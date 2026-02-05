@@ -1,145 +1,77 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html>
 <head>
-<meta charset="UTF-8">
-<title>PayBank</title>
-
-<style>
-body{
-  margin:0;
-  height:100vh;
-  background:
-    radial-gradient(600px 300px at 20% 10%, #1c1f35, transparent),
-    radial-gradient(600px 300px at 80% 90%, #151628, transparent),
-    #05060a;
-  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto;
-  color:white;
-}
-
-.center{
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  height:100vh;
-}
-
-.panel{
-  width:420px;
-  padding:32px;
-  border-radius:28px;
-  background:rgba(20,21,32,.75);
-  backdrop-filter:blur(20px);
-  box-shadow:0 40px 120px rgba(0,0,0,.8);
-}
-
-h2{
-  margin:0 0 20px;
-}
-
-input,button{
-  width:100%;
-  padding:14px;
-  margin-top:14px;
-  border:none;
-  border-radius:14px;
-  font-size:15px;
-}
-
-input{
-  background:#1e1f28;
-  color:white;
-}
-
-button{
-  background:#ffd600;
-  font-weight:600;
-}
-
-.card{
-  margin-top:20px;
-  padding:20px;
-  border-radius:20px;
-  background:linear-gradient(135deg,#1e2030,#0f1018);
-}
-.small{
-  opacity:.7;
-  font-size:14px;
-}
-.big{
-  font-size:24px;
-  margin-top:6px;
-}
-</style>
+  <meta charset="UTF-8">
+  <title>My Bank</title>
 </head>
-
 <body>
 
-<div class="center" id="login">
-  <div class="panel">
-    <h2>PayBank</h2>
-    <input id="email" placeholder="Email">
-    <input id="password" placeholder="Пароль" type="password">
-    <button onclick="login()">Войти</button>
-  </div>
-</div>
+<h2>Вход</h2>
+<input id="email" placeholder="email">
+<input id="password" placeholder="password">
+<button onclick="login()">Войти</button>
 
-<div class="center" id="app" style="display:none">
-  <div class="panel">
-    <h2>Ваш аккаунт</h2>
+<h3 id="balance"></h3>
 
-    <div class="card">
-      <div class="small">Баланс</div>
-      <div class="big" id="balance"></div>
-    </div>
+<h2>Перевод</h2>
+<input id="to" placeholder="email получателя">
+<input id="amount" placeholder="сумма">
+<button onclick="transfer()">Перевести</button>
 
-    <div class="card">
-      <div class="small">Карта</div>
-      <div class="big" id="card"></div>
-    </div>
-
-    <button onclick="logout()" style="margin-top:20px">Выйти</button>
-  </div>
-</div>
+<h2>История</h2>
+<ul id="history"></ul>
 
 <script>
-const API = 'https://script.google.com/macros/s/AKfycbxdFinEDxJ50aGVNtIDhGbs9idKwLhnNxstrCXBzTbL3ByquP2FNKngZEcm_xl0uWW7BQ/exec';
+const API = "ТВОЙ_WEB_APP_URL";
+let currentEmail = "";
 
-function login(){
-  fetch(API,{
-    method:'POST',
-    headers:{
-      'Content-Type':'application/json'
-    },
-    body: JSON.stringify({
-      action:'login',
-      email: email.value,
-      password: password.value
-    })
-  })
-  .then(r => r.text())
-  .then(t => {
-    console.log('API RESPONSE:', t);
-    const d = JSON.parse(t);
+function post(data) {
+  return fetch(API, {
+    method: "POST",
+    body: JSON.stringify(data)
+  }).then(r => r.json());
+}
 
-    if (!d.ok) {
-      alert('Неверный email или пароль');
-      return;
-    }
-
-    login.style.display = 'none';
-    app.style.display = 'flex';
-
-    balance.innerText = d.balance + ' ₽';
-    card.innerText = d.card;
-  })
-  .catch(e=>{
-    alert('Ошибка API');
-    console.error(e);
+function login() {
+  post({
+    action: "login",
+    email: email.value,
+    password: password.value
+  }).then(r => {
+    if (!r.success) return alert("Ошибка входа");
+    currentEmail = r.email;
+    balance.innerText = "Баланс: " + r.balance;
+    loadHistory();
   });
 }
 
-function logout(){
-  location.reload();
+function transfer() {
+  post({
+    action: "transfer",
+    from: currentEmail,
+    to: to.value,
+    amount: Number(amount.value)
+  }).then(r => {
+    if (r.error) alert(r.error);
+    else {
+      alert("Перевод выполнен");
+      loadHistory();
+    }
+  });
+}
+
+function loadHistory() {
+  post({
+    action: "history",
+    email: currentEmail
+  }).then(list => {
+    history.innerHTML = "";
+    list.forEach(t => {
+      let li = document.createElement("li");
+      li.innerText = t;
+      history.appendChild(li);
+    });
+  });
 }
 </script>
 
