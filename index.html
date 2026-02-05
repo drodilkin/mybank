@@ -2,116 +2,182 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Demo Bank</title>
+<title>Demo Online Bank</title>
+
+<style>
+body{
+font-family:Arial;
+background:#0f172a;
+color:white;
+padding:40px;
+}
+
+.card{
+background:#1e293b;
+padding:20px;
+border-radius:15px;
+margin-bottom:20px;
+}
+
+input,button{
+padding:10px;
+margin:5px;
+border-radius:8px;
+border:none;
+}
+
+button{
+background:#22c55e;
+color:white;
+cursor:pointer;
+}
+
+#bank{display:none;}
+</style>
+
 </head>
 <body>
 
-<h2>Demo Bank</h2>
+<h1>🏦 Demo Online Bank</h1>
 
-<div id="login">
-<input id="email" placeholder="email"><br><br>
-<input id="password" type="password" placeholder="password"><br><br>
+<div id="login" class="card">
+<h3>Login</h3>
+<input id="email" placeholder="email"><br>
+<input id="password" type="password" placeholder="password"><br>
 <button onclick="login()">Login</button>
 </div>
 
-<div id="bank" style="display:none">
+<div id="bank">
 
+<div class="card">
+<h3>💳 Account</h3>
 <p id="info"></p>
+<button onclick="refresh()">Refresh balance</button>
+<button onclick="logout()">Logout</button>
+</div>
 
-<h3>Transfer money</h3>
-
-<input id="to" placeholder="receiver email"><br><br>
-<input id="amount" placeholder="amount"><br><br>
-
+<div class="card">
+<h3>💸 Transfer</h3>
+<input id="to" placeholder="receiver email"><br>
+<input id="amount" placeholder="amount"><br>
 <button onclick="transfer()">Send</button>
+</div>
+
+<div class="card">
+<h3>📜 History</h3>
+<div id="history"></div>
+<button onclick="loadHistory()">Load history</button>
+</div>
 
 </div>
 
 <script>
 
-const API = "https://script.google.com/macros/s/AKfycbzLwgFXfyG-nQfBbkQfhJv3vjf7AdWnc7aZ68A4NxvqBJra_HOAPxV6QoPudW9R4UZ1fQ/exec";
+const API="https://script.google.com/macros/s/AKfycbxylhpXqnfBqplmJiy5QO1K91MITh3mgTvqpKLB_GaBNe85SkisPjs-SP5-PM1yAaLk4Q/exec";
+let user=null;
 
-let currentUser = null;
-
-window.onload = () => {
-
-  const saved = localStorage.getItem("user");
-
-  if (saved) {
-    currentUser = JSON.parse(saved);
-    showBank();
-  }
-};
-
-function showBank() {
-
-  document.getElementById("login").style.display = "none";
-  document.getElementById("bank").style.display = "block";
-
-  document.getElementById("info").innerText =
-    "User: " + currentUser.email +
-    " | Balance: " + currentUser.balance;
+window.onload=()=>{
+const saved=localStorage.getItem("user");
+if(saved){
+user=JSON.parse(saved);
+showBank();
+refresh();
+}
 }
 
-async function login() {
+function showBank(){
+login.style.display="none";
+bank.style.display="block";
+updateInfo();
+}
 
-  const email = document.getElementById("email").value;
-  const password = document.getElementById("password").value;
+function updateInfo(){
+info.innerText=
+"User: "+user.email+
+" | Balance: "+user.balance;
+}
 
-  const res = await fetch(API,{
-    method:"POST",
-    body:JSON.stringify({
-      action:"login",
-      email,
-      password
-    })
-  });
+async function login(){
 
-  const data = await res.json();
+const res=await fetch(API,{
+method:"POST",
+body:JSON.stringify({
+action:"login",
+email:email.value,
+password:password.value
+})
+});
 
-  if(data.status==="success"){
+const data=await res.json();
 
-    currentUser = data;
-    localStorage.setItem("user",JSON.stringify(data));
+if(data.status==="success"){
+user=data;
+localStorage.setItem("user",JSON.stringify(user));
+showBank();
+}else{
+alert("wrong login");
+}
+}
 
-    showBank();
-  }else{
-    alert("wrong login");
-  }
+async function refresh(){
+
+const res=await fetch(API,{
+method:"POST",
+body:JSON.stringify({
+action:"balance",
+email:user.email
+})
+});
+
+const data=await res.json();
+user.balance=data.balance;
+localStorage.setItem("user",JSON.stringify(user));
+updateInfo();
 }
 
 async function transfer(){
 
-  const to = document.getElementById("to").value;
-  const amount = document.getElementById("amount").value;
+const res=await fetch(API,{
+method:"POST",
+body:JSON.stringify({
+action:"transfer",
+from:user.email,
+to:to.value,
+amount:amount.value
+})
+});
 
-  const res = await fetch(API,{
-    method:"POST",
-    body:JSON.stringify({
-      action:"transfer",
-      from:currentUser.email,
-      to,
-      amount
-    })
-  });
+const data=await res.json();
 
-  const data = await res.json();
+if(data.status==="success"){
+user.balance=data.newBalance;
+localStorage.setItem("user",JSON.stringify(user));
+updateInfo();
+alert("sent");
+}else{
+alert(data.status);
+}
+}
 
-  if(data.status==="success"){
+async function loadHistory(){
 
-    currentUser.balance = data.newBalance;
-    localStorage.setItem("user",JSON.stringify(currentUser));
+const res=await fetch(API,{
+method:"POST",
+body:JSON.stringify({
+action:"history"
+})
+});
 
-    showBank();
-    alert("money sent");
+const data=await res.json();
 
-  }else if(data.status==="no_money"){
-    alert("not enough money");
-  }else if(data.status==="bad_amount"){
-    alert("wrong amount");
-  }else{
-    alert("error");
-  }
+history.innerHTML=data.data
+.map(r=>r.join(" | "))
+.join("<br>");
+}
+
+function logout(){
+localStorage.removeItem("user");
+location.reload();
 }
 
 </script>
