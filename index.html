@@ -20,18 +20,16 @@ padding:20px;
 }
 
 .card{
-background:linear-gradient(135deg,#1e293b,#020617);
+background:#1e293b;
 padding:20px;
 border-radius:20px;
 margin-bottom:15px;
-box-shadow:0 10px 25px rgba(0,0,0,.4);
 }
 
 .bank-card{
 background:linear-gradient(135deg,#22c55e,#16a34a);
-border-radius:18px;
 padding:20px;
-color:white;
+border-radius:20px;
 margin-bottom:15px;
 }
 
@@ -41,7 +39,6 @@ padding:12px;
 margin-top:10px;
 border-radius:10px;
 border:none;
-font-size:16px;
 }
 
 button{
@@ -56,10 +53,6 @@ font-size:16px;
 cursor:pointer;
 }
 
-h2,h3{
-margin-top:0;
-}
-
 #bank{display:none}
 
 .history-item{
@@ -67,25 +60,6 @@ background:#020617;
 padding:10px;
 border-radius:10px;
 margin-top:5px;
-font-size:14px;
-}
-
-.topbar{
-display:flex;
-justify-content:space-between;
-align-items:center;
-margin-bottom:15px;
-}
-
-.small-btn{
-width:auto;
-padding:6px 12px;
-background:#334155;
-}
-
-.balance{
-font-size:28px;
-font-weight:bold;
 }
 
 </style>
@@ -99,35 +73,31 @@ font-weight:bold;
 
 <div id="login" class="card">
 <h3>Login</h3>
-<input id="email" placeholder="Email">
-<input id="password" type="password" placeholder="Password">
+<input id="email">
+<input id="password" type="password">
 <button onclick="login()">Login</button>
 </div>
 
 <div id="bank">
 
-<div class="topbar">
-<h3>Dashboard</h3>
-<button class="small-btn" onclick="logout()">Logout</button>
-</div>
-
 <div class="bank-card">
-<div>💳 Demo Card</div>
+<div>💳 Card</div>
 <div id="card"></div>
-<div class="balance" id="balance"></div>
+<div id="balance"></div>
+<button onclick="logout()">Logout</button>
 </div>
 
 <div class="card">
-<h3>💸 Transfer</h3>
-<input id="to" placeholder="Receiver email">
-<input id="amount" placeholder="Amount">
-<button onclick="transfer()">Send Money</button>
+<h3>Transfer</h3>
+<input id="to">
+<input id="amount">
+<button onclick="transfer()">Send</button>
 </div>
 
 <div class="card">
-<h3>📜 Transactions</h3>
+<h3>History</h3>
 <div id="history"></div>
-<button onclick="loadHistory()">Refresh History</button>
+<button onclick="loadHistory()">Refresh</button>
 </div>
 
 </div>
@@ -136,29 +106,38 @@ font-weight:bold;
 
 <script>
 
-const API="https://script.google.com/macros/s/AKfycbw5rnGgWUFlumk3D82maoKeDYfqDQyn-SkKMtAL7BErvZMtXbKZ9Y_QKerYnPYvWEki7g/exec";
+const API="https://script.google.com/macros/s/AKfycbx4_5O8KJiL4sOJEF_sCAXcx6qLY3BV4_CKiApVjbEKj3vtKzjW9negndsywmZw0eIq_A/exec";
+
 let user=null;
 
 window.onload=()=>{
+
 const saved=localStorage.getItem("bankUser");
+
 if(saved){
+
 user=JSON.parse(saved);
+
 openBank();
 refreshBalance();
 loadHistory();
+
 setInterval(refreshBalance,5000);
 }
 }
 
 function openBank(){
-login.style.display="none";
-bank.style.display="block";
+
+document.getElementById("login").style.display="none";
+document.getElementById("bank").style.display="block";
+
 updateUI();
 }
 
 function updateUI(){
-balance.innerText="₽ "+user.balance;
-card.innerText=user.card;
+
+document.getElementById("balance").innerText="Balance: "+user.balance;
+document.getElementById("card").innerText=user.card;
 }
 
 async function login(){
@@ -167,19 +146,24 @@ const res=await fetch(API,{
 method:"POST",
 body:JSON.stringify({
 action:"login",
-email:email.value,
-password:password.value
+email:document.getElementById("email").value,
+password:document.getElementById("password").value
 })
 });
 
 const data=await res.json();
 
 if(data.status==="success"){
+
 user=data;
+
 localStorage.setItem("bankUser",JSON.stringify(user));
+
 openBank();
 loadHistory();
+
 setInterval(refreshBalance,5000);
+
 }else{
 alert("Wrong login");
 }
@@ -198,8 +182,11 @@ email:user.email
 const data=await res.json();
 
 if(data.status==="success"){
+
 user.balance=data.balance;
+
 localStorage.setItem("bankUser",JSON.stringify(user));
+
 updateUI();
 }
 }
@@ -211,19 +198,24 @@ method:"POST",
 body:JSON.stringify({
 action:"transfer",
 from:user.email,
-to:to.value,
-amount:amount.value
+to:document.getElementById("to").value,
+amount:document.getElementById("amount").value
 })
 });
 
 const data=await res.json();
 
 if(data.status==="success"){
+
 user.balance=data.newBalance;
+
 localStorage.setItem("bankUser",JSON.stringify(user));
+
 updateUI();
 loadHistory();
-alert("Transfer complete");
+
+alert("Sent");
+
 }else{
 alert(data.status);
 }
@@ -242,20 +234,23 @@ const data=await res.json();
 
 if(data.status==="success"){
 
-history.innerHTML="";
+const box=document.getElementById("history");
 
-data.data.reverse().forEach(row=>{
+box.innerHTML="";
+
+data.data.reverse().forEach(r=>{
 
 const div=document.createElement("div");
 div.className="history-item";
-div.innerText=row[1]+" → "+row[2]+" : "+row[3];
-history.appendChild(div);
+div.innerText=r[1]+" → "+r[2]+" : "+r[3];
+box.appendChild(div);
 
 });
 }
 }
 
 function logout(){
+
 localStorage.removeItem("bankUser");
 location.reload();
 }
