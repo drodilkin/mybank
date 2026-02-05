@@ -9,9 +9,9 @@
 :root{
   --bg:#0b0b0f;
   --card:#15161c;
-  --input:#1f2028;
+  --panel:#1f2028;
   --yellow:#ffdd2d;
-  --text:#ffffff;
+  --text:#fff;
   --muted:#8b8d98;
   --green:#2ecc71;
   --red:#ff5a5a;
@@ -26,296 +26,216 @@ body{
   color:var(--text);
 }
 
-.hidden{display:none}
-
+/* ===== SCREENS ===== */
 .screen{
   min-height:100vh;
-  display:flex;
-  justify-content:center;
-  align-items:center;
+  padding-bottom:90px;
+  animation:fade .35s ease;
+}
+.hidden{display:none}
+
+@keyframes fade{
+  from{opacity:0;transform:translateY(8px)}
+  to{opacity:1;transform:none}
 }
 
+/* ===== CARDS ===== */
 .card{
-  width:100%;
-  max-width:400px;
   background:linear-gradient(180deg,#1a1b22,#14151b);
-  border-radius:28px;
-  padding:28px;
-  box-shadow:0 20px 60px rgba(0,0,0,.6);
-}
-
-h1{
-  text-align:center;
-  font-size:26px;
-  margin-bottom:20px;
-}
-
-.input{
-  width:100%;
-  background:var(--input);
-  border:none;
-  padding:16px;
-  border-radius:16px;
-  color:#fff;
-  margin-bottom:14px;
-  font-size:16px;
-}
-
-.btn{
-  width:100%;
-  padding:16px;
-  border:none;
-  border-radius:18px;
-  background:var(--yellow);
-  color:#000;
-  font-size:17px;
-  font-weight:600;
-  cursor:pointer;
-}
-
-.msg{
-  text-align:center;
-  margin-top:10px;
-  color:var(--red);
-}
-
-.pin-dots{
-  display:flex;
-  justify-content:center;
-  gap:12px;
-  margin:18px 0;
-}
-
-.dot{
-  width:14px;
-  height:14px;
-  border-radius:50%;
-  background:#333;
-}
-
-.dot.active{background:var(--yellow)}
-
-/* DASHBOARD */
-.dashboard{
-  padding:24px;
+  border-radius:26px;
+  padding:22px;
+  margin:16px;
+  box-shadow:0 20px 50px rgba(0,0,0,.6);
 }
 
 .balance-card{
   background:var(--yellow);
   color:#000;
-  border-radius:22px;
-  padding:20px;
-  margin-bottom:20px;
 }
 
 .balance{
-  font-size:34px;
+  font-size:36px;
   font-weight:700;
 }
 
+/* ===== BUTTONS ===== */
+.btn{
+  width:100%;
+  padding:15px;
+  border:none;
+  border-radius:18px;
+  background:var(--yellow);
+  color:#000;
+  font-size:16px;
+  font-weight:600;
+  margin-top:14px;
+}
+
+.btn.dark{
+  background:#2a2b33;
+  color:#fff;
+}
+
+/* ===== INPUT ===== */
+.input{
+  width:100%;
+  padding:15px;
+  background:var(--panel);
+  border:none;
+  border-radius:16px;
+  color:#fff;
+  margin-top:12px;
+}
+
+/* ===== ACTIONS ===== */
 .actions{
   display:flex;
   gap:12px;
-  margin-bottom:20px;
+  margin:16px;
 }
 
 .action{
   flex:1;
-  background:#22232b;
-  border-radius:18px;
+  background:var(--panel);
   padding:14px;
+  border-radius:18px;
   text-align:center;
-  cursor:pointer;
 }
 
-/* HISTORY */
-.history{
-  margin-top:10px;
-}
-
+/* ===== HISTORY ===== */
 .tx{
   display:flex;
   justify-content:space-between;
   padding:12px 0;
   border-bottom:1px solid #222;
 }
-
 .tx.plus{color:var(--green)}
 .tx.minus{color:var(--red)}
 
-.logout{
-  margin-top:20px;
-  background:#2a2b33;
-  color:#fff;
+/* ===== NAV ===== */
+.nav{
+  position:fixed;
+  bottom:0;
+  left:0;
+  right:0;
+  height:80px;
+  background:#121319;
+  display:flex;
+  justify-content:space-around;
+  align-items:center;
+  border-top:1px solid #222;
+}
+
+.nav div{
+  text-align:center;
+  font-size:12px;
+  color:var(--muted);
+}
+
+.nav .active{
+  color:var(--yellow);
 }
 </style>
 </head>
 
 <body>
 
-<!-- LOGIN -->
-<div class="screen" id="loginScreen">
-  <div class="card">
-    <h1>Вход</h1>
-    <input id="email" class="input" placeholder="Email">
-    <input id="password" type="password" class="input" placeholder="Пароль">
-    <button class="btn" onclick="login()">Войти</button>
-    <div class="msg" id="loginMsg"></div>
+<!-- ===== HOME ===== -->
+<div class="screen" id="home">
+  <div class="card balance-card">
+    <div>Баланс</div>
+    <div class="balance" id="balance">0 ₽</div>
+  </div>
+
+  <div class="actions">
+    <div class="action" onclick="showTransfer()">Перевести</div>
+    <div class="action" onclick="openScreen('history')">История</div>
+  </div>
+
+  <div class="card hidden" id="transfer">
+    <input id="to" class="input" placeholder="Email">
+    <input id="amount" class="input" placeholder="Сумма">
+    <button class="btn" onclick="transferMoney()">Отправить</button>
   </div>
 </div>
 
-<!-- CREATE PIN -->
-<div class="screen hidden" id="createPinScreen">
+<!-- ===== HISTORY ===== -->
+<div class="screen hidden" id="history">
   <div class="card">
-    <h1>Создай PIN</h1>
-    <div class="pin-dots" id="createDots"></div>
-    <input id="createPin" class="input" maxlength="4" inputmode="numeric">
-    <button class="btn" onclick="savePin()">Сохранить</button>
+    <h3>История</h3>
+    <div id="historyList"></div>
   </div>
 </div>
 
-<!-- PIN -->
-<div class="screen hidden" id="pinScreen">
+<!-- ===== PROFILE ===== -->
+<div class="screen hidden" id="profile">
   <div class="card">
-    <h1>Введите PIN</h1>
-    <div class="pin-dots" id="pinDots"></div>
-    <input id="pinInput" class="input" maxlength="4" inputmode="numeric">
-    <button class="btn" onclick="checkPin()">Войти</button>
-    <div class="msg" id="pinMsg"></div>
+    <h3>Профиль</h3>
+    <p id="profileEmail"></p>
+    <button class="btn dark" onclick="logout()">Выйти</button>
   </div>
 </div>
 
-<!-- APP -->
-<div class="screen hidden" id="appScreen">
-  <div class="card dashboard">
-
-    <div class="balance-card">
-      <div>Баланс</div>
-      <div class="balance" id="balance">0 ₽</div>
-    </div>
-
-    <div class="actions">
-      <div class="action" onclick="showTransfer()">Перевести</div>
-      <div class="action" onclick="loadHistory()">История</div>
-    </div>
-
-    <div id="transferBlock" class="hidden">
-      <input id="to" class="input" placeholder="Email получателя">
-      <input id="amount" class="input" placeholder="Сумма">
-      <button class="btn" onclick="transfer()">Отправить</button>
-    </div>
-
-    <div class="history" id="history"></div>
-
-    <button class="btn logout" onclick="logout()">Выйти</button>
-  </div>
+<!-- ===== NAV ===== -->
+<div class="nav">
+  <div class="active" onclick="openScreen('home')">🏠<br>Главная</div>
+  <div onclick="openScreen('history')">📜<br>История</div>
+  <div onclick="openScreen('profile')">👤<br>Профиль</div>
 </div>
 
 <script>
-const API_URL = 'https://script.google.com/macros/s/AKfycbzw2nwKnvc-1zlGcl7p1OYvEk4NdqVIGS6gKrhpJ3XFglkmh7rhbDMARlvNQKclqh31/exec';
-let currentEmail = '';
+const API_URL='https://script.google.com/macros/s/AKfycbzw2nwKnvc-1zlGcl7p1OYvEk4NdqVIGS6gKrhpJ3XFglkmh7rhbDMARlvNQKclqh31/exec';
+let email=localStorage.getItem('email');
 
-window.onload=()=>{
-  if(localStorage.getItem('pin')){
-    loginScreen.classList.add('hidden');
-    pinScreen.classList.remove('hidden');
-    renderDots('pinDots',0);
-  }
-};
-
-async function login(){
-  const res=await fetch(API_URL,{
-    method:'POST',
-    body:JSON.stringify({action:'login',email:email.value,password:password.value})
-  });
-  const data=await res.json();
-  if(!data.success){loginMsg.textContent='Ошибка входа';return;}
-  currentEmail=email.value;
-  localStorage.setItem('email',currentEmail);
-  loginScreen.classList.add('hidden');
-  createPinScreen.classList.remove('hidden');
+/* ===== NAV ===== */
+function openScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.add('hidden'));
+  document.getElementById(id).classList.remove('hidden');
+  document.querySelectorAll('.nav div').forEach(n=>n.classList.remove('active'));
+  event.target.closest('div').classList.add('active');
 }
 
-function savePin(){
-  if(createPin.value.length!==4)return;
-  localStorage.setItem('pin',createPin.value);
-  createPinScreen.classList.add('hidden');
-  openApp();
-}
-
-function checkPin(){
-  if(pinInput.value===localStorage.getItem('pin')){
-    openApp();
-  }else pinMsg.textContent='Неверный PIN';
-}
-
-async function openApp(){
-  currentEmail=localStorage.getItem('email');
-  pinScreen.classList.add('hidden');
-  appScreen.classList.remove('hidden');
-  await loadBalance();
-  await loadHistory();
-}
-
+/* ===== DATA ===== */
 async function loadBalance(){
-  const res=await fetch(API_URL,{
-    method:'POST',
-    body:JSON.stringify({action:'balance',email:currentEmail})
-  });
-  const data=await res.json();
-  balance.textContent=data.balance+' ₽';
-}
-
-function showTransfer(){
-  transferBlock.classList.toggle('hidden');
-}
-
-async function transfer(){
-  await fetch(API_URL,{
-    method:'POST',
-    body:JSON.stringify({
-      action:'transfer',
-      from:currentEmail,
-      to:to.value,
-      amount:+amount.value
-    })
-  });
-  await loadBalance();
-  await loadHistory();
+  const r=await fetch(API_URL,{method:'POST',body:JSON.stringify({action:'balance',email})});
+  const d=await r.json();
+  balance.textContent=d.balance+' ₽';
 }
 
 async function loadHistory(){
-  const res=await fetch(API_URL,{
-    method:'POST',
-    body:JSON.stringify({action:'history',email:currentEmail})
-  });
-  const data=await res.json();
-  history.innerHTML='';
+  const r=await fetch(API_URL,{method:'POST',body:JSON.stringify({action:'history',email})});
+  const data=await r.json();
+  historyList.innerHTML='';
   data.forEach(t=>{
     const div=document.createElement('div');
     div.className='tx '+(t.amount>0?'plus':'minus');
-    div.innerHTML=`<div>${t.from} → ${t.to}</div><div>${t.amount}</div>`;
-    history.appendChild(div);
+    div.innerHTML=`<div>${t.from}</div><div>${t.amount}</div>`;
+    historyList.appendChild(div);
   });
 }
 
-function renderDots(id,count){
-  const el=document.getElementById(id);
-  el.innerHTML='';
-  for(let i=0;i<4;i++){
-    const d=document.createElement('div');
-    d.className='dot'+(i<count?' active':'');
-    el.appendChild(d);
-  }
+async function transferMoney(){
+  await fetch(API_URL,{
+    method:'POST',
+    body:JSON.stringify({action:'transfer',from:email,to:to.value,amount:+amount.value})
+  });
+  loadBalance();
+  loadHistory();
+  transfer.classList.add('hidden');
 }
 
-createPin.oninput=()=>renderDots('createDots',createPin.value.length);
-pinInput.oninput=()=>renderDots('pinDots',pinInput.value.length);
+function showTransfer(){
+  transfer.classList.toggle('hidden');
+}
 
 function logout(){
   localStorage.clear();
   location.reload();
 }
+
+profileEmail.textContent=email;
+loadBalance();
+loadHistory();
 </script>
 
 </body>
