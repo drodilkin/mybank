@@ -20,11 +20,7 @@
             border-radius: 15px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.2);
         }
-        h1 { 
-            color: #333; 
-            margin-bottom: 30px; 
-            text-align: center;
-        }
+        h1 { color: #333; margin-bottom: 30px; text-align: center; }
         .tab-container { margin-bottom: 20px; }
         .tab { 
             display: inline-block; 
@@ -60,14 +56,12 @@
             font-size: 16px;
             cursor: pointer;
             margin-top: 10px;
-            transition: transform 0.2s;
         }
-        button:hover { transform: translateY(-2px); }
         .balance { 
-            font-size: 32px; 
+            font-size: 24px; 
             text-align: center; 
             margin: 20px 0;
-            color: #667eea;
+            color: #28a745;
             font-weight: bold;
         }
         .message { 
@@ -78,10 +72,10 @@
         }
         .success { background: #d4edda; color: #155724; }
         .error { background: #f8d7da; color: #721c24; }
-        .transaction { 
-            padding: 10px; 
-            border-bottom: 1px solid #eee; 
-            margin: 5px 0;
+        .info { background: #d1ecf1; color: #0c5460; }
+        .logout-btn {
+            background: #dc3545 !important;
+            margin-top: 20px;
         }
     </style>
 </head>
@@ -90,55 +84,68 @@
         <h1>🏦 Виртуальный Банк</h1>
         
         <div class="tab-container">
-            <div class="tab active" onclick="showTab('login')">Вход</div>
-            <div class="tab" onclick="showTab('register')">Регистрация</div>
-            <div class="tab" onclick="showTab('transfer')" id="transferTab" style="display:none">Перевод</div>
+            <div class="tab active" onclick="showTab('login')" id="loginTab">Вход</div>
+            <div class="tab" onclick="showTab('register')" id="registerTab">Регистрация</div>
+            <div class="tab" onclick="showTab('bank')" id="bankTab" style="display:none">Банк</div>
             <div class="tab" onclick="showTab('history')" id="historyTab" style="display:none">История</div>
         </div>
         
         <!-- Вход -->
         <div class="tab-content active" id="login">
-            <h2>Вход в систему</h2>
-            <input type="email" id="loginEmail" placeholder="Ваш email">
-            <input type="password" id="loginPassword" placeholder="Пароль">
+            <h3>Вход в систему</h3>
+            <input type="email" id="loginEmail" placeholder="Email" value="test@mail.ru">
+            <input type="password" id="loginPassword" placeholder="Пароль" value="12345">
             <button onclick="login()">Войти</button>
-            <div id="loginMessage"></div>
+            <div class="message info">
+                Тестовые пользователи:<br>
+                test@mail.ru / 12345<br>
+                user@mail.ru / 54321
+            </div>
+            <div id="loginMessage" class="message"></div>
         </div>
         
         <!-- Регистрация -->
         <div class="tab-content" id="register">
-            <h2>Регистрация</h2>
-            <input type="email" id="regEmail" placeholder="Ваш email">
-            <input type="password" id="regPassword" placeholder="Пароль">
+            <h3>Регистрация</h3>
+            <input type="email" id="regEmail" placeholder="Email">
+            <input type="password" id="regPassword" placeholder="Пароль (минимум 4 символа)">
             <button onclick="register()">Зарегистрироваться</button>
-            <div id="regMessage"></div>
+            <div id="regMessage" class="message"></div>
         </div>
         
-        <!-- Перевод средств -->
-        <div class="tab-content" id="transfer">
-            <h2>Перевод средств</h2>
-            <div class="balance" id="currentBalance">Баланс: 0 ₿</div>
-            <input type="email" id="toEmail" placeholder="Email получателя">
-            <input type="number" id="amount" placeholder="Сумма" min="1">
-            <button onclick="transfer()">Отправить</button>
-            <div id="transferMessage"></div>
+        <!-- Банк -->
+        <div class="tab-content" id="bank">
+            <h3>Ваш виртуальный счёт</h3>
+            <div class="balance" id="balance">Загрузка...</div>
+            
+            <h4>Перевод средств</h4>
+            <input type="email" id="sendTo" placeholder="Email получателя">
+            <input type="number" id="sendAmount" placeholder="Сумма (₿)" min="1">
+            <button onclick="sendMoney()">Отправить перевод</button>
+            
+            <h4>Быстрый перевод</h4>
+            <button onclick="quickSend('user@mail.ru', 100)" style="background:#28a745">Отправить 100 ₿ пользователю user@mail.ru</button>
+            
+            <button onclick="logout()" class="logout-btn">Выйти из системы</button>
+            <div id="bankMessage" class="message"></div>
         </div>
         
-        <!-- История операций -->
+        <!-- История -->
         <div class="tab-content" id="history">
-            <h2>История операций</h2>
-            <div id="historyList"></div>
+            <h3>История операций</h3>
+            <button onclick="loadHistory()">Обновить историю</button>
+            <div id="historyList" style="margin-top:15px; max-height:300px; overflow-y:auto;"></div>
         </div>
     </div>
 
     <script>
-        // ВАШИ ДАННЫЕ (нужен только API_KEY)
-        const SHEET_ID = '1NKHNYwDT9WVvHLLd38xhIzLJreaLs7jkWzPHarjmH68';
-        const API_KEY = 'AIzaSyDv5GBoJW60bPwuGOroiVF1r9WokT4zQX0'; // ← ПОЛУЧИТЕ ЕГО (инструкция ниже)
+        // ВАШИ ДАННЫЕ
+        const SHEET_ID = '1UJzb281UvBZIGr9rE8y0hzvhHUt_G2YDnRYqlTi03xI';
+        const API_KEY = 'AIzaSyDv5GBoJW60bPwuGOroiVF1r9WokT4zQX0';
         
         let currentUser = null;
         
-        // Показать нужную вкладку
+        // Показать вкладку
         function showTab(tabName) {
             document.querySelectorAll('.tab-content').forEach(tab => {
                 tab.classList.remove('active');
@@ -148,51 +155,89 @@
             });
             
             document.getElementById(tabName).classList.add('active');
-            document.querySelector(`[onclick="showTab('${tabName}')"]`).classList.add('active');
+            document.getElementById(tabName + 'Tab').classList.add('active');
         }
         
-        // Войти в систему
+        // Войти
         async function login() {
-            const email = document.getElementById('loginEmail').value;
+            const email = document.getElementById('loginEmail').value.trim();
             const password = document.getElementById('loginPassword').value;
             
-            if (!email || !password) {
-                showMessage('loginMessage', 'Заполните все поля', 'error');
-                return;
-            }
-            
             try {
-                // Получаем данные пользователей
-                const users = await getSheetData('Users');
+                // Пробуем получить данные из Google Sheets
+                const users = await getUsersFromSheet();
                 
                 // Ищем пользователя
-                const user = users.find(u => u.Email === email && u.Password === password);
+                const user = users.find(u => 
+                    u.Email && u.Email.toLowerCase() === email.toLowerCase() && 
+                    u.Password === password
+                );
                 
                 if (user) {
-                    currentUser = user;
-                    showMessage('loginMessage', `Добро пожаловать!`, 'success');
+                    currentUser = {
+                        id: user.ID,
+                        email: user.Email,
+                        balance: parseInt(user.Balance) || 0
+                    };
                     
-                    // Показываем вкладки для авторизованных
-                    document.getElementById('transferTab').style.display = 'inline-block';
+                    document.getElementById('loginMessage').innerHTML = 'Успешный вход!';
+                    document.getElementById('loginMessage').className = 'message success';
+                    
+                    // Показать банковские вкладки
+                    document.getElementById('bankTab').style.display = 'inline-block';
                     document.getElementById('historyTab').style.display = 'inline-block';
+                    document.getElementById('loginTab').style.display = 'none';
+                    document.getElementById('registerTab').style.display = 'none';
                     
-                    // Показываем баланс
-                    document.getElementById('currentBalance').textContent = `Баланс: ${user.Balance} ₿`;
+                    // Перейти в банк
+                    showTab('bank');
+                    updateBalanceDisplay();
                     
-                    // Переключаемся на вкладку переводов
-                    setTimeout(() => showTab('transfer'), 1000);
                 } else {
-                    showMessage('loginMessage', 'Неверный email или пароль', 'error');
+                    document.getElementById('loginMessage').innerHTML = 'Неверный email или пароль';
+                    document.getElementById('loginMessage').className = 'message error';
                 }
+                
             } catch (error) {
-                console.error('Ошибка:', error);
-                showMessage('loginMessage', 'Ошибка соединения с сервером', 'error');
+                console.log('Ошибка Google Sheets, используем локальные данные');
+                // Локальные данные для теста
+                const localUsers = [
+                    {ID: '1', Email: 'test@mail.ru', Password: '12345', Balance: '1000'},
+                    {ID: '2', Email: 'user@mail.ru', Password: '54321', Balance: '500'}
+                ];
+                
+                const user = localUsers.find(u => 
+                    u.Email.toLowerCase() === email.toLowerCase() && 
+                    u.Password === password
+                );
+                
+                if (user) {
+                    currentUser = {
+                        id: user.ID,
+                        email: user.Email,
+                        balance: parseInt(user.Balance)
+                    };
+                    
+                    document.getElementById('loginMessage').innerHTML = 'Успешный вход (локальный режим)!';
+                    document.getElementById('loginMessage').className = 'message success';
+                    
+                    document.getElementById('bankTab').style.display = 'inline-block';
+                    document.getElementById('historyTab').style.display = 'inline-block';
+                    document.getElementById('loginTab').style.display = 'none';
+                    document.getElementById('registerTab').style.display = 'none';
+                    
+                    showTab('bank');
+                    updateBalanceDisplay();
+                } else {
+                    document.getElementById('loginMessage').innerHTML = 'Неверный email или пароль';
+                    document.getElementById('loginMessage').className = 'message error';
+                }
             }
         }
         
-        // Регистрация
-        async function register() {
-            const email = document.getElementById('regEmail').value;
+        // Регистрация (упрощенная)
+        function register() {
+            const email = document.getElementById('regEmail').value.trim();
             const password = document.getElementById('regPassword').value;
             
             if (!email || !password) {
@@ -200,53 +245,162 @@
                 return;
             }
             
+            if (password.length < 4) {
+                showMessage('regMessage', 'Пароль минимум 4 символа', 'error');
+                return;
+            }
+            
+            // Локальная регистрация
+            alert('Регистрация в демо-режиме. Войдите как test@mail.ru / 12345');
+            
+            document.getElementById('regEmail').value = '';
+            document.getElementById('regPassword').value = '';
+            setTimeout(() => showTab('login'), 1000);
+        }
+        
+        // Отправить деньги
+        async function sendMoney() {
+            if (!currentUser) return;
+            
+            const toEmail = document.getElementById('sendTo').value.trim();
+            const amount = parseInt(document.getElementById('sendAmount').value);
+            
+            if (!toEmail || !amount || amount <= 0) {
+                showMessage('bankMessage', 'Заполните все поля', 'error');
+                return;
+            }
+            
+            if (amount > currentUser.balance) {
+                showMessage('bankMessage', `Недостаточно средств. Ваш баланс: ${currentUser.balance} ₿`, 'error');
+                return;
+            }
+            
             try {
-                // Получаем текущих пользователей
-                const users = await getSheetData('Users');
+                // Получаем пользователей
+                const users = await getUsersFromSheet();
+                const receiver = users.find(u => 
+                    u.Email && u.Email.toLowerCase() === toEmail.toLowerCase()
+                );
                 
-                // Проверяем, существует ли пользователь
-                if (users.find(u => u.Email === email)) {
-                    showMessage('regMessage', 'Пользователь уже существует', 'error');
+                if (!receiver) {
+                    showMessage('bankMessage', 'Получатель не найден', 'error');
                     return;
                 }
                 
-                // Генерируем новый ID
-                const newId = users.length + 1;
+                if (receiver.Email === currentUser.email) {
+                    showMessage('bankMessage', 'Нельзя переводить себе', 'error');
+                    return;
+                }
                 
-                // Добавляем нового пользователя
-                const response = await fetch(`https://api.sheetson.com/v2/sheets/Users`, {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': 'Bearer YOUR_SHEETSON_API_KEY',
-                        'X-Spreadsheet-Id': SHEET_ID,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        ID: newId,
-                        Email: email,
-                        Password: password,
-                        Balance: 1000,
-                        RegistrationDate: new Date().toISOString()
-                    })
-                });
+                // Обновляем балансы (демо-версия)
+                currentUser.balance -= amount;
                 
-                showMessage('regMessage', 'Регистрация успешна! Теперь войдите в систему.', 'success');
-                setTimeout(() => showTab('login'), 1500);
+                // Добавляем транзакцию
+                await addTransaction(currentUser.id, receiver.ID, amount);
+                
+                // Обновляем отображение
+                updateBalanceDisplay();
+                
+                showMessage('bankMessage', 
+                    `✅ Перевод ${amount} ₿ пользователю ${toEmail} выполнен!<br>
+                    <small>Демо-режим: баланс обновился локально</small>`, 
+                    'success'
+                );
+                
+                // Очищаем поля
+                document.getElementById('sendTo').value = '';
+                document.getElementById('sendAmount').value = '';
+                
             } catch (error) {
-                console.error('Ошибка регистрации:', error);
-                showMessage('regMessage', 'Ошибка регистрации', 'error');
+                console.error('Ошибка:', error);
+                // Локальный демо-режим
+                currentUser.balance -= amount;
+                updateBalanceDisplay();
+                
+                showMessage('bankMessage', 
+                    `✅ Демо-перевод ${amount} ₿ пользователю ${toEmail}<br>
+                    <small>(локальный режим)</small>`, 
+                    'success'
+                );
             }
         }
         
-        // Перевод средств (упрощенная версия)
-        async function transfer() {
-            alert('Функция перевода работает с полной настройкой API. Сначала настройте API ключ.');
+        // Быстрый перевод
+        function quickSend(email, amount) {
+            document.getElementById('sendTo').value = email;
+            document.getElementById('sendAmount').value = amount;
+            sendMoney();
         }
         
-        // Функция для получения данных из Google Sheets
-        async function getSheetData(sheetName) {
+        // Загрузить историю
+        async function loadHistory() {
+            const historyDiv = document.getElementById('historyList');
+            historyDiv.innerHTML = '<p>Загрузка истории...</p>';
+            
             try {
-                const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${sheetName}`;
+                const transactions = await getTransactionsFromSheet();
+                const users = await getUsersFromSheet();
+                
+                if (transactions.length === 0) {
+                    historyDiv.innerHTML = '<p>Нет операций</p>';
+                    return;
+                }
+                
+                let html = '';
+                transactions.forEach(trans => {
+                    const fromUser = users.find(u => u.ID === trans.FromID);
+                    const toUser = users.find(u => u.ID === trans.ToID);
+                    
+                    html += `
+                        <div style="padding:10px; border-bottom:1px solid #eee; margin:5px 0">
+                            <div><strong>${fromUser?.Email || 'Неизвестно'} → ${toUser?.Email || 'Неизвестно'}</strong></div>
+                            <div>Сумма: ${trans.Amount} ₿</div>
+                            <div><small>${trans.Date || 'Дата не указана'}</small></div>
+                        </div>
+                    `;
+                });
+                
+                historyDiv.innerHTML = html;
+                
+            } catch (error) {
+                historyDiv.innerHTML = '<p>История транзакций пуста или ошибка загрузки</p>';
+            }
+        }
+        
+        // Выйти
+        function logout() {
+            currentUser = null;
+            document.getElementById('bankTab').style.display = 'none';
+            document.getElementById('historyTab').style.display = 'none';
+            document.getElementById('loginTab').style.display = 'inline-block';
+            document.getElementById('registerTab').style.display = 'inline-block';
+            
+            document.getElementById('loginEmail').value = '';
+            document.getElementById('loginPassword').value = '';
+            
+            showTab('login');
+        }
+        
+        // Обновить отображение баланса
+        function updateBalanceDisplay() {
+            if (currentUser) {
+                document.getElementById('balance').innerHTML = `${currentUser.balance} ₿`;
+            }
+        }
+        
+        // Показать сообщение
+        function showMessage(elementId, text, type) {
+            const element = document.getElementById(elementId);
+            element.innerHTML = text;
+            element.className = `message ${type}`;
+        }
+        
+        // ========== GOOGLE SHEETS ФУНКЦИИ ==========
+        
+        // Получить пользователей из таблицы
+        async function getUsersFromSheet() {
+            try {
+                const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=Users`;
                 const response = await fetch(url);
                 const text = await response.text();
                 const json = JSON.parse(text.substr(47).slice(0, -2));
@@ -262,21 +416,52 @@
                     return obj;
                 });
             } catch (error) {
-                console.error('Ошибка загрузки данных:', error);
-                return [];
+                console.error('Ошибка загрузки пользователей:', error);
+                throw error;
             }
         }
         
-        // Показать сообщение
-        function showMessage(elementId, text, type) {
-            const element = document.getElementById(elementId);
-            element.textContent = text;
-            element.className = `message ${type}`;
-            setTimeout(() => {
-                element.textContent = '';
-                element.className = 'message';
-            }, 3000);
+        // Получить транзакции из таблицы
+        async function getTransactionsFromSheet() {
+            try {
+                const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=Transactions`;
+                const response = await fetch(url);
+                const text = await response.text();
+                const json = JSON.parse(text.substr(47).slice(0, -2));
+                
+                if (!json.table || !json.table.rows) return [];
+                
+                const headers = json.table.cols.map(col => col.label);
+                return json.table.rows.map(row => {
+                    const obj = {};
+                    row.c.forEach((cell, index) => {
+                        obj[headers[index]] = cell ? cell.v : '';
+                    });
+                    return obj;
+                });
+            } catch (error) {
+                console.error('Ошибка загрузки транзакций:', error);
+                return []; // Возвращаем пустой массив если листа нет
+            }
         }
+        
+        // Добавить транзакцию
+        async function addTransaction(fromId, toId, amount) {
+            try {
+                // Этот метод требует более сложной настройки API
+                // В демо-режиме просто показываем сообщение
+                console.log(`Добавлена транзакция: ${fromId} → ${toId}, сумма: ${amount}`);
+                return true;
+            } catch (error) {
+                console.error('Ошибка добавления транзакции:', error);
+                return false;
+            }
+        }
+        
+        // При загрузке страницы
+        window.onload = function() {
+            showTab('login');
+        };
     </script>
 </body>
 </html>
