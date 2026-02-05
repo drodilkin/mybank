@@ -6,308 +6,283 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
-:root {
-  --bg:#0b0b10;
-  --card:#181820;
-  --accent:#ffd600;
+:root{
+  --bg:#0c0c0f;
+  --card:#1a1a1f;
+  --soft:#24242b;
+  --accent:#ffdd2d;
   --text:#fff;
   --muted:#9b9ba3;
-  --danger:#ff4d4f;
-  --success:#2ecc71;
 }
 
-* {
-  box-sizing: border-box;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+*{box-sizing:border-box;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--text);
 }
 
-body {
-  margin: 0;
-  background: var(--bg);
-  color: var(--text);
-  min-height: 100vh;
+.hidden{display:none}
+
+/* ===== LOGIN ===== */
+.login{
+  min-height:100vh;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  padding:20px;
 }
 
-/* ===== LOADER ===== */
-#loader {
-  position: fixed;
-  inset: 0;
-  background: var(--bg);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  z-index: 999;
+.login-card{
+  width:100%;
+  max-width:380px;
+  background:var(--card);
+  border-radius:24px;
+  padding:24px;
 }
 
-.spinner {
-  width: 48px;
-  height: 48px;
-  border: 4px solid #2a2a36;
-  border-top: 4px solid var(--accent);
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
+.login-card h1{
+  text-align:center;
+  margin-bottom:20px;
 }
 
-@keyframes spin {
-  to { transform: rotate(360deg); }
+input{
+  width:100%;
+  padding:14px;
+  margin-top:12px;
+  border:none;
+  border-radius:14px;
+  background:var(--soft);
+  color:#fff;
+  font-size:16px;
 }
 
-/* ===== APP ===== */
-.app {
-  display: none;
-  min-height: 100vh;
-  justify-content: center;
-  align-items: center;
+button{
+  width:100%;
+  padding:14px;
+  margin-top:16px;
+  border:none;
+  border-radius:16px;
+  background:var(--accent);
+  font-weight:600;
+  font-size:16px;
+  cursor:pointer;
 }
 
-.card {
-  width: 100%;
-  max-width: 420px;
-  background: var(--card);
-  border-radius: 22px;
-  padding: 24px;
-  box-shadow: 0 20px 50px rgba(0,0,0,.5);
+.message{
+  margin-top:12px;
+  text-align:center;
+  color:#ff6b6b;
 }
 
-h1 {
-  text-align: center;
-  margin-bottom: 12px;
+/* ===== DASHBOARD ===== */
+.app{
+  min-height:100vh;
+  padding:20px;
 }
 
-input, select, button {
-  width: 100%;
-  padding: 14px;
-  border-radius: 14px;
-  border: none;
-  font-size: 16px;
-  margin-top: 12px;
+.header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:20px;
 }
 
-input, select {
-  background: #242430;
-  color: white;
+.header h2{margin:0}
+
+.card{
+  background:var(--card);
+  border-radius:24px;
+  padding:20px;
+  margin-bottom:16px;
 }
 
-button {
-  background: var(--accent);
-  font-weight: 600;
-  cursor: pointer;
+.balance{
+  font-size:34px;
+  font-weight:600;
+  margin-top:6px;
 }
 
-button.secondary {
-  background: #2a2a36;
-  color: white;
+.actions{
+  display:flex;
+  gap:12px;
+  margin-bottom:16px;
 }
 
-.balance {
-  font-size: 36px;
-  text-align: center;
-  margin: 12px 0;
+.action{
+  flex:1;
+  background:var(--soft);
+  border-radius:18px;
+  padding:14px;
+  text-align:center;
+  font-size:14px;
+  cursor:pointer;
 }
 
-/* ===== HISTORY ===== */
-.history {
-  margin-top: 20px;
+.transfer input, .transfer select{
+  background:var(--soft);
 }
 
-.history h3 {
-  font-size: 16px;
-  color: var(--muted);
-  margin-bottom: 10px;
+.history{
+  margin-top:10px;
 }
 
-.history-item {
-  background: #242430;
-  padding: 12px;
-  border-radius: 12px;
-  margin-bottom: 8px;
-  display: flex;
-  justify-content: space-between;
-  font-size: 14px;
+.history-item{
+  padding:10px 0;
+  border-bottom:1px solid #2a2a30;
+  font-size:14px;
 }
 
-.history-item.in { border-left: 4px solid var(--success); }
-.history-item.out { border-left: 4px solid var(--danger); }
+.plus{color:#2ecc71}
+.minus{color:#ff6b6b}
 
-.amount.in { color: var(--success); }
-.amount.out { color: var(--danger); }
-
-.message {
-  margin-top: 12px;
-  padding: 12px;
-  border-radius: 12px;
-  text-align: center;
+.logout{
+  margin-top:20px;
+  background:#2a2a30;
+  color:#fff;
 }
-
-.error { background: rgba(255,77,79,.15); color: var(--danger); }
-.success { background: rgba(46,204,113,.15); color: var(--success); }
-
-.hidden { display: none; }
 </style>
 </head>
 
 <body>
 
-<div id="loader">
-  <div class="spinner"></div>
-  <p>Загрузка PayBank…</p>
-</div>
-
-<div class="app" id="app">
-
-  <!-- LOGIN -->
-  <div class="card" id="loginScreen">
+<!-- LOGIN -->
+<div class="login" id="loginScreen">
+  <div class="login-card">
     <h1>PayBank</h1>
     <input id="email" placeholder="Email">
     <input id="password" type="password" placeholder="Пароль">
     <button onclick="login()">Войти</button>
     <div id="loginMsg" class="message"></div>
   </div>
+</div>
 
-  <!-- USER -->
-  <div class="card hidden" id="userScreen">
-    <h1 id="userName"></h1>
-    <div class="balance" id="balance">0 ₿</div>
+<!-- APP -->
+<div class="app hidden" id="appScreen">
 
+  <div class="header">
+    <h2 id="userName">Пользователь</h2>
+    <span style="color:var(--muted)">PayBank</span>
+  </div>
+
+  <div class="card">
+    <div style="color:var(--muted)">Основной счёт</div>
+    <div class="balance" id="balance">0 ₽</div>
+  </div>
+
+  <div class="actions">
+    <div class="action">💸 Перевод</div>
+    <div class="action">📜 История</div>
+    <div class="action">⚙️</div>
+  </div>
+
+  <div class="card transfer">
     <select id="toUser"></select>
     <input id="amount" type="number" placeholder="Сумма">
-    <button onclick="transfer()">Перевести</button>
-    <button class="secondary" onclick="logout()">Выйти</button>
-
-    <div class="history">
-      <h3>История операций</h3>
-      <div id="historyList"></div>
-    </div>
-
-    <div id="userMsg" class="message"></div>
+    <button onclick="transfer()">Отправить</button>
   </div>
+
+  <div class="card">
+    <h3 style="margin-top:0">История</h3>
+    <div class="history" id="history"></div>
+  </div>
+
+  <button class="logout" onclick="logout()">Выйти</button>
 
 </div>
 
 <script>
-const API_URL = 'https://script.google.com/macros/s/AKfycbzw2nwKnvc-1zlGcl7p1OYvEk4NdqVIGS6gKrhpJ3XFglkmh7rhbDMARlvNQKclqh31/exec';
+const API_URL = 'ВСТАВЬ_СЮДА_API_URL';
 
 const USERS = [
-  { name:'Роман Киселев', email:'romankisel@mail.ru' },
-  { name:'Ильяс Валиев', email:'ilyasvaliev@mail.ru' },
-  { name:'Артем Антонов', email:'artemant@mail.ru' },
-  { name:'Прохор Мартьянов', email:'prokhormart@mail.ru' }
+  {name:'Роман',email:'romankisel@mail.ru'},
+  {name:'Ильяс',email:'ilyasvaliev@mail.ru'},
+  {name:'Артем',email:'artemant@mail.ru'},
+  {name:'Прохор',email:'prokhormart@mail.ru'}
 ];
 
-let currentUserEmail = '';
+let currentUser='';
 
-window.onload = () => {
-  setTimeout(() => {
-    loader.style.display = 'none';
-    app.style.display = 'flex';
-  }, 1000);
-};
+/* LOGIN */
+async function login(){
+  const emailVal=email.value.toLowerCase();
+  const pass=password.value;
 
-async function login() {
-  const email = emailInput.value.toLowerCase().trim();
-  const password = passwordInput.value.trim();
-
-  const res = await fetch(API_URL, {
-    method: 'POST',
-    body: JSON.stringify({ action:'login', email, password })
+  const res=await fetch(API_URL,{
+    method:'POST',
+    body:JSON.stringify({action:'login',email:emailVal,password:pass})
   });
+  const data=await res.json();
 
-  const data = await res.json();
-
-  if (!data.success) {
-    msg('loginMsg','❌ Неверные данные','error');
+  if(!data.success){
+    loginMsg.textContent='Неверные данные';
     return;
   }
 
-  currentUserEmail = email;
-  userName.textContent = USERS.find(u=>u.email===email)?.name || email;
-  balance.textContent = data.balance + ' ₿';
+  currentUser=emailVal;
+  userName.textContent=USERS.find(u=>u.email===emailVal)?.name || emailVal;
+  balance.textContent=data.balance+' ₽';
 
-  fillRecipients();
+  fillUsers();
   loadHistory();
 
   loginScreen.classList.add('hidden');
-  userScreen.classList.remove('hidden');
+  appScreen.classList.remove('hidden');
 }
 
-function fillRecipients() {
-  toUser.innerHTML = '<option value="">Получатель</option>';
-  USERS.filter(u=>u.email!==currentUserEmail).forEach(u=>{
-    const o=document.createElement('option');
-    o.value=u.email;
-    o.textContent=u.name;
-    toUser.appendChild(o);
+function fillUsers(){
+  toUser.innerHTML='<option value="">Кому</option>';
+  USERS.forEach(u=>{
+    if(u.email!==currentUser){
+      const o=document.createElement('option');
+      o.value=u.email;
+      o.textContent=u.name;
+      toUser.appendChild(o);
+    }
   });
 }
 
-async function transfer() {
-  const to = toUser.value;
-  const amount = Number(amountInput.value);
+/* TRANSFER */
+async function transfer(){
+  const to=toUser.value;
+  const amountVal=Number(amount.value);
 
-  if (!to || amount <= 0) {
-    msg('userMsg','❌ Проверь данные','error');
-    return;
+  if(!to||amountVal<=0) return;
+
+  const res=await fetch(API_URL,{
+    method:'POST',
+    body:JSON.stringify({action:'transfer',from:currentUser,to,amount:amountVal})
+  });
+  const data=await res.json();
+
+  if(data.success){
+    balance.textContent=data.balance+' ₽';
+    amount.value='';
+    loadHistory();
   }
+}
 
-  await fetch(API_URL, {
+/* HISTORY */
+async function loadHistory(){
+  const res=await fetch(API_URL,{
     method:'POST',
-    body:JSON.stringify({ action:'transfer', from:currentUserEmail, to, amount })
+    body:JSON.stringify({action:'history',email:currentUser})
   });
+  const data=await res.json();
 
-  msg('userMsg','✅ Перевод выполнен','success');
-  amountInput.value='';
-  updateBalance();
-  loadHistory();
-}
-
-async function updateBalance() {
-  const res = await fetch(API_URL, {
-    method:'POST',
-    body:JSON.stringify({ action:'getBalance', email:currentUserEmail })
-  });
-  const data = await res.json();
-  balance.textContent = data.balance + ' ₿';
-}
-
-async function loadHistory() {
-  const res = await fetch(API_URL, {
-    method:'POST',
-    body:JSON.stringify({ action:'history', email:currentUserEmail })
-  });
-  const data = await res.json();
-
-  historyList.innerHTML='';
-  if (data.history.length === 0) {
-    historyList.innerHTML='<p style="color:#9b9ba3">Нет операций</p>';
-    return;
-  }
-
-  data.history.reverse().forEach(op=>{
-    const isIn = op.to === currentUserEmail;
-    const div = document.createElement('div');
-    div.className = 'history-item ' + (isIn?'in':'out');
-    div.innerHTML = `
-      <span>${isIn ? '⬇️ от '+op.fromName : '⬆️ → '+op.toName}</span>
-      <span class="amount ${isIn?'in':'out'}">
-        ${isIn?'+':'-'}${op.amount} ₿
-      </span>
-    `;
-    historyList.appendChild(div);
+  history.innerHTML='';
+  data.history.reverse().forEach(h=>{
+    const d=document.createElement('div');
+    d.className='history-item '+(h.amount.startsWith('+')?'plus':'minus');
+    d.textContent=`${h.time} — ${h.text} ${h.amount}`;
+    history.appendChild(d);
   });
 }
 
-function msg(id,text,type){
-  const el=document.getElementById(id);
-  el.textContent=text;
-  el.className='message '+type;
+function logout(){
+  location.reload();
 }
-
-function logout(){ location.reload(); }
-
-const emailInput=document.getElementById('email');
-const passwordInput=document.getElementById('password');
-const amountInput=document.getElementById('amount');
 </script>
 
 </body>
