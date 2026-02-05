@@ -1,78 +1,119 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="UTF-8">
-  <title>My Bank</title>
+<meta charset="UTF-8">
+<title>Demo Bank</title>
 </head>
 <body>
 
-<h2>Вход</h2>
-<input id="email" placeholder="email">
-<input id="password" placeholder="password">
-<button onclick="login()">Войти</button>
+<h2>Demo Bank</h2>
 
-<h3 id="balance"></h3>
+<div id="login">
+<input id="email" placeholder="email"><br><br>
+<input id="password" type="password" placeholder="password"><br><br>
+<button onclick="login()">Login</button>
+</div>
 
-<h2>Перевод</h2>
-<input id="to" placeholder="email получателя">
-<input id="amount" placeholder="сумма">
-<button onclick="transfer()">Перевести</button>
+<div id="bank" style="display:none">
 
-<h2>История</h2>
-<ul id="history"></ul>
+<p id="info"></p>
+
+<h3>Transfer money</h3>
+
+<input id="to" placeholder="receiver email"><br><br>
+<input id="amount" placeholder="amount"><br><br>
+
+<button onclick="transfer()">Send</button>
+
+</div>
 
 <script>
-const API = "https://script.google.com/macros/s/AKfycbxtG3W02IJWB4JwH2oys9zCqoCJxrDP1p3iXPWL1JMhAD8JOHCwr1ofe9Gisqgm3Ehqgg/exec";
-let currentEmail = "";
 
-function post(data) {
-  return fetch(API, {
-    method: "POST",
-    body: JSON.stringify(data)
-  }).then(r => r.json());
+const API = "https://script.google.com/macros/s/AKfycbzLwgFXfyG-nQfBbkQfhJv3vjf7AdWnc7aZ68A4NxvqBJra_HOAPxV6QoPudW9R4UZ1fQ/exec";
+
+let currentUser = null;
+
+window.onload = () => {
+
+  const saved = localStorage.getItem("user");
+
+  if (saved) {
+    currentUser = JSON.parse(saved);
+    showBank();
+  }
+};
+
+function showBank() {
+
+  document.getElementById("login").style.display = "none";
+  document.getElementById("bank").style.display = "block";
+
+  document.getElementById("info").innerText =
+    "User: " + currentUser.email +
+    " | Balance: " + currentUser.balance;
 }
 
-function login() {
-  post({
-    action: "login",
-    email: email.value,
-    password: password.value
-  }).then(r => {
-    if (!r.success) return alert("Ошибка входа");
-    currentEmail = r.email;
-    balance.innerText = "Баланс: " + r.balance;
-    loadHistory();
+async function login() {
+
+  const email = document.getElementById("email").value;
+  const password = document.getElementById("password").value;
+
+  const res = await fetch(API,{
+    method:"POST",
+    body:JSON.stringify({
+      action:"login",
+      email,
+      password
+    })
   });
+
+  const data = await res.json();
+
+  if(data.status==="success"){
+
+    currentUser = data;
+    localStorage.setItem("user",JSON.stringify(data));
+
+    showBank();
+  }else{
+    alert("wrong login");
+  }
 }
 
-function transfer() {
-  post({
-    action: "transfer",
-    from: currentEmail,
-    to: to.value,
-    amount: Number(amount.value)
-  }).then(r => {
-    if (r.error) alert(r.error);
-    else {
-      alert("Перевод выполнен");
-      loadHistory();
-    }
+async function transfer(){
+
+  const to = document.getElementById("to").value;
+  const amount = document.getElementById("amount").value;
+
+  const res = await fetch(API,{
+    method:"POST",
+    body:JSON.stringify({
+      action:"transfer",
+      from:currentUser.email,
+      to,
+      amount
+    })
   });
+
+  const data = await res.json();
+
+  if(data.status==="success"){
+
+    currentUser.balance = data.newBalance;
+    localStorage.setItem("user",JSON.stringify(currentUser));
+
+    showBank();
+    alert("money sent");
+
+  }else if(data.status==="no_money"){
+    alert("not enough money");
+  }else if(data.status==="bad_amount"){
+    alert("wrong amount");
+  }else{
+    alert("error");
+  }
 }
 
-function loadHistory() {
-  post({
-    action: "history",
-    email: currentEmail
-  }).then(list => {
-    history.innerHTML = "";
-    list.forEach(t => {
-      let li = document.createElement("li");
-      li.innerText = t;
-      history.appendChild(li);
-    });
-  });
-}
 </script>
 
 </body>
