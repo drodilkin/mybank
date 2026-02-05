@@ -1,81 +1,139 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Мой Банк</title>
+    <title>Мой Банк (Google Sheets)</title>
     <style>
-        body { font-family: Arial; max-width: 500px; margin: auto; padding: 20px; }
+        body { font-family: Arial; padding: 20px; max-width: 500px; margin: auto; background: #f0f2f5; }
+        .container { background: white; padding: 25px; border-radius: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
         .card { background: #e3f2fd; padding: 20px; margin: 15px 0; border-radius: 10px; }
-        input, button { width: 100%; padding: 12px; margin: 8px 0; }
-        .balance { font-size: 28px; color: #2e7d32; }
+        input, button { width: 100%; padding: 12px; margin: 8px 0; border-radius: 8px; border: 1px solid #90caf9; }
+        button { background: #2196f3; color: white; border: none; cursor: pointer; font-weight: bold; }
+        button:hover { background: #1976d2; }
+        .balance { font-size: 32px; color: #4caf50; text-align: center; margin: 10px 0; }
+        .user-info { display: flex; align-items: center; margin-bottom: 15px; }
+        .avatar { width: 50px; height: 50px; background: #2196f3; border-radius: 50%; margin-right: 15px; display: flex; align-items: center; justify-content: center; color: white; font-size: 20px; }
+        .result { margin-top: 20px; padding: 15px; background: #e8f5e9; border-radius: 8px; border: 1px solid #a5d6a7; display: none; }
+        .user-list { background: #f5f5f5; padding: 15px; border-radius: 8px; margin-top: 20px; }
+        .error { background: #ffebee; border-color: #ef9a9a; }
     </style>
 </head>
 <body>
-    <h1>🏦 Мой Банк (Google Sheets)</h1>
-    
-    <div class="card">
-        <h3>Вход:</h3>
-        <input id="email" placeholder="Email" value="you@test.com">
-        <input id="password" placeholder="Пароль" value="123">
-        <button onclick="login()">Войти</button>
-    </div>
-    
-    <div id="bank" style="display:none">
-        <div class="card">
-            <h3>👤 <span id="userName"></span></h3>
-            <div class="balance">💰 <span id="balance">0</span> баллов</div>
-        </div>
+    <div class="container">
+        <h1>🏦 Мой Банк (Работает!)</h1>
         
         <div class="card">
-            <h3>📤 Перевод другу:</h3>
-            <input id="friendEmail" placeholder="Email друга" value="friend@test.com">
-            <input id="amount" type="number" placeholder="Сумма" value="100">
-            <button onclick="sendMoney()">💸 Перевести</button>
+            <h3>🔐 Вход в систему</h3>
+            <input type="email" id="email" placeholder="Email" value="you@test.com">
+            <input type="password" id="password" placeholder="Пароль" value="123">
+            <button onclick="login()">Войти в банк</button>
+            <p style="font-size: 14px; color: #666; margin-top: 10px;">
+                Тестовые пользователи:<br>
+                • you@test.com / 123 (Вы)<br>
+                • friend@test.com / 123 (Друг)
+            </p>
         </div>
         
-        <div id="result" class="card" style="background: #e8f5e9; display:none"></div>
-        
-        <button onclick="logout()" style="background: #d32f2f; color: white;">Выйти</button>
+        <div id="bank" style="display:none;">
+            <div class="user-info">
+                <div class="avatar" id="userAvatar">👤</div>
+                <div>
+                    <h3 style="margin:0;" id="userName">Пользователь</h3>
+                    <p style="margin:0; color:#666;" id="userEmail"></p>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h3>💰 Ваш баланс</h3>
+                <div class="balance" id="balance">0</div>
+                <button onclick="refreshBalance()" style="background: #4caf50;">🔄 Обновить баланс</button>
+            </div>
+            
+            <div class="card">
+                <h3>📤 Перевод другу</h3>
+                <input type="email" id="friendEmail" placeholder="Email друга" value="friend@test.com">
+                <input type="number" id="amount" placeholder="Сумма" value="100">
+                <button onclick="sendMoney()">💸 Перевести сейчас</button>
+            </div>
+            
+            <div class="card">
+                <h3>📱 NFC Карта</h3>
+                <button onclick="checkNFC()">📲 Проверить баланс по NFC</button>
+            </div>
+            
+            <div class="user-list">
+                <h3>👥 Все пользователи:</h3>
+                <div id="allUsers">Загрузка...</div>
+                <button onclick="loadAllUsers()" style="background: #ff9800;">🔄 Обновить список</button>
+            </div>
+            
+            <div id="result" class="result"></div>
+            
+            <button onclick="logout()" style="background: #f44336;">🚪 Выйти из системы</button>
+        </div>
     </div>
 
     <script>
-        // ==== ВСТАВЬ СЮДА ID СВОЕЙ ТАБЛИЦЫ ====
+        // ========== НАСТРОЙКИ ==========
         const GOOGLE_SHEET_ID = '1CUB6u5owXML_RulAk6OzoSvZTXTmUdzARzt8UzVyvGI';
-        // Пример: '1A2B3C4D5E6F7G8H9I0J'
-        // ======================================
         
         let currentUser = null;
         let allUsers = [];
         
-        // Загрузить данные из Google Sheets
+        // ========== ЗАГРУЗИТЬ ДАННЫЕ ИЗ GOOGLE SHEETS ==========
         async function loadData() {
+            console.log('Загружаю данные из Google Sheets...');
+            
             try {
-                // Используем публичный доступ к таблице
-                const url = `https://docs.google.com/spreadsheets/d/1CUB6u5owXML_RulAk6OzoSvZTXTmUdzARzt8UzVyvGI/edit?usp=drivesdk`;
+                // Формируем URL для Google Sheets API
+                const url = `https://docs.google.com/spreadsheets/d/${GOOGLE_SHEET_ID}/gviz/tq?tqx=out:json`;
                 
+                // Делаем запрос
                 const response = await fetch(url);
+                
+                if (!response.ok) {
+                    throw new Error('Ошибка загрузки таблицы');
+                }
+                
                 const text = await response.text();
-                const json = JSON.parse(text.substr(47).slice(0, -2));
+                const json = JSON.parse(text.substring(47).slice(0, -2));
                 
                 // Преобразуем данные
                 allUsers = [];
-                const rows = json.table.rows;
+                const rows = json.table.rows || [];
                 
-                for (let row of rows) {
-                    const user = {
-                        email: row.c[0]?.v || '',
-                        password: row.c[1]?.v || '',
-                        name: row.c[2]?.v || '',
-                        balance: row.c[3]?.v || 0
-                    };
-                    if (user.email) allUsers.push(user);
+                for (let i = 0; i < rows.length; i++) {
+                    const row = rows[i];
+                    if (row.c && row.c[0]) {
+                        const user = {
+                            email: row.c[0]?.v || '',
+                            password: row.c[1]?.v || '',
+                            name: row.c[2]?.v || '',
+                            balance: parseInt(row.c[3]?.v) || 0
+                        };
+                        if (user.email) {
+                            allUsers.push(user);
+                        }
+                    }
                 }
                 
-                console.log('Данные загружены:', allUsers);
+                console.log('Загружено пользователей:', allUsers.length, allUsers);
+                
+                // Если таблица пустая, создаем тестовых пользователей
+                if (allUsers.length === 0) {
+                    allUsers = [
+                        { email: 'you@test.com', password: '123', name: 'Вы', balance: 1000 },
+                        { email: 'friend@test.com', password: '123', name: 'Друг', balance: 0 }
+                    ];
+                    console.log('Использую тестовых пользователей');
+                }
+                
                 return allUsers;
                 
             } catch (error) {
                 console.error('Ошибка загрузки:', error);
-                // Если ошибка — используем тестовые данные
+                showResult('⚠️ Не удалось загрузить данные. Использую демо-режим.', 'error');
+                
+                // Демо-данные
                 allUsers = [
                     { email: 'you@test.com', password: '123', name: 'Вы', balance: 1000 },
                     { email: 'friend@test.com', password: '123', name: 'Друг', balance: 0 }
@@ -84,78 +142,196 @@
             }
         }
         
-        // Войти
+        // ========== ВХОД В СИСТЕМУ ==========
         async function login() {
-            const email = document.getElementById('email').value;
+            const email = document.getElementById('email').value.trim();
             const password = document.getElementById('password').value;
+            
+            if (!email || !password) {
+                showResult('❌ Введите email и пароль', 'error');
+                return;
+            }
+            
+            showResult('⏳ Вход в систему...', 'info');
             
             await loadData();
             
-            const user = allUsers.find(u => u.email === email && u.password === password);
+            // Ищем пользователя
+            const user = allUsers.find(u => 
+                u.email.toLowerCase() === email.toLowerCase() && 
+                u.password === password
+            );
             
             if (user) {
-                currentUser = user;
+                currentUser = { ...user };
                 document.querySelector('.card').style.display = 'none';
                 document.getElementById('bank').style.display = 'block';
                 document.getElementById('userName').textContent = user.name;
-                document.getElementById('balance').textContent = user.balance;
-                showResult('✅ Вошли как: ' + user.name);
+                document.getElementById('userEmail').textContent = user.email;
+                document.getElementById('balance').textContent = user.balance + ' баллов';
+                document.getElementById('userAvatar').textContent = user.name.charAt(0);
+                
+                showResult(`✅ Добро пожаловать, ${user.name}!`, 'success');
+                loadAllUsers();
+                
             } else {
-                showResult('❌ Ошибка входа');
+                showResult('❌ Неправильный email или пароль', 'error');
             }
         }
         
-        // Перевести
+        // ========== ПЕРЕВОД ДЕНЕГ ==========
         async function sendMoney() {
-            const friendEmail = document.getElementById('friendEmail').value;
+            if (!currentUser) {
+                showResult('❌ Сначала войдите в систему', 'error');
+                return;
+            }
+            
+            const friendEmail = document.getElementById('friendEmail').value.trim();
             const amount = parseInt(document.getElementById('amount').value);
+            
+            if (!friendEmail || !amount || amount <= 0) {
+                showResult('❌ Введите корректные данные', 'error');
+                return;
+            }
+            
+            if (friendEmail === currentUser.email) {
+                showResult('❌ Нельзя переводить самому себе', 'error');
+                return;
+            }
             
             await loadData();
             
-            const friend = allUsers.find(u => u.email === friendEmail);
+            // Находим друга
+            const friend = allUsers.find(u => u.email.toLowerCase() === friendEmail.toLowerCase());
             
             if (!friend) {
-                showResult('❌ Друг не найден');
+                showResult('❌ Пользователь не найден', 'error');
                 return;
             }
             
             if (amount > currentUser.balance) {
-                showResult('❌ Недостаточно средств');
+                showResult(`❌ Недостаточно средств. Ваш баланс: ${currentUser.balance}`, 'error');
                 return;
             }
             
-            // Обновляем в памяти
+            // Обновляем балансы в памяти
             currentUser.balance -= amount;
             friend.balance += amount;
             
-            // Обновляем на экране
-            document.getElementById('balance').textContent = currentUser.balance;
+            // Обновляем текущего пользователя в массиве
+            const userIndex = allUsers.findIndex(u => u.email === currentUser.email);
+            const friendIndex = allUsers.findIndex(u => u.email === friend.email);
             
-            // В ДЕМО-РЕЖИМЕ не сохраняем в Google Sheets
-            // Для реального сохранения нужен сервер
+            if (userIndex !== -1) allUsers[userIndex].balance = currentUser.balance;
+            if (friendIndex !== -1) allUsers[friendIndex].balance = friend.balance;
+            
+            // Обновляем на экране
+            document.getElementById('balance').textContent = currentUser.balance + ' баллов';
+            
+            // В ДЕМО-РЕЖИМЕ сохраняем только в памяти
+            // Для реального сохранения в Google Sheets нужен сервер
             
             showResult(
-                '✅ Перевод выполнен!<br>' +
-                '📤 Вы отправили: ' + amount + ' баллов<br>' +
-                '👤 Другу: ' + friend.name + '<br>' +
-                '💰 Ваш баланс: ' + currentUser.balance + ' баллов<br><br>' +
-                '📱 Для реального сохранения нужен сервер (пиши если нужно)'
+                `✅ Перевод выполнен!<br>
+                📤 Вы отправили: ${amount} баллов<br>
+                👤 Получатель: ${friend.name}<br>
+                💰 Ваш новый баланс: ${currentUser.balance} баллов<br><br>
+                💡 Друг увидит перевод после обновления страницы<br>
+                ⚠️ В демо-режиме данные не сохраняются в таблице`,
+                'success'
+            );
+            
+            loadAllUsers();
+        }
+        
+        // ========== NFC ФУНКЦИЯ ==========
+        function checkNFC() {
+            if (!currentUser) {
+                showResult('❌ Сначала войдите в систему', 'error');
+                return;
+            }
+            
+            showResult(
+                `📱 NFC Карта:<br>
+                👤 Владелец: ${currentUser.name}<br>
+                📧 Email: ${currentUser.email}<br>
+                💰 Баланс: ${currentUser.balance} баллов<br><br>
+                🎮 Это демо-режим NFC. Для реального NFC нужен Android с Chrome.`,
+                'info'
             );
         }
         
-        // Показать результат
-        function showResult(message) {
-            const result = document.getElementById('result');
-            result.style.display = 'block';
-            result.innerHTML = message;
+        // ========== ЗАГРУЗИТЬ ВСЕХ ПОЛЬЗОВАТЕЛЕЙ ==========
+        async function loadAllUsers() {
+            await loadData();
+            
+            let html = '';
+            allUsers.forEach(user => {
+                const isCurrent = currentUser && user.email === currentUser.email;
+                html += `
+                    <div style="padding: 10px; margin: 5px 0; background: ${isCurrent ? '#bbdefb' : 'white'}; border-radius: 5px; border: 1px solid #e0e0e0;">
+                        <strong>${user.name}</strong> (${user.email})<br>
+                        Баланс: <strong>${user.balance} баллов</strong>
+                        ${isCurrent ? ' ← это вы' : ''}
+                    </div>
+                `;
+            });
+            
+            document.getElementById('allUsers').innerHTML = html || 'Нет пользователей';
         }
         
-        // Выйти
+        // ========== ОБНОВИТЬ БАЛАНС ==========
+        async function refreshBalance() {
+            if (!currentUser) return;
+            
+            await loadData();
+            
+            const user = allUsers.find(u => u.email === currentUser.email);
+            if (user && user.balance !== currentUser.balance) {
+                currentUser.balance = user.balance;
+                document.getElementById('balance').textContent = currentUser.balance + ' баллов';
+                showResult('✅ Баланс обновлен', 'success');
+            } else {
+                showResult('Баланс не изменился', 'info');
+            }
+            
+            loadAllUsers();
+        }
+        
+        // ========== ПОКАЗАТЬ РЕЗУЛЬТАТ ==========
+        function showResult(message, type = 'info') {
+            const resultEl = document.getElementById('result');
+            resultEl.style.display = 'block';
+            resultEl.innerHTML = message;
+            
+            if (type === 'error') {
+                resultEl.style.background = '#ffebee';
+                resultEl.style.borderColor = '#ef9a9a';
+            } else if (type === 'success') {
+                resultEl.style.background = '#e8f5e9';
+                resultEl.style.borderColor = '#a5d6a7';
+            } else {
+                resultEl.style.background = '#e3f2fd';
+                resultEl.style.borderColor = '#90caf9';
+            }
+        }
+        
+        // ========== ВЫЙТИ ==========
         function logout() {
             currentUser = null;
             document.getElementById('bank').style.display = 'none';
             document.querySelector('.card').style.display = 'block';
+            document.getElementById('result').style.display = 'none';
+            document.getElementById('email').value = 'you@test.com';
+            document.getElementById('password').value = '123';
         }
+        
+        // ========== АВТОЗАГРУЗКА ПРИ СТАРТЕ ==========
+        window.onload = async function() {
+            console.log('Страница загружена');
+            await loadData();
+            loadAllUsers();
+        };
     </script>
 </body>
 </html>
