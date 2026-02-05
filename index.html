@@ -136,6 +136,11 @@ button.secondary {
   <p>Загрузка PayBank…</p>
 </div>
 
+<!-- ===== SOUNDS ===== -->
+<audio id="sound-click" src="https://assets.mixkit.co/sfx/preview/mixkit-modern-click-box-check-1120.mp3"></audio>
+<audio id="sound-transfer" src="https://assets.mixkit.co/sfx/preview/mixkit-positive-interface-beep-221.mp3"></audio>
+<audio id="sound-error" src="https://assets.mixkit.co/sfx/preview/mixkit-wrong-answer-fail-notification-946.mp3"></audio>
+
 <!-- ===== APP ===== -->
 <div class="app" id="app">
 
@@ -144,27 +149,20 @@ button.secondary {
     <h1>PayBank</h1>
     <input id="email" placeholder="Email">
     <input id="password" type="password" placeholder="Пароль">
-    <button onclick="login()">Войти</button>
+    <button onclick="playSound('sound-click'); login()">Войти</button>
     <div id="loginMsg" class="message"></div>
   </div>
 
   <!-- USER -->
   <div class="card hidden" id="userScreen">
-    <h1 id="userEmail"></h1>
+    <h1 id="userName"></h1>
     <div class="balance" id="balance">0 ₿</div>
 
-    <select id="toUser">
-      <option value="">Получатель</option>
-      <option value="tilyas@mail.ru">tilyas@mail.ru</option>
-      <option value="prokhor@mail.ru">prokhor@mail.ru</option>
-      <option value="roma@mail.ru">roma@mail.ru</option>
-      <option value="artem@mail.ru">artem@mail.ru</option>
-      <option value="test@mail.ru">test@mail.ru</option>
-    </select>
-
+    <select id="toUser"></select>
     <input id="amount" type="number" placeholder="Сумма">
-    <button onclick="transfer()">Перевести</button>
-    <button class="secondary" onclick="logout()">Выйти</button>
+
+    <button onclick="playSound('sound-click'); transfer()">Перевести</button>
+    <button class="secondary" onclick="playSound('sound-click'); logout()">Выйти</button>
 
     <div id="userMsg" class="message"></div>
   </div>
@@ -174,39 +172,55 @@ button.secondary {
     <h1>Админ</h1>
     <input id="adminTarget" placeholder="Email пользователя">
     <input id="adminAmount" type="number" placeholder="Сумма">
-    <button onclick="adminAdd()">Пополнить</button>
-    <button class="secondary" onclick="logout()">Выйти</button>
+    <button onclick="playSound('sound-click'); adminAdd()">Пополнить</button>
+    <button class="secondary" onclick="playSound('sound-click'); logout()">Выйти</button>
     <div id="adminMsg" class="message"></div>
   </div>
 
 </div>
 
 <script>
-// ========== НАСТРОЙКИ ==========
+// ===== НАСТРОЙКИ =====
 const API_URL = 'https://script.google.com/macros/s/AKfycbzBRaaGfxEBHQL16nxPR_Y3dbG2nTF_Q8ui0XMyJ_DCFmHuuFovzlI1bO3wT8iE1SHs-w/exec';
-const ADMIN_EMAIL = 'admin_secret_928374@bank.local';
-const ADMIN_PASSWORD = 'superSecretPass123';
-// ===============================
 
-let currentUser = null;
+const ADMIN_EMAIL = 'admin_secret@bank.local';
+const ADMIN_PASSWORD = 'superSecret123';
+
+// Пользователи (ИМЯ → EMAIL)
+const USERS = [
+  { name: 'Роман Киселев', email: 'romankisel@mail.ru' },
+  { name: 'Ильяс Валиев', email: 'ilyasvaliev@mail.ru' },
+  { name: 'Артем Антонов', email: 'artemant@mail.ru' },
+  { name: 'Прохор Мартьянов', email: 'prokhormart@mail.ru' }
+];
+
+let currentUserEmail = '';
+let currentUserName = '';
 
 // ===== LOADER =====
 window.onload = () => {
   setTimeout(() => {
-    document.getElementById('loader').style.display = 'none';
-    document.getElementById('app').style.display = 'flex';
+    loader.style.display = 'none';
+    app.style.display = 'flex';
   }, 1200);
 };
 
+// ===== SOUND =====
+function playSound(id) {
+  const s = document.getElementById(id);
+  if (!s) return;
+  s.currentTime = 0;
+  s.play().catch(() => {});
+}
+
 // ===== LOGIN =====
 async function login() {
-  const email = document.getElementById('email').value.toLowerCase().trim();
-  const password = document.getElementById('password').value.trim();
+  const email = emailInput.value.toLowerCase().trim();
+  const password = passwordInput.value.trim();
 
-  // ADMIN
   if (email === ADMIN_EMAIL && password === ADMIN_PASSWORD) {
-    show('loginScreen', false);
-    show('adminScreen', true);
+    loginScreen.classList.add('hidden');
+    adminScreen.classList.remove('hidden');
     return;
   }
 
@@ -218,71 +232,86 @@ async function login() {
   const data = await res.json();
 
   if (!data.success) {
-    msg('loginMsg', '❌ Неверный логин или пароль', 'error');
+    playSound('sound-error');
+    msg('loginMsg', '❌ Неверные данные', 'error');
     return;
   }
 
-  currentUser = email;
-  show('loginScreen', false);
-  show('userScreen', true);
-  document.getElementById('userEmail').textContent = email;
-  document.getElementById('balance').textContent = data.balance + ' ₿';
+  currentUserEmail = email;
+  currentUserName = USERS.find(u => u.email === email)?.name || email;
+
+  userName.textContent = currentUserName;
+  balance.textContent = data.balance + ' ₿';
+
+  fillRecipients();
+
+  loginScreen.classList.add('hidden');
+  userScreen.classList.remove('hidden');
+}
+
+// ===== RECIPIENTS =====
+function fillRecipients() {
+  toUser.innerHTML = '<option value="">Получатель</option>';
+  USERS.forEach(u => {
+    if (u.email !== currentUserEmail) {
+      const opt = document.createElement('option');
+      opt.value = u.email;
+      opt.textContent = u.name;
+      toUser.appendChild(opt);
+    }
+  });
 }
 
 // ===== TRANSFER =====
 async function transfer() {
   const to = toUser.value;
-  const amount = Number(document.getElementById('amount').value);
+  const amount = Number(amountInput.value);
 
   if (!to || amount <= 0) {
+    playSound('sound-error');
     msg('userMsg', '❌ Проверь данные', 'error');
     return;
   }
 
   const res = await fetch(API_URL, {
     method: 'POST',
-    body: JSON.stringify({ action: 'transfer', from: currentUser, to, amount })
+    body: JSON.stringify({ action: 'transfer', from: currentUserEmail, to, amount })
   });
 
   const data = await res.json();
 
   if (!data.success) {
+    playSound('sound-error');
     msg('userMsg', '❌ Ошибка перевода', 'error');
     return;
   }
 
+  playSound('sound-transfer');
   msg('userMsg', '✅ Перевод выполнен', 'success');
   setTimeout(() => location.reload(), 1200);
 }
 
-// ===== ADMIN ADD =====
+// ===== ADMIN =====
 async function adminAdd() {
-  const to = document.getElementById('adminTarget').value.toLowerCase();
-  const amount = Number(document.getElementById('adminAmount').value);
+  const to = adminTarget.value.toLowerCase();
+  const amount = Number(adminAmount.value);
 
   if (!to || amount <= 0) {
-    msg('adminMsg', '❌ Проверь данные', 'error');
+    playSound('sound-error');
+    msg('adminMsg', '❌ Ошибка данных', 'error');
     return;
   }
 
   await fetch(API_URL, {
     method: 'POST',
-    body: JSON.stringify({
-      action: 'transfer',
-      from: to,
-      to: to,
-      amount: -amount
-    })
+    body: JSON.stringify({ action: 'transfer', from: to, to, amount: -amount })
   });
 
+  playSound('sound-transfer');
   msg('adminMsg', '✅ Баланс изменён', 'success');
 }
 
 // ===== HELPERS =====
-function show(id, state) {
-  document.getElementById(id).classList.toggle('hidden', !state);
-}
-
 function msg(id, text, type) {
   const el = document.getElementById(id);
   el.textContent = text;
@@ -292,6 +321,11 @@ function msg(id, text, type) {
 function logout() {
   location.reload();
 }
+
+// inputs shortcuts
+const emailInput = document.getElementById('email');
+const passwordInput = document.getElementById('password');
+const amountInput = document.getElementById('amount');
 </script>
 
 </body>
