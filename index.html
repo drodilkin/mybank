@@ -88,7 +88,7 @@ button{
     <h2>PayBank</h2>
     <input id="email" placeholder="Email">
     <input id="password" placeholder="Пароль" type="password">
-    <button onclick="login()">Войти</button>
+    <button onclick="loginUser()">Войти</button>
   </div>
 </div>
 
@@ -96,7 +96,7 @@ button{
   <div class="panel">
 
     <div class="card" onclick="flipCard()">
-      <div class="card-inner" id="cardInner">
+      <div class="card-inner">
         <div class="card-side">
           <div>Баланс</div>
           <h1 id="balance"></h1>
@@ -124,22 +124,30 @@ button{
 const API = 'https://script.google.com/macros/s/AKfycbxTgtfPJfP56bxuC98OnUE47EFEScgZrlASyFSe3Hcr9A0PMU8PRBr9QUal4Gta8LKzBw/exec';
 let me = null;
 
-function login(){
-  fetch(API,{
+function api(data){
+  return fetch(API,{
     method:'POST',
-    body:JSON.stringify({
-      action:'login',
-      email:email.value,
-      password:password.value
-    })
-  })
-  .then(r=>r.json())
-  .then(d=>{
-    if(!d.ok){ alert('Неверные данные'); return; }
+    headers:{
+      'Content-Type':'application/json'
+    },
+    body: JSON.stringify(data)
+  }).then(r=>r.json());
+}
+
+function loginUser(){
+  api({
+    action:'login',
+    email: email.value,
+    password: password.value
+  }).then(d=>{
+    if(!d.ok){
+      alert('Неверные данные');
+      return;
+    }
 
     me = d;
-    login.style.display='none';
-    app.style.display='flex';
+    document.getElementById('login').style.display='none';
+    document.getElementById('app').style.display='flex';
 
     balance.innerText = d.balance + ' ₽';
     cardNumber.innerText = d.card;
@@ -150,50 +158,40 @@ function login(){
 }
 
 function loadUsers(){
-  fetch(API,{
-    method:'POST',
-    body:JSON.stringify({
-      action:'getUsers',
-      email:me.email
-    })
-  })
-  .then(r=>r.json())
-  .then(d=>{
+  api({
+    action:'getUsers',
+    email: me.email
+  }).then(d=>{
     users.innerHTML = d.map(u=>`<option>${u}</option>`).join('');
   });
 }
 
 function send(){
-  fetch(API,{
-    method:'POST',
-    body:JSON.stringify({
-      action:'transfer',
-      from:me.email,
-      to:users.value,
-      amount:Number(amount.value),
-      comment:comment.value
-    })
-  })
-  .then(r=>r.json())
-  .then(d=>{
-    if(d.error){ alert(d.error); return; }
+  api({
+    action:'transfer',
+    from: me.email,
+    to: users.value,
+    amount: Number(amount.value),
+    comment: comment.value
+  }).then(d=>{
+    if(d.error){
+      alert(d.error);
+      return;
+    }
     balance.innerText = d.balance + ' ₽';
+    amount.value = '';
+    comment.value = '';
     loadHistory();
   });
 }
 
 function loadHistory(){
-  fetch(API,{
-    method:'POST',
-    body:JSON.stringify({
-      action:'history',
-      email:me.email
-    })
-  })
-  .then(r=>r.json())
-  .then(d=>{
+  api({
+    action:'history',
+    email: me.email
+  }).then(d=>{
     history.innerHTML = d.map(r=>{
-      const sign = r[1]===me.email ? '−' : '+';
+      const sign = r[1] === me.email ? '−' : '+';
       return `<div>${sign}${r[3]} ₽ · ${r[4]}</div>`;
     }).join('');
   });
