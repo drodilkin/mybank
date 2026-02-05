@@ -2,241 +2,316 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<title>PayBank</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MyBank</title>
 
 <style>
 :root{
-  --bg:#0b0b0f;
-  --card:#15161c;
-  --panel:#1f2028;
-  --yellow:#ffdd2d;
+  --bg:#0b0c10;
+  --card:#16171d;
+  --accent:#ffdd2d;
   --text:#fff;
-  --muted:#8b8d98;
-  --green:#2ecc71;
-  --red:#ff5a5a;
+  --muted:#8e8e93;
+  --plus:#2ecc71;
+  --minus:#ff4d4f;
 }
 
-*{box-sizing:border-box}
+*{box-sizing:border-box;font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 
 body{
   margin:0;
-  background:radial-gradient(circle at top,#1a1b22,#0b0b0f 70%);
-  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+  background:radial-gradient(circle at top,#1b1c22,#050507);
   color:var(--text);
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  min-height:100vh;
 }
 
-/* ===== SCREENS ===== */
+.app{
+  width:100%;
+  max-width:420px;
+  height:100vh;
+  position:relative;
+  overflow:hidden;
+}
+
+/* ===== Screens ===== */
 .screen{
-  min-height:100vh;
-  padding-bottom:90px;
+  position:absolute;
+  inset:0;
+  padding:24px;
+  display:none;
   animation:fade .35s ease;
 }
-.hidden{display:none}
+.screen.active{display:block}
 
 @keyframes fade{
-  from{opacity:0;transform:translateY(8px)}
-  to{opacity:1;transform:none}
+  from{opacity:0;transform:translateY(10px)}
+  to{opacity:1;transform:translateY(0)}
 }
 
-/* ===== CARDS ===== */
+/* ===== UI ===== */
 .card{
-  background:linear-gradient(180deg,#1a1b22,#14151b);
-  border-radius:26px;
-  padding:22px;
-  margin:16px;
-  box-shadow:0 20px 50px rgba(0,0,0,.6);
+  background:linear-gradient(180deg,#1b1c22,#121318);
+  border-radius:24px;
+  padding:24px;
+  box-shadow:0 30px 80px rgba(0,0,0,.6);
+  margin-bottom:16px;
 }
 
-.balance-card{
-  background:var(--yellow);
-  color:#000;
-}
-
-.balance{
-  font-size:36px;
-  font-weight:700;
-}
-
-/* ===== BUTTONS ===== */
-.btn{
-  width:100%;
-  padding:15px;
-  border:none;
-  border-radius:18px;
-  background:var(--yellow);
-  color:#000;
-  font-size:16px;
-  font-weight:600;
-  margin-top:14px;
-}
-
-.btn.dark{
-  background:#2a2b33;
-  color:#fff;
-}
-
-/* ===== INPUT ===== */
 .input{
   width:100%;
-  padding:15px;
-  background:var(--panel);
-  border:none;
-  border-radius:16px;
-  color:#fff;
+  padding:16px;
   margin-top:12px;
+  border-radius:16px;
+  border:none;
+  background:#1f2028;
+  color:#fff;
+  font-size:16px;
 }
 
-/* ===== ACTIONS ===== */
-.actions{
-  display:flex;
-  gap:12px;
-  margin:16px;
-}
-
-.action{
-  flex:1;
-  background:var(--panel);
-  padding:14px;
+.btn{
+  width:100%;
+  padding:16px;
+  margin-top:16px;
   border-radius:18px;
-  text-align:center;
+  border:none;
+  font-weight:600;
+  font-size:16px;
+  cursor:pointer;
 }
 
-/* ===== HISTORY ===== */
-.tx{
+.btn.primary{background:var(--accent);color:#000}
+.btn.secondary{background:#1f2028;color:#fff}
+
+/* ===== PIN ===== */
+.pin-dots{display:flex;justify-content:center;gap:14px;margin:40px 0}
+.dot{width:14px;height:14px;border-radius:50%;background:#2a2b34}
+.dot.active{background:var(--accent)}
+
+.pin-pad{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+.pin-btn{
+  height:72px;
+  border-radius:50%;
+  background:#1f2028;
+  border:none;
+  font-size:22px;
+  color:white;
+}
+.pin-btn:active{transform:scale(.92)}
+
+/* ===== History ===== */
+.history{
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+}
+
+.op{
   display:flex;
   justify-content:space-between;
-  padding:12px 0;
-  border-bottom:1px solid #222;
+  align-items:center;
+  background:#1a1b22;
+  padding:14px 16px;
+  border-radius:16px;
 }
-.tx.plus{color:var(--green)}
-.tx.minus{color:var(--red)}
 
-/* ===== NAV ===== */
+.op.plus{color:var(--plus)}
+.op.minus{color:var(--minus)}
+.op small{color:var(--muted)}
+
+/* ===== Nav ===== */
 .nav{
-  position:fixed;
-  bottom:0;
-  left:0;
-  right:0;
-  height:80px;
-  background:#121319;
+  position:absolute;
+  bottom:0;left:0;right:0;
+  height:72px;
   display:flex;
   justify-content:space-around;
   align-items:center;
-  border-top:1px solid #222;
+  backdrop-filter:blur(20px);
+  background:rgba(20,20,25,.6);
 }
-
-.nav div{
-  text-align:center;
-  font-size:12px;
+.nav button{
+  background:none;border:none;
   color:var(--muted);
+  font-size:13px;
 }
-
-.nav .active{
-  color:var(--yellow);
-}
+.nav button.active{color:var(--accent)}
 </style>
 </head>
 
 <body>
+<div class="app">
 
-<!-- ===== HOME ===== -->
+<!-- LOGIN -->
+<div class="screen active" id="login">
+  <div class="card">
+    <h2>Вход</h2>
+    <input class="input" id="email" placeholder="Email">
+    <input class="input" id="password" type="password" placeholder="Пароль">
+    <button class="btn primary" onclick="login()">Войти</button>
+  </div>
+</div>
+
+<!-- CREATE PIN -->
+<div class="screen" id="createPin">
+  <h2>Придумайте PIN</h2>
+  <div class="pin-dots" id="createDots"></div>
+  <div class="pin-pad" id="createPad"></div>
+</div>
+
+<!-- ENTER PIN -->
+<div class="screen" id="enterPin">
+  <h2>Введите PIN</h2>
+  <div class="pin-dots" id="enterDots"></div>
+  <div class="pin-pad" id="enterPad"></div>
+</div>
+
+<!-- HOME -->
 <div class="screen" id="home">
-  <div class="card balance-card">
-    <div>Баланс</div>
-    <div class="balance" id="balance">0 ₽</div>
-  </div>
-
-  <div class="actions">
-    <div class="action" onclick="showTransfer()">Перевести</div>
-    <div class="action" onclick="openScreen('history')">История</div>
-  </div>
-
-  <div class="card hidden" id="transfer">
-    <input id="to" class="input" placeholder="Email">
-    <input id="amount" class="input" placeholder="Сумма">
-    <button class="btn" onclick="transferMoney()">Отправить</button>
-  </div>
-</div>
-
-<!-- ===== HISTORY ===== -->
-<div class="screen hidden" id="history">
   <div class="card">
-    <h3>История</h3>
-    <div id="historyList"></div>
+    <small>Баланс</small>
+    <h1 id="balance">— ₽</h1>
   </div>
-</div>
 
-<!-- ===== PROFILE ===== -->
-<div class="screen hidden" id="profile">
   <div class="card">
-    <h3>Профиль</h3>
-    <p id="profileEmail"></p>
-    <button class="btn dark" onclick="logout()">Выйти</button>
+    <input class="input" id="to" placeholder="Email получателя">
+    <input class="input" id="amount" type="number" placeholder="Сумма">
+    <button class="btn primary" onclick="transfer()">Перевести</button>
+  </div>
+
+  <div class="nav">
+    <button class="active" onclick="openTab('home')">Главная</button>
+    <button onclick="openTab('history')">История</button>
+    <button onclick="logout()">Профиль</button>
   </div>
 </div>
 
-<!-- ===== NAV ===== -->
-<div class="nav">
-  <div class="active" onclick="openScreen('home')">🏠<br>Главная</div>
-  <div onclick="openScreen('history')">📜<br>История</div>
-  <div onclick="openScreen('profile')">👤<br>Профиль</div>
+<!-- HISTORY -->
+<div class="screen" id="history">
+  <h2>История операций</h2>
+  <div class="history" id="historyList"></div>
+
+  <div class="nav">
+    <button onclick="openTab('home')">Главная</button>
+    <button class="active">История</button>
+    <button onclick="logout()">Профиль</button>
+  </div>
+</div>
+
 </div>
 
 <script>
-const API_URL='https://script.google.com/macros/s/AKfycbwy8OCfKF_vNTuSCfI9rKrGEflwGH432hjHtS01tRbj0uD7dyfXdo7uKJXpKvp1OwLaHA/exec';
-let email=localStorage.getItem('email');
+const API_URL = 'https://script.google.com/macros/s/AKfycbwy8OCfKF_vNTuSCfI9rKrGEflwGH432hjHtS01tRbj0uD7dyfXdo7uKJXpKvp1OwLaHA/exec';
 
-/* ===== NAV ===== */
-function openScreen(id){
-  document.querySelectorAll('.screen').forEach(s=>s.classList.add('hidden'));
-  document.getElementById(id).classList.remove('hidden');
-  document.querySelectorAll('.nav div').forEach(n=>n.classList.remove('active'));
-  event.target.closest('div').classList.add('active');
+/* ===== helpers ===== */
+function show(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+function openTab(id){ show(id); if(id==='history') loadHistory(); }
+
+/* ===== login ===== */
+async function login(){
+  const email=emailInput.value.trim();
+  const password=passwordInput.value.trim();
+  const r=await fetch(API_URL,{method:'POST',body:JSON.stringify({action:'login',email,password})});
+  const d=await r.json();
+  if(!d.success)return alert('Неверные данные');
+  localStorage.setItem('email',email);
+  localStorage.getItem('pin')?show('enterPin'):show('createPin');
 }
 
-/* ===== DATA ===== */
+/* ===== balance ===== */
 async function loadBalance(){
+  const email=localStorage.getItem('email');
   const r=await fetch(API_URL,{method:'POST',body:JSON.stringify({action:'balance',email})});
   const d=await r.json();
   balance.textContent=d.balance+' ₽';
 }
 
+/* ===== transfer ===== */
+async function transfer(){
+  const from=localStorage.getItem('email');
+  const to=toInput.value.trim();
+  const amount=Number(amountInput.value);
+  if(!to||amount<=0)return;
+  const r=await fetch(API_URL,{method:'POST',body:JSON.stringify({action:'transfer',from,to,amount})});
+  const d=await r.json();
+  if(!d.success)return alert('Ошибка перевода');
+  await loadBalance();
+  loadHistory();
+  toInput.value='';
+  amountInput.value='';
+}
+
+/* ===== history ===== */
 async function loadHistory(){
+  const email=localStorage.getItem('email');
   const r=await fetch(API_URL,{method:'POST',body:JSON.stringify({action:'history',email})});
-  const data=await r.json();
+  const d=await r.json();
   historyList.innerHTML='';
-  data.forEach(t=>{
+  d.forEach(o=>{
     const div=document.createElement('div');
-    div.className='tx '+(t.amount>0?'plus':'minus');
-    div.innerHTML=`<div>${t.from}</div><div>${t.amount}</div>`;
+    const plus=o.to===email;
+    div.className='op '+(plus?'plus':'minus');
+    div.innerHTML=`<div><small>${plus?'От':'Кому'} ${plus?o.from:o.to}</small></div>
+                   <div>${plus?'+':'-'}${o.amount} ₽</div>`;
     historyList.appendChild(div);
   });
 }
 
-async function transferMoney(){
-  await fetch(API_URL,{
-    method:'POST',
-    body:JSON.stringify({action:'transfer',from:email,to:to.value,amount:+amount.value})
+/* ===== PIN ===== */
+function setupPin(dotsId,padId,done){
+  let cur='';
+  const dots=document.getElementById(dotsId);
+  const pad=document.getElementById(padId);
+  dots.innerHTML='<div class="dot"></div>'.repeat(4);
+  pad.innerHTML='';
+  for(let i=1;i<=9;i++)pad.innerHTML+=`<button class="pin-btn">${i}</button>`;
+  pad.innerHTML+=`<div></div><button class="pin-btn">0</button><div></div>`;
+  pad.querySelectorAll('.pin-btn').forEach(b=>{
+    b.onclick=()=>{
+      if(cur.length>=4)return;
+      cur+=b.textContent;
+      dots.children[cur.length-1].classList.add('active');
+      if(cur.length===4)done(cur);
+    }
   });
+}
+
+setupPin('createDots','createPad',async p=>{
+  localStorage.setItem('pin',p);
+  show('home');
   loadBalance();
-  loadHistory();
-  transfer.classList.add('hidden');
-}
+});
 
-function showTransfer(){
-  transfer.classList.toggle('hidden');
-}
+setupPin('enterDots','enterPad',async p=>{
+  if(p===localStorage.getItem('pin')){
+    show('home');
+    loadBalance();
+  }
+});
 
+/* ===== logout ===== */
 function logout(){
   localStorage.clear();
-  location.reload();
+  show('login');
 }
 
-profileEmail.textContent=email;
-loadBalance();
-loadHistory();
-</script>
+/* ===== start ===== */
+window.onload=()=>{
+  if(localStorage.getItem('email'))show('enterPin');
+}
 
+/* ===== refs ===== */
+const emailInput=document.getElementById('email');
+const passwordInput=document.getElementById('password');
+const balance=document.getElementById('balance');
+const toInput=document.getElementById('to');
+const amountInput=document.getElementById('amount');
+const historyList=document.getElementById('historyList');
+</script>
 </body>
 </html>
