@@ -2,316 +2,286 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
+<title>PayBank</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MyBank</title>
 
 <style>
-:root{
-  --bg:#0b0c10;
-  --card:#16171d;
-  --accent:#ffdd2d;
-  --text:#fff;
-  --muted:#8e8e93;
-  --plus:#2ecc71;
-  --minus:#ff4d4f;
+:root {
+  --bg: #0b0b10;
+  --card: #16161d;
+  --accent: #ffd600;
+  --text: #ffffff;
+  --muted: #9b9ba3;
+  --danger: #ff4d4f;
+  --success: #2ecc71;
 }
 
-*{box-sizing:border-box;font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
-
-body{
-  margin:0;
-  background:radial-gradient(circle at top,#1b1c22,#050507);
-  color:var(--text);
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  min-height:100vh;
+* {
+  box-sizing: border-box;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 
-.app{
-  width:100%;
-  max-width:420px;
-  height:100vh;
-  position:relative;
-  overflow:hidden;
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
-/* ===== Screens ===== */
-.screen{
-  position:absolute;
-  inset:0;
-  padding:24px;
-  display:none;
-  animation:fade .35s ease;
-}
-.screen.active{display:block}
-
-@keyframes fade{
-  from{opacity:0;transform:translateY(10px)}
-  to{opacity:1;transform:translateY(0)}
+/* ===== CARDS ===== */
+.card {
+  width: 100%;
+  max-width: 420px;
+  background: var(--card);
+  border-radius: 22px;
+  padding: 24px;
+  box-shadow: 0 20px 50px rgba(0,0,0,.6);
+  animation: fadeUp .4s ease;
 }
 
-/* ===== UI ===== */
-.card{
-  background:linear-gradient(180deg,#1b1c22,#121318);
-  border-radius:24px;
-  padding:24px;
-  box-shadow:0 30px 80px rgba(0,0,0,.6);
-  margin-bottom:16px;
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
-.input{
-  width:100%;
-  padding:16px;
-  margin-top:12px;
-  border-radius:16px;
-  border:none;
-  background:#1f2028;
-  color:#fff;
-  font-size:16px;
+h1 {
+  text-align: center;
+  margin-bottom: 20px;
+  font-weight: 600;
 }
 
-.btn{
-  width:100%;
-  padding:16px;
-  margin-top:16px;
-  border-radius:18px;
-  border:none;
-  font-weight:600;
-  font-size:16px;
-  cursor:pointer;
+input, select, button {
+  width: 100%;
+  padding: 14px;
+  border-radius: 14px;
+  border: none;
+  font-size: 16px;
+  margin-top: 12px;
 }
 
-.btn.primary{background:var(--accent);color:#000}
-.btn.secondary{background:#1f2028;color:#fff}
-
-/* ===== PIN ===== */
-.pin-dots{display:flex;justify-content:center;gap:14px;margin:40px 0}
-.dot{width:14px;height:14px;border-radius:50%;background:#2a2b34}
-.dot.active{background:var(--accent)}
-
-.pin-pad{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
-.pin-btn{
-  height:72px;
-  border-radius:50%;
-  background:#1f2028;
-  border:none;
-  font-size:22px;
-  color:white;
-}
-.pin-btn:active{transform:scale(.92)}
-
-/* ===== History ===== */
-.history{
-  display:flex;
-  flex-direction:column;
-  gap:12px;
+input, select {
+  background: #242430;
+  color: white;
 }
 
-.op{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  background:#1a1b22;
-  padding:14px 16px;
-  border-radius:16px;
+button {
+  background: var(--accent);
+  color: black;
+  font-weight: 600;
+  cursor: pointer;
 }
 
-.op.plus{color:var(--plus)}
-.op.minus{color:var(--minus)}
-.op small{color:var(--muted)}
+button.secondary {
+  background: #2a2a36;
+  color: white;
+}
 
-/* ===== Nav ===== */
-.nav{
-  position:absolute;
-  bottom:0;left:0;right:0;
-  height:72px;
-  display:flex;
-  justify-content:space-around;
-  align-items:center;
-  backdrop-filter:blur(20px);
-  background:rgba(20,20,25,.6);
+/* ===== SCREENS ===== */
+.hidden { display: none; }
+
+.balance {
+  font-size: 36px;
+  text-align: center;
+  margin: 20px 0;
 }
-.nav button{
-  background:none;border:none;
-  color:var(--muted);
-  font-size:13px;
+
+.message {
+  margin-top: 12px;
+  padding: 12px;
+  border-radius: 12px;
+  text-align: center;
 }
-.nav button.active{color:var(--accent)}
+
+.error { background: rgba(255,77,79,.15); color: var(--danger); }
+.success { background: rgba(46,204,113,.15); color: var(--success); }
+
+.history {
+  margin-top: 20px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.history-item {
+  padding: 10px;
+  border-bottom: 1px solid #2a2a36;
+  font-size: 14px;
+}
+
+.history-item span {
+  color: var(--muted);
+}
 </style>
 </head>
 
 <body>
-<div class="app">
 
 <!-- LOGIN -->
-<div class="screen active" id="login">
-  <div class="card">
-    <h2>Вход</h2>
-    <input class="input" id="email" placeholder="Email">
-    <input class="input" id="password" type="password" placeholder="Пароль">
-    <button class="btn primary" onclick="login()">Войти</button>
-  </div>
+<div class="card" id="loginScreen">
+  <h1>PayBank</h1>
+  <input id="email" placeholder="Email">
+  <input id="password" type="password" placeholder="Пароль">
+  <button onclick="login()">Войти</button>
+  <div id="loginMsg" class="message"></div>
 </div>
 
-<!-- CREATE PIN -->
-<div class="screen" id="createPin">
-  <h2>Придумайте PIN</h2>
-  <div class="pin-dots" id="createDots"></div>
-  <div class="pin-pad" id="createPad"></div>
-</div>
+<!-- USER -->
+<div class="card hidden" id="userScreen">
+  <h1>Баланс</h1>
+  <div class="balance" id="balance">0 ₽</div>
 
-<!-- ENTER PIN -->
-<div class="screen" id="enterPin">
-  <h2>Введите PIN</h2>
-  <div class="pin-dots" id="enterDots"></div>
-  <div class="pin-pad" id="enterPad"></div>
-</div>
+  <select id="toUser"></select>
+  <input id="amount" type="number" placeholder="Сумма">
+  <button onclick="transfer()">Перевести</button>
 
-<!-- HOME -->
-<div class="screen" id="home">
-  <div class="card">
-    <small>Баланс</small>
-    <h1 id="balance">— ₽</h1>
-  </div>
+  <div class="history" id="history"></div>
 
-  <div class="card">
-    <input class="input" id="to" placeholder="Email получателя">
-    <input class="input" id="amount" type="number" placeholder="Сумма">
-    <button class="btn primary" onclick="transfer()">Перевести</button>
-  </div>
-
-  <div class="nav">
-    <button class="active" onclick="openTab('home')">Главная</button>
-    <button onclick="openTab('history')">История</button>
-    <button onclick="logout()">Профиль</button>
-  </div>
-</div>
-
-<!-- HISTORY -->
-<div class="screen" id="history">
-  <h2>История операций</h2>
-  <div class="history" id="historyList"></div>
-
-  <div class="nav">
-    <button onclick="openTab('home')">Главная</button>
-    <button class="active">История</button>
-    <button onclick="logout()">Профиль</button>
-  </div>
-</div>
-
+  <button class="secondary" onclick="logout()">Выйти</button>
+  <div id="userMsg" class="message"></div>
 </div>
 
 <script>
 const API_URL = 'https://script.google.com/macros/s/AKfycbwmGrXdDBnlfMM_HWLUSlllbJz_Tyl9HmE3Ii6l0u1IP3u18wF5wdCFuZdjDPl0i4th6g/exec';
 
-/* ===== helpers ===== */
-function show(id){
-  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
-}
-function openTab(id){ show(id); if(id==='history') loadHistory(); }
+const USERS = [
+  { name: 'Ильяс Валиев', email: 'ilyasvaliev@mail.ru' },
+  { name: 'Прохор Мартьянов', email: 'prokhormart@mail.ru' },
+  { name: 'Роман Киселев', email: 'romankisel@mail.ru' },
+  { name: 'Артем Антонов', email: 'artemant@mail.ru' }
+];
 
-/* ===== login ===== */
-async function login(){
-  const email=emailInput.value.trim();
-  const password=passwordInput.value.trim();
-  const r=await fetch(API_URL,{method:'POST',body:JSON.stringify({action:'login',email,password})});
-  const d=await r.json();
-  if(!d.success)return alert('Неверные данные');
-  localStorage.setItem('email',email);
-  localStorage.getItem('pin')?show('enterPin'):show('createPin');
-}
+let currentUserEmail = '';
 
-/* ===== balance ===== */
-async function loadBalance(){
-  const email=localStorage.getItem('email');
-  const r=await fetch(API_URL,{method:'POST',body:JSON.stringify({action:'balance',email})});
-  const d=await r.json();
-  balance.textContent=d.balance+' ₽';
-}
+const loginScreen = document.getElementById('loginScreen');
+const userScreen = document.getElementById('userScreen');
+const balanceEl = document.getElementById('balance');
+const historyEl = document.getElementById('history');
+const toUser = document.getElementById('toUser');
+const amountInput = document.getElementById('amount');
 
-/* ===== transfer ===== */
-async function transfer(){
-  const from=localStorage.getItem('email');
-  const to=toInput.value.trim();
-  const amount=Number(amountInput.value);
-  if(!to||amount<=0)return;
-  const r=await fetch(API_URL,{method:'POST',body:JSON.stringify({action:'transfer',from,to,amount})});
-  const d=await r.json();
-  if(!d.success)return alert('Ошибка перевода');
+window.onload = async () => {
+  const saved = localStorage.getItem('userEmail');
+  if (saved) {
+    currentUserEmail = saved;
+    loginScreen.classList.add('hidden');
+    userScreen.classList.remove('hidden');
+    fillRecipients();
+    await loadBalance();
+    await loadHistory();
+  }
+};
+
+async function login() {
+  const email = document.getElementById('email').value.trim().toLowerCase();
+  const password = document.getElementById('password').value.trim();
+
+  const res = await fetch(API_URL, {
+    method: 'POST',
+    body: JSON.stringify({ action: 'login', email, password })
+  });
+
+  const data = await res.json();
+  if (!data.success) {
+    msg('loginMsg', 'Неверный email или пароль', 'error');
+    return;
+  }
+
+  currentUserEmail = email;
+  localStorage.setItem('userEmail', email);
+
+  loginScreen.classList.add('hidden');
+  userScreen.classList.remove('hidden');
+
+  fillRecipients();
   await loadBalance();
-  loadHistory();
-  toInput.value='';
-  amountInput.value='';
+  await loadHistory();
 }
 
-/* ===== history ===== */
-async function loadHistory(){
-  const email=localStorage.getItem('email');
-  const r=await fetch(API_URL,{method:'POST',body:JSON.stringify({action:'history',email})});
-  const d=await r.json();
-  historyList.innerHTML='';
-  d.forEach(o=>{
-    const div=document.createElement('div');
-    const plus=o.to===email;
-    div.className='op '+(plus?'plus':'minus');
-    div.innerHTML=`<div><small>${plus?'От':'Кому'} ${plus?o.from:o.to}</small></div>
-                   <div>${plus?'+':'-'}${o.amount} ₽</div>`;
-    historyList.appendChild(div);
+async function loadBalance() {
+  const res = await fetch(API_URL, {
+    method: 'POST',
+    body: JSON.stringify({ action: 'balance', email: currentUserEmail })
+  });
+  const data = await res.json();
+  balanceEl.textContent = data.balance + ' ₽';
+}
+
+async function transfer() {
+  const to = toUser.value;
+  const amount = Number(amountInput.value);
+
+  if (!to || amount <= 0) {
+    msg('userMsg', 'Проверь данные', 'error');
+    return;
+  }
+
+  const res = await fetch(API_URL, {
+    method: 'POST',
+    body: JSON.stringify({
+      action: 'transfer',
+      from: currentUserEmail,
+      to,
+      amount
+    })
+  });
+
+  const data = await res.json();
+  if (!data.success) {
+    msg('userMsg', 'Ошибка перевода', 'error');
+    return;
+  }
+
+  amountInput.value = '';
+  msg('userMsg', 'Перевод выполнен', 'success');
+  await loadBalance();
+  await loadHistory();
+}
+
+async function loadHistory() {
+  const res = await fetch(API_URL, {
+    method: 'POST',
+    body: JSON.stringify({ action: 'history', email: currentUserEmail })
+  });
+
+  const data = await res.json();
+  historyEl.innerHTML = '';
+
+  data.forEach(h => {
+    const div = document.createElement('div');
+    div.className = 'history-item';
+    div.innerHTML = `
+      <strong>${h.amount} ₽</strong><br>
+      <span>${h.from} → ${h.to}</span>
+    `;
+    historyEl.appendChild(div);
   });
 }
 
-/* ===== PIN ===== */
-function setupPin(dotsId,padId,done){
-  let cur='';
-  const dots=document.getElementById(dotsId);
-  const pad=document.getElementById(padId);
-  dots.innerHTML='<div class="dot"></div>'.repeat(4);
-  pad.innerHTML='';
-  for(let i=1;i<=9;i++)pad.innerHTML+=`<button class="pin-btn">${i}</button>`;
-  pad.innerHTML+=`<div></div><button class="pin-btn">0</button><div></div>`;
-  pad.querySelectorAll('.pin-btn').forEach(b=>{
-    b.onclick=()=>{
-      if(cur.length>=4)return;
-      cur+=b.textContent;
-      dots.children[cur.length-1].classList.add('active');
-      if(cur.length===4)done(cur);
+function fillRecipients() {
+  toUser.innerHTML = '<option value="">Получатель</option>';
+  USERS.forEach(u => {
+    if (u.email !== currentUserEmail) {
+      const opt = document.createElement('option');
+      opt.value = u.email;
+      opt.textContent = u.name;
+      toUser.appendChild(opt);
     }
   });
 }
 
-setupPin('createDots','createPad',async p=>{
-  localStorage.setItem('pin',p);
-  show('home');
-  loadBalance();
-});
-
-setupPin('enterDots','enterPad',async p=>{
-  if(p===localStorage.getItem('pin')){
-    show('home');
-    loadBalance();
-  }
-});
-
-/* ===== logout ===== */
-function logout(){
-  localStorage.clear();
-  show('login');
+function logout() {
+  localStorage.removeItem('userEmail');
+  location.reload();
 }
 
-/* ===== start ===== */
-window.onload=()=>{
-  if(localStorage.getItem('email'))show('enterPin');
+function msg(id, text, type) {
+  const el = document.getElementById(id);
+  el.textContent = text;
+  el.className = 'message ' + type;
 }
-
-/* ===== refs ===== */
-const emailInput=document.getElementById('email');
-const passwordInput=document.getElementById('password');
-const balance=document.getElementById('balance');
-const toInput=document.getElementById('to');
-const amountInput=document.getElementById('amount');
-const historyList=document.getElementById('historyList');
 </script>
+
 </body>
 </html>
