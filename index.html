@@ -148,7 +148,10 @@ transform:translateY(0);
 <button onclick="downloadStatement()">Скачать выписку</button>
 </div>
 
-<div class="block" id="history"></div>
+<div class="block">
+<button onclick="toggleHistory()">Показать / скрыть переводы</button>
+<div id="history"></div>
+</div>
 
 <button class="block logout" onclick="logout()">Выйти</button>
 
@@ -160,6 +163,8 @@ const API='https://script.google.com/macros/s/AKfycbzpREMs_CGdEJaD78SW7zzsepJdVh
 let userEmail='';
 let lastHistory=[];
 let autoUpdateInterval=null;
+let lastTxCount=0;
+let historyVisible=true;
 
 const names={
 'ilyasvaliev@mail.ru':'Ильяс',
@@ -179,6 +184,17 @@ const to=document.getElementById('to');
 const amount=document.getElementById('amount');
 const comment=document.getElementById('comment');
 const historyEl=document.getElementById('history');
+
+function pushNotify(title,body){
+if(Notification.permission==="granted"){
+new Notification(title,{body});
+}
+}
+
+function toggleHistory(){
+historyVisible=!historyVisible;
+historyEl.style.display=historyVisible?'block':'none';
+}
 
 function getName(e){return names[e]||e;}
 
@@ -202,6 +218,10 @@ cardNumber.textContent=d.card||'0000 0000 0000 0000';
 
 auth.classList.add('hidden');
 app.classList.remove('hidden');
+
+if(Notification.permission!=="granted"){
+Notification.requestPermission();
+}
 
 loadUsers();
 loadHistory();
@@ -293,7 +313,25 @@ body:JSON.stringify({action:'history',email:userEmail})
 });
 
 const d=await r.json();
-lastHistory=d.history||[];
+const newHistory=d.history||[];
+
+if(lastTxCount!==0 && newHistory.length>lastTxCount){
+
+const newTx=newHistory[0];
+
+const from=newTx[1];
+const amountVal=newTx[3];
+
+if(from===userEmail){
+pushNotify("💸 Списание",`-${amountVal} ₽`);
+}else{
+pushNotify("💰 Зачисление",`+${amountVal} ₽`);
+}
+
+}
+
+lastTxCount=newHistory.length;
+lastHistory=newHistory;
 
 historyEl.innerHTML='<h3>История операций</h3>';
 
