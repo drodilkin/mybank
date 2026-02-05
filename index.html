@@ -6,143 +6,112 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
-:root {
-  --bg:#0b0b10;
-  --card:#17171f;
-  --input:#222230;
-  --accent:#ffd600;
-  --text:#fff;
-  --muted:#9b9ba3;
+:root{
+--bg:#0b0b10;
+--card:#17171f;
+--input:#222230;
+--accent:#ffd600;
+--text:#fff;
+--muted:#9b9ba3;
 }
 
-* {
-  box-sizing:border-box;
-  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+*{box-sizing:border-box;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;}
+
+body{
+margin:0;
+background:var(--bg);
+color:var(--text);
+min-height:100vh;
+display:flex;
+justify-content:center;
+align-items:center;
 }
 
-body {
-  margin:0;
-  background:var(--bg);
-  color:var(--text);
-  min-height:100vh;
-  display:flex;
-  justify-content:center;
-  align-items:center;
+.hidden{display:none;}
+
+.auth{
+background:var(--card);
+padding:28px;
+border-radius:22px;
+width:100%;
+max-width:360px;
+box-shadow:0 20px 60px rgba(0,0,0,.6);
 }
 
-.hidden { display:none; }
-
-.auth {
-  background:var(--card);
-  padding:28px;
-  border-radius:22px;
-  width:100%;
-  max-width:360px;
-  box-shadow:0 20px 60px rgba(0,0,0,.6);
+.auth input,.auth button{
+width:100%;
+margin-top:12px;
+padding:14px;
+border:none;
+border-radius:14px;
+font-size:16px;
 }
 
-.auth input, .auth button {
-  width:100%;
-  margin-top:12px;
-  padding:14px;
-  border:none;
-  border-radius:14px;
-  font-size:16px;
+.auth input{background:var(--input);color:white;}
+.auth button{background:var(--accent);font-weight:600;cursor:pointer;}
+
+.app{width:100%;max-width:420px;padding:16px;}
+
+.card-wrap{perspective:1000px;}
+
+.card{
+width:100%;
+height:160px;
+border-radius:22px;
+background:var(--card);
+padding:20px;
+transition:transform .7s;
+transform-style:preserve-3d;
+cursor:pointer;
+position:relative;
 }
 
-.auth input {
-  background:var(--input);
-  color:white;
+.card.flipped{transform:rotateY(180deg);}
+
+.card-face{
+position:absolute;
+inset:0;
+padding:20px;
+backface-visibility:hidden;
 }
 
-.auth button {
-  background:var(--accent);
-  font-weight:600;
-  cursor:pointer;
+.card-back{
+transform:rotateY(180deg);
+display:flex;
+flex-direction:column;
+justify-content:center;
 }
 
-.app {
-  width:100%;
-  max-width:420px;
-  padding:16px;
+.balance-title{color:var(--muted);}
+.balance-amount{font-size:34px;margin-top:6px;}
+
+.block{
+background:var(--card);
+border-radius:22px;
+padding:18px;
+margin-top:16px;
 }
 
-.card-wrap { perspective:1000px; }
-
-.card {
-  width:100%;
-  height:160px;
-  border-radius:22px;
-  background:var(--card);
-  padding:20px;
-  transition:transform .7s;
-  transform-style:preserve-3d;
-  cursor:pointer;
-  position:relative;
+.block input,.block select,.block button{
+width:100%;
+margin-top:12px;
+padding:14px;
+border:none;
+border-radius:14px;
+font-size:15px;
 }
 
-.card.flipped { transform:rotateY(180deg); }
+.block input,.block select{background:var(--input);color:white;}
+.block button{background:var(--accent);font-weight:600;cursor:pointer;}
 
-.card-face {
-  position:absolute;
-  inset:0;
-  padding:20px;
-  backface-visibility:hidden;
-}
+.history-item{padding:12px 0;border-bottom:1px solid #2a2a36;}
+.in{color:#2ecc71;}
+.out{color:#ff4d4f;}
 
-.card-back {
-  transform:rotateY(180deg);
-  display:flex;
-  flex-direction:column;
-  justify-content:center;
-}
-
-.balance-title { color:var(--muted); }
-
-.balance-amount {
-  font-size:34px;
-  margin-top:6px;
-}
-
-.block {
-  background:var(--card);
-  border-radius:22px;
-  padding:18px;
-  margin-top:16px;
-}
-
-.block input, .block select, .block button {
-  width:100%;
-  margin-top:12px;
-  padding:14px;
-  border:none;
-  border-radius:14px;
-  font-size:15px;
-}
-
-.block input, .block select {
-  background:var(--input);
-  color:white;
-}
-
-.block button {
-  background:var(--accent);
-  font-weight:600;
-  cursor:pointer;
-}
-
-.history-item {
-  padding:12px 0;
-  border-bottom:1px solid #2a2a36;
-}
-
-.in { color:#2ecc71; }
-.out { color:#ff4d4f; }
-
-.logout {
-  margin-top:14px;
-  background:#2a2a36 !important;
-  color:white;
+.logout{
+margin-top:14px;
+background:#2a2a36 !important;
+color:white;
 }
 </style>
 </head>
@@ -150,163 +119,200 @@ body {
 <body>
 
 <div class="auth" id="auth">
-  <h1>PayBank</h1>
-  <input id="email" placeholder="Email">
-  <input id="password" type="password" placeholder="Пароль">
-  <button onclick="login()">Войти</button>
+<h1>PayBank</h1>
+<input id="email" placeholder="Email">
+<input id="password" type="password" placeholder="Пароль">
+<button onclick="login()">Войти</button>
 </div>
 
 <div class="app hidden" id="app">
 
-  <div class="card-wrap">
-    <div class="card" id="bankCard" onclick="flipCard()">
-      <div class="card-face">
-        <div class="balance-title">Баланс</div>
-        <div class="balance-amount" id="balance">0 ₽</div>
-      </div>
-      <div class="card-face card-back">
-        <div class="balance-title">Номер карты</div>
-        <div class="balance-amount" id="cardNumber"></div>
-      </div>
-    </div>
-  </div>
+<div class="card-wrap">
+<div class="card" id="bankCard" onclick="flipCard()">
+<div class="card-face">
+<div class="balance-title">Баланс</div>
+<div class="balance-amount" id="balance">0 ₽</div>
+</div>
+<div class="card-face card-back">
+<div class="balance-title">Номер карты</div>
+<div class="balance-amount" id="cardNumber"></div>
+</div>
+</div>
+</div>
 
-  <div class="block">
-    <select id="to">
-      <option value="">Получатель</option>
-    </select>
-    <input id="amount" type="number" placeholder="Сумма">
-    <input id="comment" placeholder="Комментарий">
-    <button onclick="transfer()">Перевести</button>
-  </div>
+<div class="block">
+<select id="to"><option value="">Получатель</option></select>
+<input id="amount" type="number" placeholder="Сумма">
+<input id="comment" placeholder="Комментарий">
+<button onclick="transfer()">Перевести</button>
+</div>
 
-  <div class="block" id="history"></div>
+<div class="block">
+<button onclick="downloadStatement()">Скачать выписку</button>
+</div>
 
-  <button class="block logout" onclick="logout()">Выйти</button>
+<div class="block" id="history"></div>
+
+<button class="block logout" onclick="logout()">Выйти</button>
 
 </div>
 
 <script>
-const API='https://script.google.com/macros/s/AKfycbxw6DqAUviSnuAVB0YW1_YgUL7rFG1HUplqy9Ihl3SansFsqzyFm5FdPRd93ezH-XQxQQ/exec';
+const API='https://script.google.com/macros/s/AKfycbyI6e3Eu9FvoH-2kq2iakm92Ceysk-BIB0OEHcbq5golo1lOklgvD_qaVFlYWX2-_Z1bA/exec';
 
 let userEmail='';
+let lastHistory=[];
+
+const names={
+'ilyasvaliev@mail.ru':'Ильяс',
+'prokhormart@mail.ru':'Прохор',
+'romankisel@mail.ru':'Роман',
+'artemant@mail.ru':'Артем'
+};
+
+function getName(email){
+return names[email]||email;
+}
 
 async function login(){
-  const email=emailInput.value.trim();
-  const password=passwordInput.value.trim();
+const email=emailInput.value.trim();
+const password=passwordInput.value.trim();
 
-  const r=await fetch(API,{
-    method:'POST',
-    body:JSON.stringify({action:'login',email,password})
-  });
+const r=await fetch(API,{
+method:'POST',
+body:JSON.stringify({action:'login',email,password})
+});
 
-  const d=await r.json();
-  if(!d.success) return alert('Неверные данные');
+const d=await r.json();
+if(!d.success) return alert('Неверные данные');
 
-  userEmail=email;
-  balance.textContent=d.balance+' ₽';
-  cardNumber.textContent=d.card;
+userEmail=email;
+balance.textContent=d.balance+' ₽';
+cardNumber.textContent=d.card;
 
-  auth.classList.add('hidden');
-  app.classList.remove('hidden');
+auth.classList.add('hidden');
+app.classList.remove('hidden');
 
-  loadUsers();
-  loadHistory();
+loadUsers();
+loadHistory();
 }
 
 function flipCard(){
-  bankCard.classList.toggle('flipped');
+bankCard.classList.toggle('flipped');
 }
 
 async function loadUsers(){
-  const list=[
-    'ilyasvaliev@mail.ru',
-    'prokhormart@mail.ru',
-    'romankisel@mail.ru',
-    'artemant@mail.ru'
-  ];
+const list=Object.keys(names);
 
-  to.innerHTML='<option value="">Получатель</option>';
+to.innerHTML='<option value="">Получатель</option>';
 
-  list.filter(e=>e!==userEmail).forEach(e=>{
-    const o=document.createElement('option');
-    o.value=e;
-    o.textContent=e;
-    to.appendChild(o);
-  });
-}
-
-async function refreshBalance(){
-  const r=await fetch(API,{
-    method:'POST',
-    body:JSON.stringify({action:'history',email:userEmail})
-  });
-
-  const d=await r.json();
-  if(d.balance!==undefined){
-    balance.textContent=d.balance+' ₽';
-  }
+list.filter(e=>e!==userEmail).forEach(e=>{
+const o=document.createElement('option');
+o.value=e;
+o.textContent=getName(e);
+to.appendChild(o);
+});
 }
 
 async function transfer(){
-  const amountVal=Number(amount.value);
-  if(!to.value||amountVal<=0) return;
+const amountVal=Number(amount.value);
+if(!to.value||amountVal<=0) return;
 
-  await fetch(API,{
-    method:'POST',
-    body:JSON.stringify({
-      action:'transfer',
-      from:userEmail,
-      to:to.value,
-      amount:amountVal,
-      comment:comment.value
-    })
-  });
+const r=await fetch(API,{
+method:'POST',
+body:JSON.stringify({
+action:'transfer',
+from:userEmail,
+to:to.value,
+amount:amountVal,
+comment:comment.value
+})
+});
 
-  comment.value='';
-  amount.value='';
+const d=await r.json();
 
-  await loadHistory();
-  await refreshBalance();
+if(d.balance!==undefined){
+balance.textContent=d.balance+' ₽';
+}else{
+await refreshBalance();
+}
+
+comment.value='';
+amount.value='';
+
+await loadHistory();
+}
+
+async function refreshBalance(){
+const r=await fetch(API,{
+method:'POST',
+body:JSON.stringify({action:'login',email:userEmail,password:''})
+});
 }
 
 async function loadHistory(){
-  const r=await fetch(API,{
-    method:'POST',
-    body:JSON.stringify({action:'history',email:userEmail})
-  });
+const r=await fetch(API,{
+method:'POST',
+body:JSON.stringify({action:'history',email:userEmail})
+});
 
-  const d=await r.json();
+const d=await r.json();
+lastHistory=d.history||[];
 
-  history.innerHTML='<h3>История операций</h3>';
+history.innerHTML='<h3>История операций</h3>';
 
-  d.history.reverse().forEach(h=>{
+lastHistory.reverse().forEach(h=>{
 
-    const from=h[1];
-    const toUser=h[2];
-    const amountVal=h[3];
-    const commentVal=h[4]||'';
-    const dateVal=h[5]||'';
+const from=h[1];
+const toUser=h[2];
+const amountVal=h[3];
+const commentVal=h[4]||'';
+const dateVal=h[0]||'';
 
-    const type=from===userEmail?'out':'in';
+const type=from===userEmail?'out':'in';
 
-    const div=document.createElement('div');
-    div.className='history-item '+type;
+const div=document.createElement('div');
+div.className='history-item '+type;
 
-    div.innerHTML=`
-      <b>${type==='out'?'⬇ Перевод':'⬆ Получение'} ${amountVal} ₽</b><br>
-      <small>${type==='out'?'Кому: '+toUser:'От: '+from}</small><br>
-      <small>${commentVal}</small><br>
-      <small>${dateVal}</small>
-    `;
+div.innerHTML=`
+<b>${type==='out'
+?`Перевод: ${getName(toUser)} — ${amountVal} ₽`
+:`Зачисление: ${getName(from)} — ${amountVal} ₽`
+}</b><br>
+<small>${commentVal}</small><br>
+<small>${new Date(dateVal).toLocaleString()}</small>
+`;
 
-    history.appendChild(div);
-  });
+history.appendChild(div);
+});
+}
+
+function downloadStatement(){
+let text='Выписка PayBank\n\n';
+
+lastHistory.forEach(h=>{
+const from=h[1];
+const toUser=h[2];
+const amountVal=h[3];
+const dateVal=new Date(h[0]).toLocaleString();
+
+if(from===userEmail){
+text+=`${dateVal} | Перевод ${getName(toUser)} | ${amountVal} ₽\n`;
+}else{
+text+=`${dateVal} | Зачисление ${getName(from)} | ${amountVal} ₽\n`;
+}
+});
+
+const blob=new Blob([text],{type:'text/plain'});
+const a=document.createElement('a');
+a.href=URL.createObjectURL(blob);
+a.download='paybank_vypiska.txt';
+a.click();
 }
 
 function logout(){
-  localStorage.clear();
-  location.reload();
+localStorage.clear();
+location.reload();
 }
 
 const emailInput=document.getElementById('email');
