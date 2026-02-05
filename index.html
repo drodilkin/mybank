@@ -26,12 +26,48 @@ body {
   background: var(--bg);
   color: var(--text);
   min-height: 100vh;
+}
+
+/* ===== LOADER ===== */
+#loader {
+  position: fixed;
+  inset: 0;
+  background: var(--bg);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+}
+
+.spinner {
+  width: 48px;
+  height: 48px;
+  border: 4px solid #2a2a36;
+  border-top: 4px solid var(--accent);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+#loader p {
+  margin-top: 16px;
+  color: var(--muted);
+}
+
+/* ===== APP ===== */
+.app {
+  display: none;
+  min-height: 100vh;
   display: flex;
   justify-content: center;
   align-items: center;
 }
 
-.app {
+.card {
   width: 100%;
   max-width: 420px;
   background: var(--card);
@@ -89,21 +125,22 @@ button.secondary {
 .success { background: rgba(46,204,113,.15); color: var(--success); }
 
 .hidden { display: none; }
-
-.admin-panel {
-  margin-top: 20px;
-  border-top: 1px solid #2a2a36;
-  padding-top: 16px;
-}
 </style>
 </head>
 
 <body>
 
-<div class="app">
+<!-- ===== LOADER ===== -->
+<div id="loader">
+  <div class="spinner"></div>
+  <p>Загрузка PayBank…</p>
+</div>
+
+<!-- ===== APP ===== -->
+<div class="app" id="app">
 
   <!-- LOGIN -->
-  <div id="loginScreen">
+  <div class="card" id="loginScreen">
     <h1>PayBank</h1>
     <input id="email" placeholder="Email">
     <input id="password" type="password" placeholder="Пароль">
@@ -112,12 +149,17 @@ button.secondary {
   </div>
 
   <!-- USER -->
-  <div id="userScreen" class="hidden">
-    <h1 id="userTitle"></h1>
+  <div class="card hidden" id="userScreen">
+    <h1 id="userEmail"></h1>
     <div class="balance" id="balance">0 ₿</div>
 
     <select id="toUser">
-      <option value="">Получатель (email)</option>
+      <option value="">Получатель</option>
+      <option value="tilyas@mail.ru">tilyas@mail.ru</option>
+      <option value="prokhor@mail.ru">prokhor@mail.ru</option>
+      <option value="roma@mail.ru">roma@mail.ru</option>
+      <option value="artem@mail.ru">artem@mail.ru</option>
+      <option value="test@mail.ru">test@mail.ru</option>
     </select>
 
     <input id="amount" type="number" placeholder="Сумма">
@@ -128,13 +170,11 @@ button.secondary {
   </div>
 
   <!-- ADMIN -->
-  <div id="adminScreen" class="hidden">
+  <div class="card hidden" id="adminScreen">
     <h1>Админ</h1>
-
     <input id="adminTarget" placeholder="Email пользователя">
     <input id="adminAmount" type="number" placeholder="Сумма">
     <button onclick="adminAdd()">Пополнить</button>
-
     <button class="secondary" onclick="logout()">Выйти</button>
     <div id="adminMsg" class="message"></div>
   </div>
@@ -142,22 +182,28 @@ button.secondary {
 </div>
 
 <script>
-// ================= НАСТРОЙКИ =================
-const API_URL = 'ТВОЯ_APPS_SCRIPT_ССЫЛКА';
-
-const ADMIN_EMAIL = 'super_admin_928374@bank.local';
-const ADMIN_PASSWORD = 'myUltraSecretPass';
-
-// =============================================
+// ========== НАСТРОЙКИ ==========
+const API_URL = 'https://script.google.com/macros/s/AKfycbzBRaaGfxEBHQL16nxPR_Y3dbG2nTF_Q8ui0XMyJ_DCFmHuuFovzlI1bO3wT8iE1SHs-w/exec';
+const ADMIN_EMAIL = 'admin_secret_928374@bank.local';
+const ADMIN_PASSWORD = 'superSecretPass123';
+// ===============================
 
 let currentUser = null;
 
+// ===== LOADER =====
+window.onload = () => {
+  setTimeout(() => {
+    document.getElementById('loader').style.display = 'none';
+    document.getElementById('app').style.display = 'flex';
+  }, 1200);
+};
+
 // ===== LOGIN =====
 async function login() {
-  const email = emailInput().toLowerCase();
-  const password = passwordInput();
+  const email = document.getElementById('email').value.toLowerCase().trim();
+  const password = document.getElementById('password').value.trim();
 
-  // ADMIN LOGIN
+  // ADMIN
   if (email === ADMIN_EMAIL && password === ADMIN_PASSWORD) {
     show('loginScreen', false);
     show('adminScreen', true);
@@ -166,11 +212,7 @@ async function login() {
 
   const res = await fetch(API_URL, {
     method: 'POST',
-    body: JSON.stringify({
-      action: 'login',
-      email,
-      password
-    })
+    body: JSON.stringify({ action: 'login', email, password })
   });
 
   const data = await res.json();
@@ -181,35 +223,16 @@ async function login() {
   }
 
   currentUser = email;
-
   show('loginScreen', false);
   show('userScreen', true);
-  document.getElementById('userTitle').textContent = email;
+  document.getElementById('userEmail').textContent = email;
   document.getElementById('balance').textContent = data.balance + ' ₿';
-
-  loadUsers();
-}
-
-// ===== LOAD USERS =====
-async function loadUsers() {
-  const list = document.getElementById('toUser');
-  list.innerHTML = '<option value="">Получатель (email)</option>';
-
-  // вручную — чтобы админ не светился
-  ['tilyas@mail.ru','prokhor@mail.ru','roma@mail.ru','artem@mail.ru','test@mail.ru']
-    .filter(e => e !== currentUser)
-    .forEach(e => {
-      const o = document.createElement('option');
-      o.value = e;
-      o.textContent = e;
-      list.appendChild(o);
-    });
 }
 
 // ===== TRANSFER =====
 async function transfer() {
   const to = toUser.value;
-  const amount = Number(amountInput());
+  const amount = Number(document.getElementById('amount').value);
 
   if (!to || amount <= 0) {
     msg('userMsg', '❌ Проверь данные', 'error');
@@ -218,12 +241,7 @@ async function transfer() {
 
   const res = await fetch(API_URL, {
     method: 'POST',
-    body: JSON.stringify({
-      action: 'transfer',
-      from: currentUser,
-      to,
-      amount
-    })
+    body: JSON.stringify({ action: 'transfer', from: currentUser, to, amount })
   });
 
   const data = await res.json();
@@ -274,10 +292,6 @@ function msg(id, text, type) {
 function logout() {
   location.reload();
 }
-
-const emailInput = () => document.getElementById('email').value.trim();
-const passwordInput = () => document.getElementById('password').value.trim();
-const amountInput = () => document.getElementById('amount').value;
 </script>
 
 </body>
