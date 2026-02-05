@@ -1,103 +1,153 @@
 <!DOCTYPE html>
-<html>
+<html lang="ru">
 <head>
 <meta charset="UTF-8">
-<title>Ultra Demo Bank</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>PayBank</title>
 
 <style>
 
+*{box-sizing:border-box}
+
 body{
 margin:0;
-font-family:system-ui;
-background:#0f172a;
+font-family:Inter,Arial;
+background:#0b0b0b;
 color:white;
+display:flex;
+justify-content:center;
 }
 
-.container{
-max-width:420px;
-margin:auto;
-padding:20px;
+.app{
+width:100%;
+max-width:430px;
+padding:15px;
 }
 
 .card{
-background:#1e293b;
+background:#171717;
+border-radius:22px;
 padding:20px;
-border-radius:20px;
-margin-bottom:15px;
+margin-top:15px;
+box-shadow:0 0 25px #000;
 }
 
-.bank-card{
-background:linear-gradient(135deg,#22c55e,#16a34a);
-padding:20px;
-border-radius:20px;
-margin-bottom:15px;
+h1{
+margin:0;
+text-align:center;
 }
 
 input{
 width:100%;
-padding:12px;
+padding:15px;
 margin-top:10px;
-border-radius:10px;
+border-radius:14px;
 border:none;
+background:#262626;
+color:white;
+font-size:16px;
 }
 
 button{
 width:100%;
-padding:12px;
-margin-top:10px;
-border-radius:10px;
+padding:15px;
+margin-top:12px;
+border-radius:14px;
 border:none;
-background:#22c55e;
-color:white;
+background:#ffd400;
+font-weight:bold;
 font-size:16px;
 cursor:pointer;
 }
 
-#bank{display:none}
+.smallbtn{
+background:#333;
+color:white;
+}
 
-.history-item{
-background:#020617;
+.balance{
+font-size:34px;
+font-weight:bold;
+margin-top:10px;
+}
+
+.row{
+display:flex;
+gap:10px;
+}
+
+.row button{
+flex:1;
+}
+
+.history{
+margin-top:10px;
+}
+
+.tx{
+background:#222;
 padding:10px;
-border-radius:10px;
-margin-top:5px;
+border-radius:12px;
+margin-top:8px;
+font-size:14px;
+}
+
+.err{
+background:#3a1414;
+padding:12px;
+border-radius:12px;
+margin-top:10px;
+display:none;
+}
+
+.loader{
+display:none;
+text-align:center;
+margin-top:10px;
 }
 
 </style>
-
 </head>
+
 <body>
 
-<div class="container">
+<div class="app">
 
-<h2>🏦 Ultra Demo Bank</h2>
-
+<!-- LOGIN -->
 <div id="login" class="card">
-<h3>Login</h3>
-<input id="email">
-<input id="password" type="password">
-<button onclick="login()">Login</button>
+<h1>PayBank</h1>
+<input id="email" placeholder="Email">
+<input id="password" type="password" placeholder="Пароль">
+<button onclick="login()">Войти</button>
+<div id="err" class="err">Неверные данные</div>
+<div id="load" class="loader">Загрузка...</div>
 </div>
 
-<div id="bank">
+<!-- BANK -->
+<div id="bank" style="display:none">
 
-<div class="bank-card">
-<div>💳 Card</div>
-<div id="card"></div>
-<div id="balance"></div>
-<button onclick="logout()">Logout</button>
+<div class="card">
+<div>Баланс</div>
+<div id="balance" class="balance">0₽</div>
+<div>Карта: <span id="card"></span></div>
+
+<div class="row">
+<button class="smallbtn" onclick="loadHistory()">История</button>
+<button class="smallbtn" onclick="logout()">Выйти</button>
+</div>
+
 </div>
 
 <div class="card">
-<h3>Transfer</h3>
-<input id="to">
-<input id="amount">
-<button onclick="transfer()">Send</button>
+<h3>Перевод</h3>
+<input id="toCard" placeholder="Карта получателя">
+<input id="amount" type="number" placeholder="Сумма">
+<button onclick="transfer()">Отправить</button>
 </div>
 
 <div class="card">
-<h3>History</h3>
-<div id="history"></div>
-<button onclick="loadHistory()">Refresh</button>
+<h3>История операций</h3>
+<div id="history" class="history"></div>
 </div>
 
 </div>
@@ -106,24 +156,52 @@ margin-top:5px;
 
 <script>
 
-const API="https://script.google.com/macros/s/AKfycbx4_5O8KJiL4sOJEF_sCAXcx6qLY3BV4_CKiApVjbEKj3vtKzjW9negndsywmZw0eIq_A/exec";
-
+const API="https://script.google.com/macros/s/AKfycbwHcb10OvHfl5VNABPVgTCL50fPM0uG3Qk7BZLUQUo8cLCcN8xZeDMHIZp7D5MDo8gDKQ/exec";
 let user=null;
 
-window.onload=()=>{
+function showLoader(v){
+document.getElementById("load").style.display=v?"block":"none";
+}
 
-const saved=localStorage.getItem("bankUser");
+function showError(v){
+document.getElementById("err").style.display=v?"block":"none";
+}
 
-if(saved){
+async function api(data){
 
-user=JSON.parse(saved);
+const r=await fetch(API,{
+method:"POST",
+body:JSON.stringify(data)
+});
+
+return await r.json();
+}
+
+async function login(){
+
+showLoader(true);
+showError(false);
+
+const email=document.getElementById("email").value;
+const password=document.getElementById("password").value;
+
+const res=await api({
+action:"login",
+email,
+password
+});
+
+showLoader(false);
+
+if(!res.ok){
+showError(true);
+return;
+}
+
+user=res;
+localStorage.setItem("user",JSON.stringify(res));
 
 openBank();
-refreshBalance();
-loadHistory();
-
-setInterval(refreshBalance,5000);
-}
 }
 
 function openBank(){
@@ -132,128 +210,84 @@ document.getElementById("login").style.display="none";
 document.getElementById("bank").style.display="block";
 
 updateUI();
+loadHistory();
 }
 
 function updateUI(){
 
-document.getElementById("balance").innerText="Balance: "+user.balance;
+document.getElementById("balance").innerText=
+Number(user.balance).toLocaleString()+" ₽";
+
 document.getElementById("card").innerText=user.card;
-}
 
-async function login(){
-
-const res=await fetch(API,{
-method:"POST",
-body:JSON.stringify({
-action:"login",
-email:document.getElementById("email").value,
-password:document.getElementById("password").value
-})
-});
-
-const data=await res.json();
-
-if(data.status==="success"){
-
-user=data;
-
-localStorage.setItem("bankUser",JSON.stringify(user));
-
-openBank();
-loadHistory();
-
-setInterval(refreshBalance,5000);
-
-}else{
-alert("Wrong login");
-}
-}
-
-async function refreshBalance(){
-
-const res=await fetch(API,{
-method:"POST",
-body:JSON.stringify({
-action:"balance",
-email:user.email
-})
-});
-
-const data=await res.json();
-
-if(data.status==="success"){
-
-user.balance=data.balance;
-
-localStorage.setItem("bankUser",JSON.stringify(user));
-
-updateUI();
-}
 }
 
 async function transfer(){
 
-const res=await fetch(API,{
-method:"POST",
-body:JSON.stringify({
+const card=document.getElementById("toCard").value;
+const amount=document.getElementById("amount").value;
+
+const res=await api({
 action:"transfer",
 from:user.email,
-to:document.getElementById("to").value,
-amount:document.getElementById("amount").value
-})
+card,
+amount
 });
 
-const data=await res.json();
+if(res.ok){
 
-if(data.status==="success"){
-
-user.balance=data.newBalance;
-
-localStorage.setItem("bankUser",JSON.stringify(user));
-
+user.balance-=Number(amount);
+localStorage.setItem("user",JSON.stringify(user));
 updateUI();
 loadHistory();
 
-alert("Sent");
+alert("Перевод выполнен");
 
 }else{
-alert(data.status);
+alert("Ошибка перевода");
 }
 }
 
 async function loadHistory(){
 
-const res=await fetch(API,{
-method:"POST",
-body:JSON.stringify({
-action:"history"
-})
+const res=await api({
+action:"history",
+email:user.email
 });
 
-const data=await res.json();
+const h=document.getElementById("history");
+h.innerHTML="";
 
-if(data.status==="success"){
+if(!res.list) return;
 
-const box=document.getElementById("history");
+res.list.reverse().forEach(tx=>{
 
-box.innerHTML="";
-
-data.data.reverse().forEach(r=>{
-
-const div=document.createElement("div");
-div.className="history-item";
-div.innerText=r[1]+" → "+r[2]+" : "+r[3];
-box.appendChild(div);
+h.innerHTML+=`
+<div class="tx">
+${tx.date}<br>
+${tx.from} → ${tx.to}<br>
+${tx.amount} ₽
+</div>
+`;
 
 });
-}
 }
 
 function logout(){
-
-localStorage.removeItem("bankUser");
+localStorage.removeItem("user");
 location.reload();
 }
+
+window.onload=()=>{
+
+const saved=localStorage.getItem("user");
+
+if(saved){
+user=JSON.parse(saved);
+openBank();
+}
+
+};
 
 </script>
 
