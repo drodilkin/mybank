@@ -3,250 +3,123 @@
 <head>
     <title>Мой Банк</title>
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-    <style>
-        body { font-family: Arial; padding: 20px; max-width: 500px; margin: auto; }
-        .card { background: #e3f2fd; padding: 20px; margin: 15px 0; border-radius: 10px; }
-        input, button { width: 100%; padding: 12px; margin: 8px 0; border-radius: 8px; border: 1px solid #90caf9; }
-        button { background: #1976d2; color: white; border: none; cursor: pointer; }
-        .balance { font-size: 32px; color: #2e7d32; text-align: center; margin: 10px 0; }
-    </style>
 </head>
 <body>
     <h1>🏦 Мой Банк</h1>
     
-    <div class="card">
-        <h3>Вход в систему:</h3>
-        <input id="email" placeholder="Email" value="you@test.com">
-        <input id="password" type="password" placeholder="Пароль" value="123">
-        <button onclick="login()">Войти</button>
-        <p style="font-size: 14px; color: #666; margin-top: 10px;">
-            Тестовые логины:<br>
-            • you@test.com / 123 (Вы)<br>
-            • friend@test.com / 123 (Друг)
-        </p>
-    </div>
+    <button onclick="checkSupabase()">🔍 Проверить Supabase</button>
+    <button onclick="login()">Войти (you@test.com / 123)</button>
+    <button onclick="sendMoney()">Перевести 100 баллов другу</button>
     
-    <div id="bank" style="display:none;">
-        <div class="card">
-            <h3>👤 <span id="userName"></span></h3>
-            <div class="balance">💰 <span id="balance">0</span> баллов</div>
-            <p style="text-align: center; color: #666;" id="userEmail"></p>
-        </div>
-        
-        <div class="card">
-            <h3>📤 Перевод другу:</h3>
-            <input id="friendEmail" placeholder="Email друга" value="friend@test.com">
-            <input id="amount" type="number" placeholder="Сумма" value="100">
-            <button onclick="sendMoney()">💸 Перевести деньги</button>
-        </div>
-        
-        <div class="card">
-            <h3>👥 Все пользователи:</h3>
-            <div id="allUsers">Загрузка...</div>
-            <button onclick="loadUsers()" style="background: #388e3c;">🔄 Обновить список</button>
-        </div>
-        
-        <div id="result" class="card" style="background: #e8f5e9; display:none;"></div>
-        
-        <button onclick="logout()" style="background: #d32f2f;">Выйти из системы</button>
-    </div>
+    <div id="status" style="margin-top:20px; padding:15px; background:#e3f2fd; border-radius:8px;"></div>
 
     <script>
-        // ========== ТВОИ КЛЮЧИ SUPABASE ==========
+        // ТВОИ КЛЮЧИ
         const SUPABASE_URL = 'https://jxhyktvwjcpqoelxduoz.supabase.co';
         const SUPABASE_KEY = 'sb_publishable_dk0dKz62B_kuH-gA7KIlnQ_SEK5K5Am';
-        // =========================================
         
-        // Создаем подключение к Supabase
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
         
-        let currentUser = null;
+        function show(msg) {
+            document.getElementById('status').innerHTML = msg;
+            console.log(msg);
+        }
         
-        // Проверяем подключение при загрузке
-        console.log('Supabase подключен:', !!supabase);
-        
-        // ========== ФУНКЦИЯ ВХОДА ==========
-        async function login() {
-            console.log('Пытаюсь войти...');
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-            
-            // Показываем загрузку
-            document.getElementById('result').style.display = 'block';
-            document.getElementById('result').innerHTML = '⏳ Вход в систему...';
+        // 1. ПРОВЕРИТЬ ПОДКЛЮЧЕНИЕ
+        async function checkSupabase() {
+            show('🔍 Проверяю подключение...');
             
             try {
-                // Ищем пользователя в базе
+                // Пробуем получить пользователей
                 const { data, error } = await supabase
                     .from('users')
-                    .select('*')
-                    .eq('email', email)
-                    .eq('password', password)
-                    .single();
+                    .select('*');
                 
                 if (error) {
-                    console.error('Ошибка Supabase:', error);
-                    throw new Error('Ошибка базы данных: ' + error.message);
+                    show('❌ Ошибка: ' + error.message);
+                    show('<br>⚠️ Таблицы users не существует!<br>Создай её через SQL Editor в Supabase.');
+                } else {
+                    show('✅ Подключение успешно!');
+                    show('Найдено пользователей: ' + data.length);
+                    data.forEach(user => {
+                        show(`${user.name} (${user.email}): ${user.balance} баллов`);
+                    });
                 }
-                
-                if (!data) {
-                    throw new Error('Пользователь не найден или неправильный пароль');
-                }
-                
-                // Сохраняем текущего пользователя
-                currentUser = data;
-                
-                // Показываем личный кабинет
-                document.querySelector('.card').style.display = 'none';
-                document.getElementById('bank').style.display = 'block';
-                document.getElementById('userName').textContent = data.name;
-                document.getElementById('userEmail').textContent = data.email;
-                document.getElementById('balance').textContent = data.balance + ' баллов';
-                
-                // Показываем успех
-                showResult('✅ Успешный вход! Добро пожаловать, ' + data.name + '!');
-                
-                // Загружаем список пользователей
-                loadUsers();
-                
-                console.log('Вход успешен:', data);
-                
-            } catch (error) {
-                console.error('Ошибка входа:', error);
-                showResult('❌ Ошибка: ' + error.message);
+            } catch (err) {
+                show('❌ Ошибка подключения: ' + err.message);
             }
         }
         
-        // ========== ФУНКЦИЯ ПЕРЕВОДА ==========
+        // 2. ВОЙТИ
+        async function login() {
+            show('Вхожу как you@test.com...');
+            
+            const { data, error } = await supabase
+                .from('users')
+                .select('*')
+                .eq('email', 'you@test.com')
+                .eq('password', '123')
+                .single();
+            
+            if (error) {
+                show('❌ Ошибка входа: ' + error.message);
+            } else if (data) {
+                show('✅ Вход успешен!<br>👤 ' + data.name + '<br>💰 Баланс: ' + data.balance + ' баллов');
+            } else {
+                show('❌ Пользователь не найден');
+            }
+        }
+        
+        // 3. ПЕРЕВЕСТИ ДЕНЬГИ
         async function sendMoney() {
-            console.log('Начинаю перевод...');
-            const friendEmail = document.getElementById('friendEmail').value;
-            const amount = parseInt(document.getElementById('amount').value);
-            
-            if (!amount || amount <= 0) {
-                showResult('❌ Введите корректную сумму');
-                return;
-            }
-            
-            if (!currentUser) {
-                showResult('❌ Сначала войдите в систему');
-                return;
-            }
-            
-            showResult('⏳ Выполняю перевод...');
+            show('🔄 Выполняю перевод...');
             
             try {
-                // 1. Находим получателя
-                const { data: friend, error: friendError } = await supabase
+                // 1. Находим отправителя
+                const { data: sender, error: senderError } = await supabase
                     .from('users')
                     .select('*')
-                    .eq('email', friendEmail)
+                    .eq('email', 'you@test.com')
                     .single();
                 
-                if (friendError || !friend) {
-                    throw new Error('Пользователь ' + friendEmail + ' не найден');
-                }
+                if (senderError) throw senderError;
                 
-                // 2. Проверяем достаточно ли денег
-                if (amount > currentUser.balance) {
-                    throw new Error('Недостаточно средств. Ваш баланс: ' + currentUser.balance);
-                }
-                
-                // 3. Выполняем перевод (обновляем балансы)
-                const newMyBalance = currentUser.balance - amount;
-                const newFriendBalance = friend.balance + amount;
-                
-                // Обновляем отправителя
-                const { error: updateMyError } = await supabase
-                    .from('users')
-                    .update({ balance: newMyBalance })
-                    .eq('id', currentUser.id);
-                
-                if (updateMyError) throw updateMyError;
-                
-                // Обновляем получателя
-                const { error: updateFriendError } = await supabase
-                    .from('users')
-                    .update({ balance: newFriendBalance })
-                    .eq('id', friend.id);
-                
-                if (updateFriendError) throw updateFriendError;
-                
-                // 4. Обновляем текущего пользователя
-                currentUser.balance = newMyBalance;
-                document.getElementById('balance').textContent = newMyBalance + ' баллов';
-                
-                // 5. Показываем успех
-                showResult(
-                    '✅ Перевод выполнен!<br>' +
-                    '📤 Отправили: ' + amount + ' баллов<br>' +
-                    '👤 Получатель: ' + friend.name + '<br>' +
-                    '💰 Ваш новый баланс: ' + newMyBalance + ' баллов<br><br>' +
-                    '💡 Друг увидит перевод после обновления страницы'
-                );
-                
-                // 6. Обновляем список пользователей
-                loadUsers();
-                
-                console.log('Перевод успешен:', { amount, to: friend.name });
-                
-            } catch (error) {
-                console.error('Ошибка перевода:', error);
-                showResult('❌ Ошибка: ' + error.message);
-            }
-        }
-        
-        // ========== ЗАГРУЗИТЬ ВСЕХ ПОЛЬЗОВАТЕЛЕЙ ==========
-        async function loadUsers() {
-            try {
-                const { data: users, error } = await supabase
+                // 2. Находим получателя
+                const { data: receiver, error: receiverError } = await supabase
                     .from('users')
                     .select('*')
-                    .order('balance', { ascending: false });
+                    .eq('email', 'friend@test.com')
+                    .single();
                 
-                if (error) throw error;
+                if (receiverError) throw receiverError;
                 
-                let html = '';
-                users.forEach(user => {
-                    const isCurrent = currentUser && user.id === currentUser.id;
-                    html += `
-                        <div style="padding: 10px; margin: 5px 0; background: ${isCurrent ? '#bbdefb' : 'white'}; border-radius: 5px;">
-                            <strong>${user.name}</strong> (${user.email})<br>
-                            Баланс: <strong>${user.balance} баллов</strong>
-                            ${isCurrent ? ' ← это вы' : ''}
-                        </div>
-                    `;
-                });
+                // 3. Обновляем балансы
+                const newSenderBalance = sender.balance - 100;
+                const newReceiverBalance = receiver.balance + 100;
                 
-                document.getElementById('allUsers').innerHTML = html || 'Нет пользователей';
+                await supabase
+                    .from('users')
+                    .update({ balance: newSenderBalance })
+                    .eq('id', sender.id);
+                
+                await supabase
+                    .from('users')
+                    .update({ balance: newReceiverBalance })
+                    .eq('id', receiver.id);
+                
+                show('✅ Перевод выполнен!<br>📤 Отправлено: 100 баллов<br>👤 Получатель: ' + receiver.name + '<br>💰 Новый баланс отправителя: ' + newSenderBalance + ' баллов');
+                
+                // 4. Показываем обновленные данные
+                setTimeout(checkSupabase, 1000);
                 
             } catch (error) {
-                console.error('Ошибка загрузки пользователей:', error);
-                document.getElementById('allUsers').innerHTML = 'Ошибка загрузки';
+                show('❌ Ошибка перевода: ' + error.message);
             }
         }
         
-        // ========== ПОКАЗАТЬ РЕЗУЛЬТАТ ==========
-        function showResult(message) {
-            const result = document.getElementById('result');
-            result.style.display = 'block';
-            result.innerHTML = message;
-        }
-        
-        // ========== ВЫЙТИ ==========
-        function logout() {
-            currentUser = null;
-            document.getElementById('bank').style.display = 'none';
-            document.querySelector('.card').style.display = 'block';
-            document.getElementById('email').value = 'you@test.com';
-            document.getElementById('password').value = '123';
-            document.getElementById('result').style.display = 'none';
-            console.log('Вышли из системы');
-        }
-        
-        // Автоматически загружаем пользователей при загрузке страницы
+        // Автопроверка при загрузке
         window.onload = function() {
-            loadUsers();
+            show('Страница загружена. Нажми "🔍 Проверить Supabase"');
         };
     </script>
 </body>
