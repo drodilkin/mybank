@@ -28,97 +28,54 @@ align-items:center;
 }
 
 .hidden{display:none;}
-
 .auth{background:var(--card);padding:28px;border-radius:22px;width:100%;max-width:360px;}
-
-.auth input,.auth button{
-width:100%;
-margin-top:12px;
-padding:14px;
-border:none;
-border-radius:14px;
-}
-
+.auth input,.auth button{width:100%;margin-top:12px;padding:14px;border:none;border-radius:14px;}
 .auth input{background:var(--input);color:white;}
 .auth button{background:var(--accent);font-weight:600;cursor:pointer;}
-
 .app{width:100%;max-width:420px;padding:16px;}
 
-.card-wrap{perspective:1000px;}
-
-.card{
-width:100%;
-height:170px;
-border-radius:22px;
-background:linear-gradient(135deg,#1e1e28,#121218);
-padding:20px;
-transition:.5s;
-transform-style:preserve-3d;
-cursor:pointer;
-position:relative;
-}
-
-.card.nfc{
-animation:pulse 1s infinite;
-}
-
-@keyframes pulse{
-0%{transform:scale(1);}
-50%{transform:scale(1.05);}
-100%{transform:scale(1);}
-}
-
-.card.flipped{transform:rotateY(180deg);}
-
-.card-face{
-position:absolute;
-inset:0;
-padding:20px;
-backface-visibility:hidden;
-}
-
-.card-back{
-transform:rotateY(180deg);
+.tabs{
 display:flex;
-flex-direction:column;
-justify-content:center;
+gap:10px;
+margin-top:15px;
 }
+.tab{
+flex:1;
+padding:12px;
+background:#222230;
+border-radius:14px;
+text-align:center;
+cursor:pointer;
+}
+.tab.active{
+background:var(--accent);
+color:black;
+font-weight:600;
+}
+
+.card-wrap{perspective:1000px;}
+.card{
+width:100%;height:170px;border-radius:22px;
+background:linear-gradient(135deg,#1e1e28,#121218);
+padding:20px;cursor:pointer;position:relative;
+transform-style:preserve-3d;transition:.5s;
+}
+.card.flipped{transform:rotateY(180deg);}
+.card-face{position:absolute;inset:0;padding:20px;backface-visibility:hidden;}
+.card-back{transform:rotateY(180deg);display:flex;flex-direction:column;justify-content:center;}
 
 .balance-title{color:var(--muted);}
 .balance-amount{font-size:34px;}
 
 .block{background:var(--card);border-radius:22px;padding:18px;margin-top:16px;}
-
-.block input,.block select,.block button{
-width:100%;
-margin-top:12px;
-padding:14px;
-border:none;
-border-radius:14px;
-}
-
+.block input,.block select,.block button{width:100%;margin-top:12px;padding:14px;border:none;border-radius:14px;}
 .block input,.block select{background:var(--input);color:white;}
 .block button{background:var(--accent);font-weight:600;cursor:pointer;}
 
-.tabs{
-display:flex;
-gap:8px;
-margin-top:16px;
-}
-
-.tab{
-flex:1;
-padding:12px;
-border-radius:12px;
-background:#2a2a36;
-text-align:center;
-cursor:pointer;
-}
-
-.tab.active{
-background:var(--accent);
-color:black;
-}
+.history-item{padding:12px 0;border-bottom:1px solid #2a2a36;}
+.in{color:#2ecc71;}
+.out{color:#ff4d4f;}
+.logout{background:#2a2a36!important;color:white;}
 </style>
 </head>
 
@@ -139,7 +96,6 @@ color:black;
 <div class="balance-title">Баланс</div>
 <div class="balance-amount" id="balance">0 ₽</div>
 </div>
-
 <div class="card-face card-back">
 <div class="balance-title">Номер карты</div>
 <div class="balance-amount" id="cardNumber"></div>
@@ -148,32 +104,29 @@ color:black;
 </div>
 
 <div class="tabs">
-<div class="tab active" onclick="switchTab('transfer')">Переводы</div>
-<div class="tab" onclick="switchTab('nfc')">NFC</div>
+<div class="tab active" onclick="switchTab('transfer',this)">Переводы</div>
+<div class="tab" onclick="switchTab('history',this)">История</div>
+<div class="tab" onclick="switchTab('nfc',this)">NFC</div>
 </div>
 
-<div id="transferTab">
-
-<div class="block">
+<div id="transferTab" class="block">
 <select id="to"></select>
 <input id="amount" type="number" placeholder="Сумма">
 <input id="comment" placeholder="Комментарий">
 <button onclick="transfer()">Перевести</button>
 </div>
 
+<div id="historyTab" class="block hidden">
+<div id="history"></div>
 </div>
 
-<div id="nfcTab" class="hidden">
-<div class="block">
-<button onclick="scanNFC()">📳 Приложить карту</button>
-</div>
+<div id="nfcTab" class="block hidden">
+<button onclick="startNFC()">📳 Приложить карту</button>
 </div>
 
 <div class="block">
 <button onclick="downloadStatement()">Скачать выписку</button>
 </div>
-
-<div class="block" id="history"></div>
 
 <button class="block logout" onclick="logout()">Выйти</button>
 
@@ -183,7 +136,9 @@ color:black;
 const API='https://script.google.com/macros/s/AKfycbzpREMs_CGdEJaD78SW7zzsepJdVh4cis93U9qdhz_uFBRPklq4YT3bf9jzmhUIEPRcPg/exec';
 
 let userEmail='';
+let lastHistory=[];
 let autoUpdateInterval=null;
+let lastTxCount=0;
 
 const names={
 'ilyasvaliev@mail.ru':'Ильяс',
@@ -192,150 +147,136 @@ const names={
 'artemant@mail.ru':'Артем'
 };
 
-const bankCard=document.getElementById('bankCard');
-const transferTab=document.getElementById('transferTab');
-const nfcTab=document.getElementById('nfcTab');
+const emailInput=email;
+const passwordInput=password;
+const authDiv=auth;
+const appDiv=app;
+const historyEl=history;
 
-function switchTab(tab){
-
+function switchTab(tab,el){
 document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
-
-if(tab==='transfer'){
-transferTab.classList.remove('hidden');
-nfcTab.classList.add('hidden');
-document.querySelectorAll('.tab')[0].classList.add('active');
-}else{
+el.classList.add('active');
 transferTab.classList.add('hidden');
-nfcTab.classList.remove('hidden');
-document.querySelectorAll('.tab')[1].classList.add('active');
+historyTab.classList.add('hidden');
+nfcTab.classList.add('hidden');
+document.getElementById(tab+'Tab').classList.remove('hidden');
 }
 
+function pushNotify(title,body){
+if(Notification.permission==="granted"){
+new Notification(title,{body});
+}
 }
 
-async function scanNFC(){
-
-if(!('NDEFReader' in window)){
-alert('NFC не поддерживается');
-return;
-}
-
-try{
-
-const ndef=new NDEFReader();
-
-await ndef.scan();
-
-bankCard.classList.add('nfc');
-
-alert('Приложи карту');
-
-ndef.onreading=async event=>{
-
-bankCard.classList.remove('nfc');
-
-alert('Карта считана');
-
-await refreshBalance();
-};
-
-}catch(e){
-alert('Ошибка NFC');
-}
-
-}
-
-function flipCard(){
-bankCard.classList.toggle('flipped');
-}
+function flipCard(){bankCard.classList.toggle('flipped');}
 
 async function login(){
-
-const email=document.getElementById('email').value.trim();
-const password=document.getElementById('password').value.trim();
-
-const r=await fetch(API,{method:'POST',body:JSON.stringify({action:'login',email,password})});
+const r=await fetch(API,{method:'POST',body:JSON.stringify({action:'login',email:emailInput.value,password:passwordInput.value})});
 const d=await r.json();
-
-if(!d.success) return alert('Ошибка входа');
-
-userEmail=email;
-document.getElementById('balance').textContent=d.balance+' ₽';
-document.getElementById('cardNumber').textContent=d.card||'0000 0000 0000 0000';
-
-document.getElementById('auth').classList.add('hidden');
-document.getElementById('app').classList.remove('hidden');
-
+if(!d.success)return alert('Ошибка входа');
+userEmail=emailInput.value;
+balance.textContent=d.balance+' ₽';
+cardNumber.textContent=d.card;
+authDiv.classList.add('hidden');
+appDiv.classList.remove('hidden');
+if(Notification.permission!=="granted"){Notification.requestPermission();}
 loadUsers();
+loadHistory();
 startAutoUpdate();
 }
 
 function startAutoUpdate(){
-
-if(autoUpdateInterval) clearInterval(autoUpdateInterval);
-
-autoUpdateInterval=setInterval(async ()=>{
+if(autoUpdateInterval)clearInterval(autoUpdateInterval);
+autoUpdateInterval=setInterval(async()=>{
 await refreshBalance();
+await loadHistory();
 },5000);
-
 }
 
 async function refreshBalance(){
-
-const r=await fetch(API,{
-method:'POST',
-body:JSON.stringify({action:'balance',email:userEmail})
-});
-
+const r=await fetch(API,{method:'POST',body:JSON.stringify({action:'balance',email:userEmail})});
 const d=await r.json();
-
-if(d.balance!==undefined){
-document.getElementById('balance').textContent=d.balance+' ₽';
-}
-
+if(d.balance!==undefined){balance.textContent=d.balance+' ₽';}
 }
 
 async function loadUsers(){
-
-const to=document.getElementById('to');
-
 to.innerHTML='<option value="">Получатель</option>';
-
 Object.keys(names).filter(e=>e!==userEmail).forEach(e=>{
 const o=document.createElement('option');
-o.value=e;
-o.textContent=names[e];
+o.value=e;o.textContent=names[e];
 to.appendChild(o);
 });
-
 }
 
 async function transfer(){
-
-const to=document.getElementById('to').value;
-const amountVal=Number(document.getElementById('amount').value);
-
-if(!to||amountVal<=0) return;
-
-await fetch(API,{
-method:'POST',
-body:JSON.stringify({
-action:'transfer',
-from:userEmail,
-to,
-amount:amountVal,
-comment:document.getElementById('comment').value
-})
-});
-
+const amountVal=Number(amount.value);
+if(!to.value||amountVal<=0)return;
+await fetch(API,{method:'POST',body:JSON.stringify({action:'transfer',from:userEmail,to:to.value,amount:amountVal,comment:comment.value})});
 await refreshBalance();
+await loadHistory();
+comment.value='';amount.value='';
+}
 
+async function loadHistory(){
+const r=await fetch(API,{method:'POST',body:JSON.stringify({action:'history',email:userEmail})});
+const d=await r.json();
+const newHistory=d.history||[];
+
+if(lastTxCount!==0 && newHistory.length>lastTxCount){
+const newTx=newHistory[0];
+const from=newTx[1];
+const amountVal=newTx[3];
+if(from===userEmail){pushNotify("💸 Списание",`-${amountVal} ₽`);}
+else{pushNotify("💰 Зачисление",`+${amountVal} ₽`);}
+}
+
+lastTxCount=newHistory.length;
+lastHistory=newHistory;
+
+historyEl.innerHTML='<h3>История операций</h3>';
+
+lastHistory.forEach(h=>{
+const from=h[1];
+const toUser=h[2];
+const amountVal=h[3];
+const type=from===userEmail?'out':'in';
+const div=document.createElement('div');
+div.className='history-item '+type;
+div.innerHTML=`<b>${type==='out'
+?`Перевод: ${names[toUser]||toUser} — ${amountVal} ₽`
+:`Зачисление: ${names[from]||from} — ${amountVal} ₽`}</b>`;
+historyEl.appendChild(div);
+});
+}
+
+async function startNFC(){
+if(!('NDEFReader'in window)){alert('NFC не поддерживается');return;}
+try{
+const ndef=new NDEFReader();
+await ndef.scan();
+alert("📳 Приложи карту к телефону");
+ndef.onreading=event=>{
+alert("Карта считана: "+new TextDecoder().decode(event.message.records[0].data));
+};
+}catch(err){
+alert("Ошибка NFC");
+}
 }
 
 function downloadStatement(){
-alert('Выписка скачана');
+let text='Выписка PayBank\n\n';
+lastHistory.forEach(h=>{
+text+=`${new Date(h[0]).toLocaleString()} | ${h[3]} ₽\n`;
+});
+const blob=new Blob([text],{type:'text/plain'});
+const a=document.createElement('a');
+a.href=URL.createObjectURL(blob);
+a.download='paybank_vypiska.txt';
+a.click();
 }
 
 function logout(){
+if(autoUpdateInterval)clearInterval(autoUpdateInterval);
 location.reload();
 }
 </script>
