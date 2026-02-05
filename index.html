@@ -62,7 +62,6 @@ body {
 .app {
   display: none;
   min-height: 100vh;
-  display: flex;
   justify-content: center;
   align-items: center;
 }
@@ -182,11 +181,9 @@ button.secondary {
 <script>
 // ===== НАСТРОЙКИ =====
 const API_URL = 'https://script.google.com/macros/s/AKfycbzS_4F765vEVD94zHFmwAiOJWY9nBBLU3WNV6Rpqg3ZMPa1Nz8XQZi_q2lr0M46nS20Pw/exec';
-
 const ADMIN_EMAIL = 'Bank';
 const ADMIN_PASSWORD = 'SUPERPUPER123';
 
-// Пользователи (ИМЯ → EMAIL)
 const USERS = [
   { name: 'Роман Киселев', email: 'romankisel@mail.ru' },
   { name: 'Ильяс Валиев', email: 'ilyasvaliev@mail.ru' },
@@ -262,7 +259,7 @@ function fillRecipients() {
   });
 }
 
-// ===== TRANSFER =====
+// ===== TRANSFER (БЕЗ RELOAD) =====
 async function transfer() {
   const to = toUser.value;
   const amount = Number(amountInput.value);
@@ -275,7 +272,12 @@ async function transfer() {
 
   const res = await fetch(API_URL, {
     method: 'POST',
-    body: JSON.stringify({ action: 'transfer', from: currentUserEmail, to, amount })
+    body: JSON.stringify({
+      action: 'transfer',
+      from: currentUserEmail,
+      to,
+      amount
+    })
   });
 
   const data = await res.json();
@@ -288,7 +290,12 @@ async function transfer() {
 
   playSound('sound-transfer');
   msg('userMsg', '✅ Перевод выполнен', 'success');
-  setTimeout(() => location.reload(), 1200);
+
+  if (data.newBalance !== undefined) {
+    balance.textContent = data.newBalance + ' ₿';
+  }
+
+  amountInput.value = '';
 }
 
 // ===== ADMIN =====
@@ -304,7 +311,12 @@ async function adminAdd() {
 
   await fetch(API_URL, {
     method: 'POST',
-    body: JSON.stringify({ action: 'transfer', from: to, to, amount: -amount })
+    body: JSON.stringify({
+      action: 'transfer',
+      from: to,
+      to,
+      amount: -amount
+    })
   });
 
   playSound('sound-transfer');
@@ -322,7 +334,7 @@ function logout() {
   location.reload();
 }
 
-// inputs shortcuts
+// inputs
 const emailInput = document.getElementById('email');
 const passwordInput = document.getElementById('password');
 const amountInput = document.getElementById('amount');
