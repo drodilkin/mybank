@@ -24,11 +24,11 @@ body{
 }
 
 .panel{
-  width:400px;
+  width:420px;
   padding:32px;
-  border-radius:26px;
-  background:rgba(20,21,32,.7);
-  backdrop-filter:blur(18px);
+  border-radius:28px;
+  background:rgba(20,21,32,.75);
+  backdrop-filter:blur(20px);
   box-shadow:0 40px 120px rgba(0,0,0,.8);
 }
 
@@ -55,12 +55,19 @@ button{
   font-weight:600;
 }
 
-.balance{
+.card{
   margin-top:20px;
   padding:20px;
   border-radius:20px;
   background:linear-gradient(135deg,#1e2030,#0f1018);
-  font-size:22px;
+}
+.small{
+  opacity:.7;
+  font-size:14px;
+}
+.big{
+  font-size:24px;
+  margin-top:6px;
 }
 </style>
 </head>
@@ -78,15 +85,24 @@ button{
 
 <div class="center" id="app" style="display:none">
   <div class="panel">
-    <h2>Добро пожаловать</h2>
-    <div class="balance" id="balance"></div>
+    <h2>Ваш аккаунт</h2>
+
+    <div class="card">
+      <div class="small">Баланс</div>
+      <div class="big" id="balance"></div>
+    </div>
+
+    <div class="card">
+      <div class="small">Карта</div>
+      <div class="big" id="card"></div>
+    </div>
+
     <button onclick="logout()" style="margin-top:20px">Выйти</button>
   </div>
 </div>
 
 <script>
-const API = 'https://script.google.com/macros/s/AKfycbyEhfevhC7fpqcI6Ljk9G2u2--NVtvE9G2IUo8y-3IHAT2YYWzGAP1cl1-ty-QTaAURiA/exec';
-let me = null;
+const API = 'https://script.google.com/macros/s/AKfycbx4PHh2oep7ov98tapDwLA36xSj-cMw5gfLtSCjQM1qJ77WAzi7uX92XGBV8UzSBp1x3g/exec';
 
 function login(){
   fetch(API,{
@@ -102,18 +118,23 @@ function login(){
   })
   .then(r => r.text())
   .then(t => {
-    console.log('API:', t);
+    console.log('API RESPONSE:', t);
     const d = JSON.parse(t);
 
-    if(!d.ok){
-      alert('Неверные данные');
+    if (!d.ok) {
+      alert('Неверный email или пароль');
       return;
     }
 
-    me = d;
-    login.style.display='none';
-    app.style.display='flex';
+    login.style.display = 'none';
+    app.style.display = 'flex';
+
     balance.innerText = d.balance + ' ₽';
+    card.innerText = d.card;
+  })
+  .catch(e=>{
+    alert('Ошибка API');
+    console.error(e);
   });
 }
 
