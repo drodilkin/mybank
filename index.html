@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Мой Банк</title>
+    <style>
+        body { font-family: Arial; max-width: 500px; margin: auto; padding: 20px; }
+        .card { background: #f0f8ff; padding: 20px; margin: 15px 0; border-radius: 10px; }
+        input, button { width: 100%; padding: 12px; margin: 8px 0; }
+        .balance { font-size: 28px; color: #228b22; }
+    </style>
+</head>
+<body>
+    <h1>🏦 Мой Банк</h1>
+    
+    <div class="card">
+        <h3>Войти:</h3>
+        <input id="email" placeholder="Email" value="you@test.com">
+        <input id="password" placeholder="Пароль" value="123">
+        <button onclick="login()">Войти</button>
+    </div>
+    
+    <div id="bank" style="display:none;">
+        <div class="card">
+            <h3>👤 <span id="userName">Пользователь</span></h3>
+            <div class="balance">💰 <span id="balance">0</span> баллов</div>
+        </div>
+        
+        <div class="card">
+            <h3>📤 Перевод другу:</h3>
+            <input id="friendEmail" placeholder="Email друга" value="friend@test.com">
+            <input id="amount" type="number" placeholder="Сумма" value="100">
+            <button onclick="sendMoney()">💸 Перевести</button>
+        </div>
+        
+        <div class="card">
+            <h3>📱 Проверить NFC:</h3>
+            <button onclick="checkNFC()">📲 Поднести карту</button>
+        </div>
+        
+        <div id="result" class="card" style="background: #f0fff0; display:none;"></div>
+        
+        <button onclick="logout()" style="background: #ff4444; color: white;">Выйти</button>
+    </div>
+
+    <script>
+        let users = {
+            'you@test.com': { name: 'Вы', balance: 1000, password: '123' },
+            'friend@test.com': { name: 'Друг', balance: 0, password: '123' }
+        };
+        
+        let currentUser = null;
+        
+        function login() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            
+            if (users[email] && users[email].password === password) {
+                currentUser = users[email];
+                document.querySelector('.card').style.display = 'none';
+                document.getElementById('bank').style.display = 'block';
+                document.getElementById('userName').textContent = currentUser.name;
+                document.getElementById('balance').textContent = currentUser.balance;
+                showResult('✅ Вошли как: ' + currentUser.name);
+            } else {
+                showResult('❌ Ошибка входа');
+            }
+        }
+        
+        function sendMoney() {
+            const friendEmail = document.getElementById('friendEmail').value;
+            const amount = parseInt(document.getElementById('amount').value);
+            
+            if (!users[friendEmail]) {
+                showResult('❌ Друг не найден');
+                return;
+            }
+            
+            if (amount > currentUser.balance) {
+                showResult('❌ Недостаточно средств');
+                return;
+            }
+            
+            currentUser.balance -= amount;
+            users[friendEmail].balance += amount;
+            
+            document.getElementById('balance').textContent = currentUser.balance;
+            
+            showResult(
+                '✅ Перевод выполнен!<br>' +
+                '📤 Вы отправили: ' + amount + ' баллов<br>' +
+                '👤 Другу: ' + users[friendEmail].name + '<br>' +
+                '💰 Ваш баланс: ' + currentUser.balance + ' баллов<br><br>' +
+                '📱 Друг увидит при обновлении страницы'
+            );
+        }
+        
+        function checkNFC() {
+            if (!currentUser) return;
+            
+            if ('NDEFReader' in window) {
+                showResult('📱 Поднесите NFC карту к телефону...');
+            } else {
+                showResult('📱 Демо NFC:<br>Владелец: ' + currentUser.name + '<br>Баланс: ' + currentUser.balance + ' баллов');
+            }
+        }
+        
+        function showResult(message) {
+            const result = document.getElementById('result');
+            result.style.display = 'block';
+            result.innerHTML = message;
+        }
+        
+        function logout() {
+            currentUser = null;
+            document.getElementById('bank').style.display = 'none';
+            document.querySelector('.card').style.display = 'block';
+        }
+    </script>
+</body>
+</html>
