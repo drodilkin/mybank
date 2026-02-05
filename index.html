@@ -7,76 +7,60 @@
 <style>
 body{
   margin:0;
-  background:#0b0b10;
-  font-family:-apple-system,BlinkMacSystemFont;
+  height:100vh;
+  background:
+    radial-gradient(600px 300px at 20% 10%, #1c1f35, transparent),
+    radial-gradient(600px 300px at 80% 90%, #151628, transparent),
+    #05060a;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto;
   color:white;
 }
+
 .center{
   display:flex;
   justify-content:center;
   align-items:center;
   height:100vh;
 }
+
 .panel{
-  width:380px;
-  background:#14151c;
-  border-radius:28px;
-  padding:24px;
-  box-shadow:0 40px 120px #000;
+  width:400px;
+  padding:32px;
+  border-radius:26px;
+  background:rgba(20,21,32,.7);
+  backdrop-filter:blur(18px);
+  box-shadow:0 40px 120px rgba(0,0,0,.8);
 }
-input,select,button{
+
+h2{
+  margin:0 0 20px;
+}
+
+input,button{
   width:100%;
   padding:14px;
   margin-top:14px;
-  background:#1e1f28;
   border:none;
   border-radius:14px;
-  color:white;
   font-size:15px;
 }
-button{
-  background:#ffd600;
-  color:black;
-  font-weight:600;
-}
-.exit{
-  background:#2a2b35;
+
+input{
+  background:#1e1f28;
   color:white;
 }
-.card{
-  height:160px;
-  border-radius:22px;
-  background:linear-gradient(135deg,#1e2030,#0f1018);
+
+button{
+  background:#ffd600;
+  font-weight:600;
+}
+
+.balance{
+  margin-top:20px;
   padding:20px;
-  perspective:900px;
-  cursor:pointer;
-}
-.card-inner{
-  position:relative;
-  width:100%;
-  height:100%;
-  transform-style:preserve-3d;
-  transition:0.8s;
-}
-.card.flip .card-inner{
-  transform:rotateY(180deg);
-}
-.card-side{
-  position:absolute;
-  width:100%;
-  height:100%;
-  backface-visibility:hidden;
-}
-.card-back{
-  transform:rotateY(180deg);
-}
-.history{
-  margin-top:14px;
-  font-size:14px;
-  opacity:.85;
-}
-.history div{
-  margin-top:6px;
+  border-radius:20px;
+  background:linear-gradient(135deg,#1e2030,#0f1018);
+  font-size:22px;
 }
 </style>
 </head>
@@ -88,117 +72,49 @@ button{
     <h2>PayBank</h2>
     <input id="email" placeholder="Email">
     <input id="password" placeholder="Пароль" type="password">
-    <button onclick="loginUser()">Войти</button>
+    <button onclick="login()">Войти</button>
   </div>
 </div>
 
 <div class="center" id="app" style="display:none">
   <div class="panel">
-
-    <div class="card" onclick="flipCard()">
-      <div class="card-inner">
-        <div class="card-side">
-          <div>Баланс</div>
-          <h1 id="balance"></h1>
-        </div>
-        <div class="card-side card-back">
-          <div>Номер карты</div>
-          <h2 id="cardNumber"></h2>
-        </div>
-      </div>
-    </div>
-
-    <select id="users"></select>
-    <input id="amount" placeholder="Сумма">
-    <input id="comment" placeholder="Комментарий">
-    <button onclick="send()">Перевести</button>
-
-    <div class="history" id="history"></div>
-
-    <button class="exit" onclick="logout()">Выйти</button>
-
+    <h2>Добро пожаловать</h2>
+    <div class="balance" id="balance"></div>
+    <button onclick="logout()" style="margin-top:20px">Выйти</button>
   </div>
 </div>
 
 <script>
-const API = 'https://script.google.com/macros/s/AKfycbzTzA0-aF-MvQRMXLLXAczDU6E-lmDl_jZ_Axhl4S8VKatVySLkBiIRkh4_JfpGGsg1WA/exec';
+const API = 'https://script.google.com/macros/s/AKfycbyEhfevhC7fpqcI6Ljk9G2u2--NVtvE9G2IUo8y-3IHAT2YYWzGAP1cl1-ty-QTaAURiA/exec';
 let me = null;
 
-function api(data){
-  return fetch(API,{
+function login(){
+  fetch(API,{
     method:'POST',
     headers:{
       'Content-Type':'application/json'
     },
-    body: JSON.stringify(data)
-  }).then(r=>r.json());
-}
+    body: JSON.stringify({
+      action:'login',
+      email: email.value,
+      password: password.value
+    })
+  })
+  .then(r => r.text())
+  .then(t => {
+    console.log('API:', t);
+    const d = JSON.parse(t);
 
-function loginUser(){
-  api({
-    action:'login',
-    email: email.value,
-    password: password.value
-  }).then(d=>{
     if(!d.ok){
       alert('Неверные данные');
       return;
     }
 
     me = d;
-    document.getElementById('login').style.display='none';
-    document.getElementById('app').style.display='flex';
-
+    login.style.display='none';
+    app.style.display='flex';
     balance.innerText = d.balance + ' ₽';
-    cardNumber.innerText = d.card;
-
-    loadUsers();
-    loadHistory();
   });
-}
-
-function loadUsers(){
-  api({
-    action:'getUsers',
-    email: me.email
-  }).then(d=>{
-    users.innerHTML = d.map(u=>`<option>${u}</option>`).join('');
-  });
-}
-
-function send(){
-  api({
-    action:'transfer',
-    from: me.email,
-    to: users.value,
-    amount: Number(amount.value),
-    comment: comment.value
-  }).then(d=>{
-    if(d.error){
-      alert(d.error);
-      return;
-    }
-    balance.innerText = d.balance + ' ₽';
-    amount.value = '';
-    comment.value = '';
-    loadHistory();
-  });
-}
-
-function loadHistory(){
-  api({
-    action:'history',
-    email: me.email
-  }).then(d=>{
-    history.innerHTML = d.map(r=>{
-      const sign = r[1] === me.email ? '−' : '+';
-      return `<div>${sign}${r[3]} ₽ · ${r[4]}</div>`;
-    }).join('');
-  });
-}
-
-function flipCard(){
-  document.querySelector('.card').classList.toggle('flip');
 }
 
 function logout(){
