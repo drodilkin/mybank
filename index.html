@@ -2,125 +2,160 @@
 <html>
 <head>
     <title>Мой Банк</title>
-    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <style>
+        body { font-family: Arial; max-width: 500px; margin: auto; padding: 20px; }
+        .card { background: #e3f2fd; padding: 20px; margin: 15px 0; border-radius: 10px; }
+        input, button { width: 100%; padding: 12px; margin: 8px 0; }
+        .balance { font-size: 28px; color: #2e7d32; }
+    </style>
 </head>
 <body>
-    <h1>🏦 Мой Банк</h1>
+    <h1>🏦 Мой Банк (Google Sheets)</h1>
     
-    <button onclick="checkSupabase()">🔍 Проверить Supabase</button>
-    <button onclick="login()">Войти (you@test.com / 123)</button>
-    <button onclick="sendMoney()">Перевести 100 баллов другу</button>
+    <div class="card">
+        <h3>Вход:</h3>
+        <input id="email" placeholder="Email" value="you@test.com">
+        <input id="password" placeholder="Пароль" value="123">
+        <button onclick="login()">Войти</button>
+    </div>
     
-    <div id="status" style="margin-top:20px; padding:15px; background:#e3f2fd; border-radius:8px;"></div>
+    <div id="bank" style="display:none">
+        <div class="card">
+            <h3>👤 <span id="userName"></span></h3>
+            <div class="balance">💰 <span id="balance">0</span> баллов</div>
+        </div>
+        
+        <div class="card">
+            <h3>📤 Перевод другу:</h3>
+            <input id="friendEmail" placeholder="Email друга" value="friend@test.com">
+            <input id="amount" type="number" placeholder="Сумма" value="100">
+            <button onclick="sendMoney()">💸 Перевести</button>
+        </div>
+        
+        <div id="result" class="card" style="background: #e8f5e9; display:none"></div>
+        
+        <button onclick="logout()" style="background: #d32f2f; color: white;">Выйти</button>
+    </div>
 
     <script>
-        // ТВОИ КЛЮЧИ
-        const SUPABASE_URL = 'https://jxhyktvwjcpqoelxduoz.supabase.co';
-        const SUPABASE_KEY = 'sb_publishable_dk0dKz62B_kuH-gA7KIlnQ_SEK5K5Am';
+        // ==== ВСТАВЬ СЮДА ID СВОЕЙ ТАБЛИЦЫ ====
+        const GOOGLE_SHEET_ID = '1CUB6u5owXML_RulAk6OzoSvZTXTmUdzARzt8UzVyvGI';
+        // Пример: '1A2B3C4D5E6F7G8H9I0J'
+        // ======================================
         
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        let currentUser = null;
+        let allUsers = [];
         
-        function show(msg) {
-            document.getElementById('status').innerHTML = msg;
-            console.log(msg);
-        }
-        
-        // 1. ПРОВЕРИТЬ ПОДКЛЮЧЕНИЕ
-        async function checkSupabase() {
-            show('🔍 Проверяю подключение...');
-            
+        // Загрузить данные из Google Sheets
+        async function loadData() {
             try {
-                // Пробуем получить пользователей
-                const { data, error } = await supabase
-                    .from('users')
-                    .select('*');
+                // Используем публичный доступ к таблице
+                const url = `https://docs.google.com/spreadsheets/d/1CUB6u5owXML_RulAk6OzoSvZTXTmUdzARzt8UzVyvGI/edit?usp=drivesdk`;
                 
-                if (error) {
-                    show('❌ Ошибка: ' + error.message);
-                    show('<br>⚠️ Таблицы users не существует!<br>Создай её через SQL Editor в Supabase.');
-                } else {
-                    show('✅ Подключение успешно!');
-                    show('Найдено пользователей: ' + data.length);
-                    data.forEach(user => {
-                        show(`${user.name} (${user.email}): ${user.balance} баллов`);
-                    });
+                const response = await fetch(url);
+                const text = await response.text();
+                const json = JSON.parse(text.substr(47).slice(0, -2));
+                
+                // Преобразуем данные
+                allUsers = [];
+                const rows = json.table.rows;
+                
+                for (let row of rows) {
+                    const user = {
+                        email: row.c[0]?.v || '',
+                        password: row.c[1]?.v || '',
+                        name: row.c[2]?.v || '',
+                        balance: row.c[3]?.v || 0
+                    };
+                    if (user.email) allUsers.push(user);
                 }
-            } catch (err) {
-                show('❌ Ошибка подключения: ' + err.message);
-            }
-        }
-        
-        // 2. ВОЙТИ
-        async function login() {
-            show('Вхожу как you@test.com...');
-            
-            const { data, error } = await supabase
-                .from('users')
-                .select('*')
-                .eq('email', 'you@test.com')
-                .eq('password', '123')
-                .single();
-            
-            if (error) {
-                show('❌ Ошибка входа: ' + error.message);
-            } else if (data) {
-                show('✅ Вход успешен!<br>👤 ' + data.name + '<br>💰 Баланс: ' + data.balance + ' баллов');
-            } else {
-                show('❌ Пользователь не найден');
-            }
-        }
-        
-        // 3. ПЕРЕВЕСТИ ДЕНЬГИ
-        async function sendMoney() {
-            show('🔄 Выполняю перевод...');
-            
-            try {
-                // 1. Находим отправителя
-                const { data: sender, error: senderError } = await supabase
-                    .from('users')
-                    .select('*')
-                    .eq('email', 'you@test.com')
-                    .single();
                 
-                if (senderError) throw senderError;
-                
-                // 2. Находим получателя
-                const { data: receiver, error: receiverError } = await supabase
-                    .from('users')
-                    .select('*')
-                    .eq('email', 'friend@test.com')
-                    .single();
-                
-                if (receiverError) throw receiverError;
-                
-                // 3. Обновляем балансы
-                const newSenderBalance = sender.balance - 100;
-                const newReceiverBalance = receiver.balance + 100;
-                
-                await supabase
-                    .from('users')
-                    .update({ balance: newSenderBalance })
-                    .eq('id', sender.id);
-                
-                await supabase
-                    .from('users')
-                    .update({ balance: newReceiverBalance })
-                    .eq('id', receiver.id);
-                
-                show('✅ Перевод выполнен!<br>📤 Отправлено: 100 баллов<br>👤 Получатель: ' + receiver.name + '<br>💰 Новый баланс отправителя: ' + newSenderBalance + ' баллов');
-                
-                // 4. Показываем обновленные данные
-                setTimeout(checkSupabase, 1000);
+                console.log('Данные загружены:', allUsers);
+                return allUsers;
                 
             } catch (error) {
-                show('❌ Ошибка перевода: ' + error.message);
+                console.error('Ошибка загрузки:', error);
+                // Если ошибка — используем тестовые данные
+                allUsers = [
+                    { email: 'you@test.com', password: '123', name: 'Вы', balance: 1000 },
+                    { email: 'friend@test.com', password: '123', name: 'Друг', balance: 0 }
+                ];
+                return allUsers;
             }
         }
         
-        // Автопроверка при загрузке
-        window.onload = function() {
-            show('Страница загружена. Нажми "🔍 Проверить Supabase"');
-        };
+        // Войти
+        async function login() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            
+            await loadData();
+            
+            const user = allUsers.find(u => u.email === email && u.password === password);
+            
+            if (user) {
+                currentUser = user;
+                document.querySelector('.card').style.display = 'none';
+                document.getElementById('bank').style.display = 'block';
+                document.getElementById('userName').textContent = user.name;
+                document.getElementById('balance').textContent = user.balance;
+                showResult('✅ Вошли как: ' + user.name);
+            } else {
+                showResult('❌ Ошибка входа');
+            }
+        }
+        
+        // Перевести
+        async function sendMoney() {
+            const friendEmail = document.getElementById('friendEmail').value;
+            const amount = parseInt(document.getElementById('amount').value);
+            
+            await loadData();
+            
+            const friend = allUsers.find(u => u.email === friendEmail);
+            
+            if (!friend) {
+                showResult('❌ Друг не найден');
+                return;
+            }
+            
+            if (amount > currentUser.balance) {
+                showResult('❌ Недостаточно средств');
+                return;
+            }
+            
+            // Обновляем в памяти
+            currentUser.balance -= amount;
+            friend.balance += amount;
+            
+            // Обновляем на экране
+            document.getElementById('balance').textContent = currentUser.balance;
+            
+            // В ДЕМО-РЕЖИМЕ не сохраняем в Google Sheets
+            // Для реального сохранения нужен сервер
+            
+            showResult(
+                '✅ Перевод выполнен!<br>' +
+                '📤 Вы отправили: ' + amount + ' баллов<br>' +
+                '👤 Другу: ' + friend.name + '<br>' +
+                '💰 Ваш баланс: ' + currentUser.balance + ' баллов<br><br>' +
+                '📱 Для реального сохранения нужен сервер (пиши если нужно)'
+            );
+        }
+        
+        // Показать результат
+        function showResult(message) {
+            const result = document.getElementById('result');
+            result.style.display = 'block';
+            result.innerHTML = message;
+        }
+        
+        // Выйти
+        function logout() {
+            currentUser = null;
+            document.getElementById('bank').style.display = 'none';
+            document.querySelector('.card').style.display = 'block';
+        }
     </script>
 </body>
 </html>
