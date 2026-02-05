@@ -16,33 +16,23 @@
   --success:#2ecc71;
 }
 
-*{
-  box-sizing:border-box;
-  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
-}
+*{box-sizing:border-box;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
 
-body{
-  margin:0;
-  background:var(--bg);
-  color:var(--text);
-  min-height:100vh;
-}
+body{margin:0;background:var(--bg);color:var(--text);min-height:100vh}
 
 /* LOADER */
 #loader{
-  position:fixed;
-  inset:0;
+  position:fixed;inset:0;
   background:var(--bg);
   display:flex;
-  flex-direction:column;
   align-items:center;
   justify-content:center;
+  flex-direction:column;
   z-index:999;
 }
 
 .spinner{
-  width:48px;
-  height:48px;
+  width:48px;height:48px;
   border:4px solid #2a2a36;
   border-top:4px solid var(--accent);
   border-radius:50%;
@@ -82,10 +72,7 @@ input,select,button{
   margin-top:12px;
 }
 
-input,select{
-  background:#242430;
-  color:#fff;
-}
+input,select{background:#242430;color:#fff}
 
 button{
   background:var(--accent);
@@ -94,16 +81,9 @@ button{
   cursor:pointer;
 }
 
-button.secondary{
-  background:#2a2a36;
-  color:#fff;
-}
+button.secondary{background:#2a2a36;color:#fff}
 
-.balance{
-  font-size:36px;
-  text-align:center;
-  margin:20px 0;
-}
+.balance{font-size:36px;text-align:center;margin:20px 0}
 
 .message{
   margin-top:12px;
@@ -169,7 +149,7 @@ button.secondary{
 </div>
 
 <script>
-/* ================= НАСТРОЙКИ ================= */
+/* ===== НАСТРОЙКИ ===== */
 const API_URL = 'https://script.google.com/macros/s/AKfycbzBRaaGfxEBHQL16nxPR_Y3dbG2nTF_Q8ui0XMyJ_DCFmHuuFovzlI1bO3wT8iE1SHs-w/exec';
 const ADMIN_EMAIL = 'admin_secret@bank.local';
 const ADMIN_PASSWORD = 'superSecret123';
@@ -181,7 +161,7 @@ const USERS = [
   {name:'Прохор Мартьянов',email:'prokhormart@mail.ru'}
 ];
 
-/* ================= SOUND ================= */
+/* ===== SOUND ===== */
 let soundEnabled=false;
 
 function initSound(){
@@ -189,9 +169,7 @@ function initSound(){
   ['sound-click','sound-transfer','sound-error'].forEach(id=>{
     const a=document.getElementById(id);
     a.volume=0.6;
-    a.play().then(()=>{
-      a.pause();a.currentTime=0;
-    }).catch(()=>{});
+    a.play().then(()=>{a.pause();a.currentTime=0}).catch(()=>{});
   });
   soundEnabled=true;
 }
@@ -209,8 +187,9 @@ function userAction(fn){
   fn();
 }
 
-/* ================= APP ================= */
+/* ===== APP ===== */
 let currentEmail='';
+
 window.onload=()=>{
   setTimeout(()=>{
     loader.style.display='none';
@@ -220,20 +199,29 @@ window.onload=()=>{
 
 async function login(){
   const email=emailInput.value.toLowerCase().trim();
-  const pass=passwordInput.value.trim();
+  const password=passwordInput.value.trim();
 
-  if(email===ADMIN_EMAIL && pass===ADMIN_PASSWORD){
+  if(email===ADMIN_EMAIL && password===ADMIN_PASSWORD){
     loginScreen.classList.add('hidden');
     adminScreen.classList.remove('hidden');
     return;
   }
 
-  const r=await fetch(API_URL,{method:'POST',body:JSON.stringify({action:'login',email,pass})});
+  const r=await fetch(API_URL,{
+    method:'POST',
+    body:JSON.stringify({
+      action:'login',
+      email:email,
+      password:password   // ✅ ИСПРАВЛЕНО
+    })
+  });
+
   const d=await r.json();
 
   if(!d.success){
     playSound('sound-error');
-    return msg('loginMsg','❌ Неверные данные','error');
+    msg('loginMsg','❌ Неверный логин или пароль','error');
+    return;
   }
 
   currentEmail=email;
@@ -260,17 +248,29 @@ function fillUsers(){
 async function transfer(){
   const to=toUser.value;
   const amount=Number(amountInput.value);
+
   if(!to||amount<=0){
     playSound('sound-error');
-    return msg('userMsg','❌ Проверь данные','error');
+    msg('userMsg','❌ Проверь данные','error');
+    return;
   }
 
-  const r=await fetch(API_URL,{method:'POST',body:JSON.stringify({action:'transfer',from:currentEmail,to,amount})});
+  const r=await fetch(API_URL,{
+    method:'POST',
+    body:JSON.stringify({
+      action:'transfer',
+      from:currentEmail,
+      to:to,
+      amount:amount
+    })
+  });
+
   const d=await r.json();
 
   if(!d.success){
     playSound('sound-error');
-    return msg('userMsg','❌ Ошибка','error');
+    msg('userMsg','❌ Ошибка перевода','error');
+    return;
   }
 
   playSound('sound-transfer');
@@ -281,11 +281,23 @@ async function transfer(){
 async function adminAdd(){
   const to=adminTarget.value;
   const amount=Number(adminAmount.value);
+
   if(!to||amount<=0){
     playSound('sound-error');
-    return msg('adminMsg','❌ Ошибка','error');
+    msg('adminMsg','❌ Ошибка','error');
+    return;
   }
-  await fetch(API_URL,{method:'POST',body:JSON.stringify({action:'transfer',from:to,to,amount:-amount})});
+
+  await fetch(API_URL,{
+    method:'POST',
+    body:JSON.stringify({
+      action:'transfer',
+      from:to,
+      to:to,
+      amount:-amount
+    })
+  });
+
   playSound('sound-transfer');
   msg('adminMsg','✅ Готово','success');
 }
