@@ -2,395 +2,252 @@
 <html>
 <head>
     <title>Мой Банк</title>
-    <style>
-        body { font-family: Arial; max-width: 500px; margin: auto; padding: 20px; background: #f5f7fa; }
-        .container { background: white; padding: 25px; border-radius: 15px; box-shadow: 0 5px 20px rgba(0,0,0,0.1); }
-        h1 { text-align: center; color: #333; margin-bottom: 25px; }
-        .card { background: #f8fafc; padding: 20px; margin: 15px 0; border-radius: 10px; border-left: 4px solid #3b82f6; }
-        input, button { width: 100%; padding: 14px; margin: 10px 0; border-radius: 8px; border: 1px solid #ddd; font-size: 16px; }
-        button { background: #3b82f6; color: white; border: none; cursor: pointer; font-weight: bold; }
-        button:hover { background: #2563eb; }
-        .balance { font-size: 32px; color: #10b981; font-weight: bold; text-align: center; margin: 15px 0; }
-        .user-info { display: flex; align-items: center; margin-bottom: 20px; }
-        .avatar { width: 50px; height: 50px; background: #3b82f6; border-radius: 50%; margin-right: 15px; display: flex; align-items: center; justify-content: center; color: white; font-size: 24px; }
-        .result { margin-top: 20px; padding: 15px; background: #dbeafe; border-radius: 8px; border: 1px solid #93c5fd; display: none; }
-        .tab { display: flex; margin-bottom: 20px; }
-        .tab button { flex: 1; margin: 0 5px; background: #e2e8f0; color: #4a5568; }
-        .tab button.active { background: #3b82f6; color: white; }
-        .users-list { background: #f1f5f9; padding: 15px; border-radius: 8px; margin-top: 20px; }
-    </style>
-    <!-- Подключаем Supabase -->
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <style>
+        body { font-family: Arial; padding: 20px; max-width: 500px; margin: auto; }
+        .card { background: #e3f2fd; padding: 20px; margin: 15px 0; border-radius: 10px; }
+        input, button { width: 100%; padding: 12px; margin: 8px 0; border-radius: 8px; border: 1px solid #90caf9; }
+        button { background: #1976d2; color: white; border: none; cursor: pointer; }
+        .balance { font-size: 32px; color: #2e7d32; text-align: center; margin: 10px 0; }
+    </style>
 </head>
 <body>
-    <div class="container">
-        <h1>🏦 Мой Банк (Supabase)</h1>
-        
-        <div class="tab">
-            <button class="tab-btn active" onclick="showTab('login')">Вход</button>
-            <button class="tab-btn" onclick="showTab('register')">Регистрация</button>
+    <h1>🏦 Мой Банк</h1>
+    
+    <div class="card">
+        <h3>Вход в систему:</h3>
+        <input id="email" placeholder="Email" value="you@test.com">
+        <input id="password" type="password" placeholder="Пароль" value="123">
+        <button onclick="login()">Войти</button>
+        <p style="font-size: 14px; color: #666; margin-top: 10px;">
+            Тестовые логины:<br>
+            • you@test.com / 123 (Вы)<br>
+            • friend@test.com / 123 (Друг)
+        </p>
+    </div>
+    
+    <div id="bank" style="display:none;">
+        <div class="card">
+            <h3>👤 <span id="userName"></span></h3>
+            <div class="balance">💰 <span id="balance">0</span> баллов</div>
+            <p style="text-align: center; color: #666;" id="userEmail"></p>
         </div>
         
-        <!-- ВХОД -->
-        <div id="login-tab" class="tab-content">
-            <div class="card">
-                <h3>🔐 Войти в аккаунт</h3>
-                <input type="email" id="login-email" placeholder="Ваш email" value="you@test.com">
-                <input type="password" id="login-password" placeholder="Пароль" value="123">
-                <button onclick="login()">Войти в систему</button>
-            </div>
+        <div class="card">
+            <h3>📤 Перевод другу:</h3>
+            <input id="friendEmail" placeholder="Email друга" value="friend@test.com">
+            <input id="amount" type="number" placeholder="Сумма" value="100">
+            <button onclick="sendMoney()">💸 Перевести деньги</button>
         </div>
         
-        <!-- РЕГИСТРАЦИЯ -->
-        <div id="register-tab" class="tab-content" style="display:none;">
-            <div class="card">
-                <h3>📝 Создать аккаунт</h3>
-                <input type="text" id="reg-name" placeholder="Ваше имя">
-                <input type="email" id="reg-email" placeholder="Email">
-                <input type="password" id="reg-password" placeholder="Пароль">
-                <button onclick="register()">Зарегистрироваться</button>
-            </div>
+        <div class="card">
+            <h3>👥 Все пользователи:</h3>
+            <div id="allUsers">Загрузка...</div>
+            <button onclick="loadUsers()" style="background: #388e3c;">🔄 Обновить список</button>
         </div>
         
-        <!-- ЛИЧНЫЙ КАБИНЕТ -->
-        <div id="dashboard" style="display:none;">
-            <div class="user-info">
-                <div class="avatar" id="userAvatar">👤</div>
-                <div>
-                    <h3 style="margin:0;" id="userName">Пользователь</h3>
-                    <p style="margin:0; color:#666;" id="userEmail">email@test.com</p>
-                </div>
-            </div>
-            
-            <div class="card">
-                <h3>💰 Ваш баланс</h3>
-                <div class="balance" id="balance">0</div>
-            </div>
-            
-            <div class="card">
-                <h3>📤 Перевод другу</h3>
-                <input type="email" id="friend-email" placeholder="Email друга" value="friend@test.com">
-                <input type="number" id="amount" placeholder="Сумма перевода" value="100">
-                <button onclick="sendMoney()">💸 Перевести сейчас</button>
-            </div>
-            
-            <div class="card">
-                <h3>📱 NFC Карта</h3>
-                <p style="color:#666;">Демо NFC функция</p>
-                <button onclick="checkNFC()">📲 Проверить баланс</button>
-            </div>
-            
-            <div class="users-list">
-                <h3>👥 Все пользователи (обновляется автоматически):</h3>
-                <div id="allUsers">Загрузка...</div>
-            </div>
-            
-            <div class="result" id="result"></div>
-            
-            <div style="text-align:center; margin-top:20px;">
-                <button onclick="logout()" style="background:#ef4444;">🚪 Выйти</button>
-            </div>
-        </div>
+        <div id="result" class="card" style="background: #e8f5e9; display:none;"></div>
+        
+        <button onclick="logout()" style="background: #d32f2f;">Выйти из системы</button>
     </div>
 
     <script>
-        // ==================== ВСТАВЬ СВОИ КЛЮЧИ SUPABASE ЗДЕСЬ! ====================
-        // Получи их в Supabase: Settings → API → Project URL и anon public
-        const SUPABASE_URL = 'https://awwdrmpteccchrxnknvk.supabase.co';  // ← ЗАМЕНИ НА СВОЙ URL
-        const SUPABASE_KEY = 'sb_publishable_KE7RWdnvOidq6fdNIwD3wQ_r0wUKuZe';         // ← ЗАМЕНИ НА СВОЙ КЛЮЧ
-        // =========================================================================
+        // ========== ТВОИ КЛЮЧИ SUPABASE ==========
+        const SUPABASE_URL = 'https://awwdrmpteccchrxnknvk.supabase.co';
+        const SUPABASE_KEY = 'sb_publishable_KE7RWdnvOidq6fdNIwD3wQ_r0wUKuZe';
+        // =========================================
         
-        // Создаем клиент Supabase
+        // Создаем подключение к Supabase
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
         
         let currentUser = null;
         
-        // ==================== ВКЛАДКИ ====================
-        function showTab(tabName) {
-            document.querySelectorAll('.tab-content').forEach(el => {
-                el.style.display = 'none';
-            });
-            document.querySelectorAll('.tab-btn').forEach(el => {
-                el.classList.remove('active');
-            });
-            
-            document.getElementById(tabName + '-tab').style.display = 'block';
-            event.target.classList.add('active');
-        }
+        // Проверяем подключение при загрузке
+        console.log('Supabase подключен:', !!supabase);
         
-        // ==================== РЕГИСТРАЦИЯ ====================
-        async function register() {
-            const name = document.getElementById('reg-name').value;
-            const email = document.getElementById('reg-email').value;
-            const password = document.getElementById('reg-password').value;
-            
-            if (!name || !email || !password) {
-                showResult('❌ Заполните все поля!', 'error');
-                return;
-            }
-            
-            // Проверяем, нет ли уже такого email
-            const { data: existingUser } = await supabase
-                .from('users')
-                .select('*')
-                .eq('email', email)
-                .single();
-            
-            if (existingUser) {
-                showResult('❌ Пользователь с таким email уже существует', 'error');
-                return;
-            }
-            
-            // Создаем нового пользователя
-            const { data, error } = await supabase
-                .from('users')
-                .insert([{ 
-                    name: name, 
-                    email: email, 
-                    password: password,
-                    balance: 1000  // Начальный баланс
-                }])
-                .select()
-                .single();
-            
-            if (error) {
-                showResult('❌ Ошибка: ' + error.message, 'error');
-            } else {
-                showResult('✅ Аккаунт создан! Теперь войдите.', 'success');
-                showTab('login');
-                loadAllUsers(); // Обновляем список пользователей
-            }
-        }
-        
-        // ==================== ВХОД ====================
+        // ========== ФУНКЦИЯ ВХОДА ==========
         async function login() {
-            const email = document.getElementById('login-email').value;
-            const password = document.getElementById('login-password').value;
+            console.log('Пытаюсь войти...');
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
             
-            const { data, error } = await supabase
-                .from('users')
-                .select('*')
-                .eq('email', email)
-                .eq('password', password)
-                .single();
+            // Показываем загрузку
+            document.getElementById('result').style.display = 'block';
+            document.getElementById('result').innerHTML = '⏳ Вход в систему...';
             
-            if (error || !data) {
-                showResult('❌ Неправильный email или пароль', 'error');
-                return;
+            try {
+                // Ищем пользователя в базе
+                const { data, error } = await supabase
+                    .from('users')
+                    .select('*')
+                    .eq('email', email)
+                    .eq('password', password)
+                    .single();
+                
+                if (error) {
+                    console.error('Ошибка Supabase:', error);
+                    throw new Error('Ошибка базы данных: ' + error.message);
+                }
+                
+                if (!data) {
+                    throw new Error('Пользователь не найден или неправильный пароль');
+                }
+                
+                // Сохраняем текущего пользователя
+                currentUser = data;
+                
+                // Показываем личный кабинет
+                document.querySelector('.card').style.display = 'none';
+                document.getElementById('bank').style.display = 'block';
+                document.getElementById('userName').textContent = data.name;
+                document.getElementById('userEmail').textContent = data.email;
+                document.getElementById('balance').textContent = data.balance + ' баллов';
+                
+                // Показываем успех
+                showResult('✅ Успешный вход! Добро пожаловать, ' + data.name + '!');
+                
+                // Загружаем список пользователей
+                loadUsers();
+                
+                console.log('Вход успешен:', data);
+                
+            } catch (error) {
+                console.error('Ошибка входа:', error);
+                showResult('❌ Ошибка: ' + error.message);
             }
-            
-            currentUser = data;
-            showDashboard();
-            showResult(`✅ Добро пожаловать, ${data.name}!`, 'success');
-            loadAllUsers(); // Загружаем список пользователей
-            
-            // Подписываемся на изменения в базе
-            subscribeToUpdates();
         }
         
-        // ==================== ЛИЧНЫЙ КАБИНЕТ ====================
-        function showDashboard() {
-            document.querySelectorAll('.tab-content').forEach(el => {
-                el.style.display = 'none';
-            });
-            document.querySelectorAll('.tab-btn').forEach(btn => {
-                btn.style.display = 'none';
-            });
-            
-            document.getElementById('dashboard').style.display = 'block';
-            
-            document.getElementById('userName').textContent = currentUser.name;
-            document.getElementById('userEmail').textContent = currentUser.email;
-            document.getElementById('balance').textContent = currentUser.balance + ' баллов';
-            document.getElementById('userAvatar').textContent = currentUser.name.charAt(0);
-        }
-        
-        // ==================== ПЕРЕВОД ДЕНЕГ ====================
+        // ========== ФУНКЦИЯ ПЕРЕВОДА ==========
         async function sendMoney() {
-            const friendEmail = document.getElementById('friend-email').value;
+            console.log('Начинаю перевод...');
+            const friendEmail = document.getElementById('friendEmail').value;
             const amount = parseInt(document.getElementById('amount').value);
             
-            if (!friendEmail || !amount || amount <= 0) {
-                showResult('❌ Введите корректные данные', 'error');
+            if (!amount || amount <= 0) {
+                showResult('❌ Введите корректную сумму');
                 return;
             }
             
-            if (amount > currentUser.balance) {
-                showResult('❌ Недостаточно средств!', 'error');
+            if (!currentUser) {
+                showResult('❌ Сначала войдите в систему');
                 return;
             }
             
-            // Найти получателя
-            const { data: friend, error: findError } = await supabase
-                .from('users')
-                .select('*')
-                .eq('email', friendEmail)
-                .single();
+            showResult('⏳ Выполняю перевод...');
             
-            if (findError || !friend) {
-                showResult('❌ Пользователь не найден', 'error');
-                return;
+            try {
+                // 1. Находим получателя
+                const { data: friend, error: friendError } = await supabase
+                    .from('users')
+                    .select('*')
+                    .eq('email', friendEmail)
+                    .single();
+                
+                if (friendError || !friend) {
+                    throw new Error('Пользователь ' + friendEmail + ' не найден');
+                }
+                
+                // 2. Проверяем достаточно ли денег
+                if (amount > currentUser.balance) {
+                    throw new Error('Недостаточно средств. Ваш баланс: ' + currentUser.balance);
+                }
+                
+                // 3. Выполняем перевод (обновляем балансы)
+                const newMyBalance = currentUser.balance - amount;
+                const newFriendBalance = friend.balance + amount;
+                
+                // Обновляем отправителя
+                const { error: updateMyError } = await supabase
+                    .from('users')
+                    .update({ balance: newMyBalance })
+                    .eq('id', currentUser.id);
+                
+                if (updateMyError) throw updateMyError;
+                
+                // Обновляем получателя
+                const { error: updateFriendError } = await supabase
+                    .from('users')
+                    .update({ balance: newFriendBalance })
+                    .eq('id', friend.id);
+                
+                if (updateFriendError) throw updateFriendError;
+                
+                // 4. Обновляем текущего пользователя
+                currentUser.balance = newMyBalance;
+                document.getElementById('balance').textContent = newMyBalance + ' баллов';
+                
+                // 5. Показываем успех
+                showResult(
+                    '✅ Перевод выполнен!<br>' +
+                    '📤 Отправили: ' + amount + ' баллов<br>' +
+                    '👤 Получатель: ' + friend.name + '<br>' +
+                    '💰 Ваш новый баланс: ' + newMyBalance + ' баллов<br><br>' +
+                    '💡 Друг увидит перевод после обновления страницы'
+                );
+                
+                // 6. Обновляем список пользователей
+                loadUsers();
+                
+                console.log('Перевод успешен:', { amount, to: friend.name });
+                
+            } catch (error) {
+                console.error('Ошибка перевода:', error);
+                showResult('❌ Ошибка: ' + error.message);
             }
-            
-            if (friend.id === currentUser.id) {
-                showResult('❌ Нельзя перевести самому себе', 'error');
-                return;
-            }
-            
-            // Обновить балансы в Supabase
-            const newMyBalance = currentUser.balance - amount;
-            const newFriendBalance = friend.balance + amount;
-            
-            // Начинаем транзакцию
-            const { error: updateMyError } = await supabase
-                .from('users')
-                .update({ balance: newMyBalance })
-                .eq('id', currentUser.id);
-            
-            const { error: updateFriendError } = await supabase
-                .from('users')
-                .update({ balance: newFriendBalance })
-                .eq('id', friend.id);
-            
-            if (updateMyError || updateFriendError) {
-                showResult('❌ Ошибка перевода', 'error');
-                return;
-            }
-            
-            // Создаем запись о транзакции
-            await supabase
-                .from('transactions')
-                .insert([{
-                    from_user: currentUser.id,
-                    to_user: friend.id,
-                    amount: amount,
-                    from_name: currentUser.name,
-                    to_name: friend.name
-                }]);
-            
-            // Обновляем текущего пользователя
-            currentUser.balance = newMyBalance;
-            document.getElementById('balance').textContent = newMyBalance + ' баллов';
-            
-            showResult(
-                `✅ Перевод выполнен!<br>
-                📤 Вы отправили: ${amount} баллов<br>
-                👤 Получатель: ${friend.name}<br>
-                💰 Ваш новый баланс: ${newMyBalance} баллов`,
-                'success'
-            );
-            
-            // Обновляем список пользователей
-            loadAllUsers();
         }
         
-        // ==================== NFC ФУНКЦИЯ ====================
-        async function checkNFC() {
-            showResult(
-                `📱 Баланс по NFC:<br>
-                👤 Владелец: ${currentUser.name}<br>
-                💰 Баланс: ${currentUser.balance} баллов<br>
-                📧 Email: ${currentUser.email}`,
-                'info'
-            );
-        }
-        
-        // ==================== ЗАГРУЗИТЬ ВСЕХ ПОЛЬЗОВАТЕЛЕЙ ====================
-        async function loadAllUsers() {
-            const { data: users, error } = await supabase
-                .from('users')
-                .select('*')
-                .order('balance', { ascending: false });
-            
-            if (error) {
+        // ========== ЗАГРУЗИТЬ ВСЕХ ПОЛЬЗОВАТЕЛЕЙ ==========
+        async function loadUsers() {
+            try {
+                const { data: users, error } = await supabase
+                    .from('users')
+                    .select('*')
+                    .order('balance', { ascending: false });
+                
+                if (error) throw error;
+                
+                let html = '';
+                users.forEach(user => {
+                    const isCurrent = currentUser && user.id === currentUser.id;
+                    html += `
+                        <div style="padding: 10px; margin: 5px 0; background: ${isCurrent ? '#bbdefb' : 'white'}; border-radius: 5px;">
+                            <strong>${user.name}</strong> (${user.email})<br>
+                            Баланс: <strong>${user.balance} баллов</strong>
+                            ${isCurrent ? ' ← это вы' : ''}
+                        </div>
+                    `;
+                });
+                
+                document.getElementById('allUsers').innerHTML = html || 'Нет пользователей';
+                
+            } catch (error) {
+                console.error('Ошибка загрузки пользователей:', error);
                 document.getElementById('allUsers').innerHTML = 'Ошибка загрузки';
-                return;
             }
-            
-            let html = '';
-            users.forEach(user => {
-                html += `
-                    <div style="padding: 8px; border-bottom: 1px solid #ddd;">
-                        <strong>${user.name}</strong> (${user.email})<br>
-                        Баланс: <strong>${user.balance} баллов</strong>
-                    </div>
-                `;
-            });
-            
-            document.getElementById('allUsers').innerHTML = html;
         }
         
-        // ==================== ПОДПИСКА НА ОБНОВЛЕНИЯ ====================
-        function subscribeToUpdates() {
-            // Подписываемся на изменения в таблице users
-            supabase
-                .channel('users-changes')
-                .on('postgres_changes', 
-                    { event: '*', schema: 'public', table: 'users' }, 
-                    () => {
-                        // При любых изменениях обновляем список пользователей и баланс
-                        loadAllUsers();
-                        
-                        // Обновляем баланс текущего пользователя
-                        if (currentUser) {
-                            supabase
-                                .from('users')
-                                .select('balance')
-                                .eq('id', currentUser.id)
-                                .single()
-                                .then(({ data }) => {
-                                    if (data && data.balance !== currentUser.balance) {
-                                        currentUser.balance = data.balance;
-                                        document.getElementById('balance').textContent = data.balance + ' баллов';
-                                    }
-                                });
-                        }
-                    }
-                )
-                .subscribe();
+        // ========== ПОКАЗАТЬ РЕЗУЛЬТАТ ==========
+        function showResult(message) {
+            const result = document.getElementById('result');
+            result.style.display = 'block';
+            result.innerHTML = message;
         }
         
-        // ==================== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ====================
-        function showResult(message, type) {
-            const resultEl = document.getElementById('result');
-            resultEl.style.display = 'block';
-            resultEl.innerHTML = message;
-            resultEl.style.background = type === 'error' ? '#fee2e2' : 
-                                      type === 'info' ? '#dbeafe' : 
-                                      '#d1fae5';
-            resultEl.style.borderColor = type === 'error' ? '#f87171' : 
-                                       type === 'info' ? '#93c5fd' : 
-                                       '#a7f3d0';
-        }
-        
+        // ========== ВЫЙТИ ==========
         function logout() {
             currentUser = null;
-            document.getElementById('dashboard').style.display = 'none';
-            document.querySelectorAll('.tab-content').forEach(el => {
-                el.style.display = 'none';
-            });
-            document.querySelectorAll('.tab-btn').forEach(btn => {
-                btn.style.display = 'flex';
-            });
-            document.getElementById('login-tab').style.display = 'block';
+            document.getElementById('bank').style.display = 'none';
+            document.querySelector('.card').style.display = 'block';
+            document.getElementById('email').value = 'you@test.com';
+            document.getElementById('password').value = '123';
+            document.getElementById('result').style.display = 'none';
+            console.log('Вышли из системы');
         }
         
-        // ==================== ИНИЦИАЛИЗАЦИЯ ====================
-        document.addEventListener('DOMContentLoaded', function() {
-            // Проверяем соединение с Supabase
-            supabase
-                .from('users')
-                .select('count', { count: 'exact', head: true })
-                .then(response => {
-                    console.log('Supabase подключен!');
-                    loadAllUsers(); // Загружаем пользователей сразу
-                })
-                .catch(error => {
-                    console.error('Ошибка подключения к Supabase:', error);
-                    document.getElementById('allUsers').innerHTML = 
-                        '❌ Не подключено к базе данных. Проверьте ключи Supabase.';
-                });
-        });
+        // Автоматически загружаем пользователей при загрузке страницы
+        window.onload = function() {
+            loadUsers();
+        };
     </script>
 </body>
 </html>
