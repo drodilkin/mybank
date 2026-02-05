@@ -158,35 +158,37 @@ transform:translateY(0);
 </div>
 </div>
 
+<!-- 🔥 ВКЛАДКИ -->
 <div class="tabs">
 <button onclick="openTab('transferTab',this)" class="active">Переводы</button>
 <button onclick="openTab('nfcTab',this)">NFC</button>
 <button onclick="openTab('historyTab',this)">История</button>
 </div>
 
+<!-- ПЕРЕВОДЫ -->
 <div id="transferTab">
+
 <div class="block">
 <select id="to"></select>
 <input id="amount" type="number" placeholder="Сумма">
 <input id="comment" placeholder="Комментарий">
 <button onclick="transfer()">Перевести</button>
 </div>
+
 </div>
 
+<!-- NFC -->
 <div id="nfcTab" class="hidden">
+
 <div class="block">
 <h3>Приложить карту</h3>
 <button onclick="startNFC()">📡 Начать сканирование</button>
-
-<!-- 🔥 ДОБАВЛЕНО -->
-<button onclick="bindCard()">🔗 Привязать карту</button>
-<button onclick="scanNFCCard()">💳 Проверить баланс карты</button>
-<div id="nfcBalance"></div>
-
 <div id="nfcStatus"></div>
 </div>
+
 </div>
 
+<!-- ИСТОРИЯ -->
 <div id="historyTab" class="hidden">
 
 <div class="block">
@@ -275,75 +277,6 @@ pushNotify('💳 Получатель выбран','Можно переводи
 };
 }
 
-async function bindCard(){
-
-const status=document.getElementById('nfcStatus');
-
-if(!('NDEFReader' in window)){
-status.textContent='NFC не поддерживается';
-return;
-}
-
-const reader=new NDEFReader();
-await reader.scan();
-
-status.textContent='📲 Приложите карту для привязки...';
-
-reader.onreading=async e=>{
-
-const uid=e.serialNumber;
-
-await fetch(API,{
-method:'POST',
-body:JSON.stringify({
-action:'bindCard',
-email:userEmail,
-uid:uid
-})
-});
-
-status.textContent='✅ Карта привязана';
-};
-}
-
-async function scanNFCCard(){
-
-const status=document.getElementById('nfcStatus');
-const bal=document.getElementById('nfcBalance');
-
-if(!('NDEFReader' in window)){
-status.textContent='NFC не поддерживается';
-return;
-}
-
-const reader=new NDEFReader();
-await reader.scan();
-
-status.textContent='💳 Приложите карту...';
-
-reader.onreading=async e=>{
-
-const uid=e.serialNumber;
-
-const r=await fetch(API,{
-method:'POST',
-body:JSON.stringify({
-action:'nfcLogin',
-uid:uid
-})
-});
-
-const d=await r.json();
-
-if(d.success){
-bal.textContent='Баланс карты: '+d.balance+' ₽';
-status.textContent='✅ Карта распознана';
-}else{
-status.textContent='❌ Карта не найдена';
-}
-};
-}
-
 function findUserByCard(card){
 return Object.keys(names)[0];
 }
@@ -364,6 +297,7 @@ function getName(e){return names[e]||e;}
 function flipCard(){
 bankCard.classList.toggle('flipped');
 }
+
 async function login(){
 
 const email=emailInput.value.trim();
@@ -551,4 +485,7 @@ function logout(){
 if(autoUpdateInterval) clearInterval(autoUpdateInterval);
 location.reload();
 }
+</script>
 
+</body>
+</html>
