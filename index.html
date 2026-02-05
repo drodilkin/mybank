@@ -29,6 +29,28 @@ align-items:center;
 
 .hidden{display:none;}
 
+.tabs{
+display:flex;
+gap:8px;
+margin-bottom:12px;
+}
+
+.tab{
+flex:1;
+padding:12px;
+border-radius:14px;
+border:none;
+background:#2a2a36;
+color:white;
+cursor:pointer;
+}
+
+.tab.active{
+background:var(--accent);
+color:black;
+font-weight:600;
+}
+
 .auth{background:var(--card);padding:28px;border-radius:22px;width:100%;max-width:360px;}
 
 .auth input,.auth button{
@@ -90,24 +112,6 @@ border-radius:14px;
 .block input,.block select{background:var(--input);color:white;}
 .block button{background:var(--accent);font-weight:600;cursor:pointer;}
 
-.history-item{
-padding:12px 0;
-border-bottom:1px solid #2a2a36;
-opacity:0;
-transform:translateY(10px);
-animation:fadeIn .35s forwards;
-}
-
-@keyframes fadeIn{
-to{
-opacity:1;
-transform:translateY(0);
-}
-}
-
-.in{color:#2ecc71;}
-.out{color:#ff4d4f;}
-
 .logout{background:#2a2a36!important;color:white;}
 </style>
 </head>
@@ -123,13 +127,18 @@ transform:translateY(0);
 
 <div class="app hidden" id="app">
 
+<div class="tabs">
+<button class="tab active" onclick="showTab('transfer',this)">💳</button>
+<button class="tab" onclick="showTab('history',this)">📜</button>
+<button class="tab" onclick="showTab('nfc',this)">📡</button>
+</div>
+
 <div class="card-wrap">
 <div class="card" id="bankCard" onclick="flipCard()">
 <div class="card-face">
 <div class="balance-title">Баланс</div>
 <div class="balance-amount" id="balance">0 ₽</div>
 </div>
-
 <div class="card-face card-back">
 <div class="balance-title">Номер карты</div>
 <div class="balance-amount" id="cardNumber"></div>
@@ -137,20 +146,31 @@ transform:translateY(0);
 </div>
 </div>
 
+<div id="transferTab">
 <div class="block">
 <select id="to"></select>
 <input id="amount" type="number" placeholder="Сумма">
 <input id="comment" placeholder="Комментарий">
 <button onclick="transfer()">Перевести</button>
 </div>
-
-<div class="block">
-<button onclick="downloadStatement()">Скачать выписку</button>
 </div>
 
+<div id="historyTab" class="hidden">
 <div class="block">
 <button onclick="toggleHistory()">Показать / скрыть переводы</button>
 <div id="history"></div>
+</div>
+</div>
+
+<div id="nfcTab" class="hidden">
+<div class="block">
+<button onclick="startNFC()">📡 Приложить карту</button>
+<div id="nfcStatus">Ожидание NFC...</div>
+</div>
+</div>
+
+<div class="block">
+<button onclick="downloadStatement()">Скачать выписку</button>
 </div>
 
 <button class="block logout" onclick="logout()">Выйти</button>
@@ -161,17 +181,7 @@ transform:translateY(0);
 const API='https://script.google.com/macros/s/AKfycbzpREMs_CGdEJaD78SW7zzsepJdVh4cis93U9qdhz_uFBRPklq4YT3bf9jzmhUIEPRcPg/exec';
 
 let userEmail='';
-let lastHistory=[];
 let autoUpdateInterval=null;
-let lastTxCount=0;
-let historyVisible=true;
-
-const names={
-'ilyasvaliev@mail.ru':'Ильяс',
-'prokhormart@mail.ru':'Прохор',
-'romankisel@mail.ru':'Роман',
-'artemant@mail.ru':'Артем'
-};
 
 const emailInput=document.getElementById('email');
 const passwordInput=document.getElementById('password');
@@ -185,205 +195,47 @@ const amount=document.getElementById('amount');
 const comment=document.getElementById('comment');
 const historyEl=document.getElementById('history');
 
-function pushNotify(title,body){
-if(Notification.permission==="granted"){
-new Notification(title,{body});
-}
-}
-
-function toggleHistory(){
-historyVisible=!historyVisible;
-historyEl.style.display=historyVisible?'block':'none';
-}
-
-function getName(e){return names[e]||e;}
-
-function flipCard(){
-bankCard.classList.toggle('flipped');
+function showTab(tab,btn){
+document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+btn.classList.add('active');
+transferTab.classList.add('hidden');
+historyTab.classList.add('hidden');
+nfcTab.classList.add('hidden');
+if(tab==='transfer')transferTab.classList.remove('hidden');
+if(tab==='history')historyTab.classList.remove('hidden');
+if(tab==='nfc')nfcTab.classList.remove('hidden');
 }
 
 async function login(){
-
-const email=emailInput.value.trim();
-const password=passwordInput.value.trim();
-
-const r=await fetch(API,{method:'POST',body:JSON.stringify({action:'login',email,password})});
+const r=await fetch(API,{method:'POST',body:JSON.stringify({action:'login',email:emailInput.value,password:passwordInput.value})});
 const d=await r.json();
-
-if(!d.success) return alert('Ошибка входа');
-
-userEmail=email;
+if(!d.success)return alert('Ошибка входа');
+userEmail=emailInput.value;
 balance.textContent=d.balance+' ₽';
-cardNumber.textContent=d.card||'0000 0000 0000 0000';
-
+cardNumber.textContent=d.card;
 auth.classList.add('hidden');
 app.classList.remove('hidden');
-
-if(Notification.permission!=="granted"){
-Notification.requestPermission();
-}
-
-loadUsers();
-loadHistory();
-startAutoUpdate();
-}
-
-function startAutoUpdate(){
-
-if(autoUpdateInterval) clearInterval(autoUpdateInterval);
-
-autoUpdateInterval=setInterval(async ()=>{
-await refreshBalance();
-await loadHistory();
-},5000);
-
-}
-
-async function refreshBalance(){
-
-const r=await fetch(API,{
-method:'POST',
-body:JSON.stringify({action:'balance',email:userEmail})
-});
-
-const d=await r.json();
-
-if(d.balance!==undefined){
-balance.textContent=d.balance+' ₽';
-}
-
-}
-
-async function loadUsers(){
-
-to.innerHTML='<option value="">Получатель</option>';
-
-Object.keys(names).filter(e=>e!==userEmail).forEach(e=>{
-const o=document.createElement('option');
-o.value=e;
-o.textContent=getName(e);
-to.appendChild(o);
-});
-
-}
-
-function addTransactionInstant(toUser,amountVal){
-
-const div=document.createElement('div');
-div.className='history-item out';
-
-div.innerHTML=`
-<b>Перевод: ${getName(toUser)} — ${amountVal} ₽</b><br>
-<small>только что</small>
-`;
-
-historyEl.prepend(div);
 }
 
 async function transfer(){
-
-const amountVal=Number(amount.value);
-if(!to.value||amountVal<=0) return;
-
-addTransactionInstant(to.value,amountVal);
-
-await fetch(API,{
-method:'POST',
-body:JSON.stringify({
+await fetch(API,{method:'POST',body:JSON.stringify({
 action:'transfer',
 from:userEmail,
 to:to.value,
-amount:amountVal,
+amount:Number(amount.value),
 comment:comment.value
-})
-});
-
-await refreshBalance();
-await loadHistory();
-
-comment.value='';
-amount.value='';
+})});
 }
 
-async function loadHistory(){
-
-const r=await fetch(API,{
-method:'POST',
-body:JSON.stringify({action:'history',email:userEmail})
-});
-
-const d=await r.json();
-const newHistory=d.history||[];
-
-if(lastTxCount!==0 && newHistory.length>lastTxCount){
-
-const newTx=newHistory[0];
-
-const from=newTx[1];
-const amountVal=newTx[3];
-
-if(from===userEmail){
-pushNotify("💸 Списание",`-${amountVal} ₽`);
+function startNFC(){
+if("NDEFReader" in window){
+document.getElementById('nfcStatus').textContent="📡 Поднесите карту...";
 }else{
-pushNotify("💰 Зачисление",`+${amountVal} ₽`);
+alert("NFC работает только на Android Chrome");
+}
 }
 
-}
-
-lastTxCount=newHistory.length;
-lastHistory=newHistory;
-
-historyEl.innerHTML='<h3>История операций</h3>';
-
-lastHistory.forEach(h=>{
-
-const from=h[1];
-const toUser=h[2];
-const amountVal=h[3];
-const dateVal=new Date(h[0]).toLocaleString();
-
-const type=from===userEmail?'out':'in';
-
-const div=document.createElement('div');
-div.className='history-item '+type;
-
-div.innerHTML=`
-<b>${type==='out'
-?`Перевод: ${getName(toUser)} — ${amountVal} ₽`
-:`Зачисление: ${getName(from)} — ${amountVal} ₽`
-}</b><br>
-<small>${dateVal}</small>
-`;
-
-historyEl.appendChild(div);
-});
-
-}
-
-function downloadStatement(){
-
-let text='Выписка PayBank\n\n';
-
-lastHistory.forEach(h=>{
-const from=h[1];
-const toUser=h[2];
-const amountVal=h[3];
-const dateVal=new Date(h[0]).toLocaleString();
-
-if(from===userEmail){
-text+=`${dateVal} | Перевод ${getName(toUser)} | ${amountVal} ₽\n`;
-}else{
-text+=`${dateVal} | Зачисление ${getName(from)} | ${amountVal} ₽\n`;
-}
-});
-
-const blob=new Blob([text],{type:'text/plain'});
-const a=document.createElement('a');
-a.href=URL.createObjectURL(blob);
-a.download='paybank_vypiska.txt';
-a.click();
-
-}
+function flipCard(){bankCard.classList.toggle('flipped');}
 
 function logout(){
 if(autoUpdateInterval) clearInterval(autoUpdateInterval);
