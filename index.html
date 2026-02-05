@@ -3,307 +3,209 @@
 <head>
 <meta charset="UTF-8">
 <title>PayBank</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
-:root {
-  --bg:#0b0b10;
-  --card:#17171f;
-  --input:#222230;
-  --accent:#ffd600;
-  --text:#fff;
-  --muted:#9b9ba3;
-}
-
-* {
-  box-sizing:border-box;
-  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
-}
-
-body {
+body{
   margin:0;
-  background:var(--bg);
-  color:var(--text);
-  min-height:100vh;
+  background:#0b0b10;
+  font-family:-apple-system,BlinkMacSystemFont;
+  color:white;
+}
+.center{
   display:flex;
   justify-content:center;
   align-items:center;
+  height:100vh;
 }
-
-.hidden { display:none; }
-
-/* ===== AUTH ===== */
-.auth {
-  background:var(--card);
-  padding:28px;
-  border-radius:22px;
+.panel{
+  width:380px;
+  background:#14151c;
+  border-radius:28px;
+  padding:24px;
+  box-shadow:0 40px 120px #000;
+}
+input,select,button{
   width:100%;
-  max-width:360px;
-  box-shadow:0 20px 60px rgba(0,0,0,.6);
-}
-
-.auth h1 {
-  text-align:center;
-  margin-bottom:20px;
-}
-
-.auth input, .auth button {
-  width:100%;
-  margin-top:12px;
   padding:14px;
+  margin-top:14px;
+  background:#1e1f28;
   border:none;
   border-radius:14px;
-  font-size:16px;
-}
-
-.auth input {
-  background:var(--input);
   color:white;
-}
-
-.auth button {
-  background:var(--accent);
-  font-weight:600;
-  cursor:pointer;
-}
-
-/* ===== APP ===== */
-.app {
-  width:100%;
-  max-width:420px;
-  padding:16px;
-}
-
-/* ===== CARD ===== */
-.card-wrap {
-  perspective:1000px;
-}
-
-.card {
-  width:100%;
-  height:160px;
-  border-radius:22px;
-  background:var(--card);
-  padding:20px;
-  transition:transform .7s;
-  transform-style:preserve-3d;
-  cursor:pointer;
-}
-
-.card.flipped {
-  transform:rotateY(180deg);
-}
-
-.card-face {
-  position:absolute;
-  inset:0;
-  backface-visibility:hidden;
-}
-
-.card-back {
-  transform:rotateY(180deg);
-  display:flex;
-  flex-direction:column;
-  justify-content:center;
-}
-
-.balance-title {
-  color:var(--muted);
-}
-
-.balance-amount {
-  font-size:34px;
-  margin-top:6px;
-}
-
-/* ===== TRANSFER ===== */
-.block {
-  background:var(--card);
-  border-radius:22px;
-  padding:18px;
-  margin-top:16px;
-}
-
-.block input, .block select, .block button {
-  width:100%;
-  margin-top:12px;
-  padding:14px;
-  border:none;
-  border-radius:14px;
   font-size:15px;
 }
-
-.block input, .block select {
-  background:var(--input);
+button{
+  background:#ffd600;
+  color:black;
+  font-weight:600;
+}
+.exit{
+  background:#2a2b35;
   color:white;
 }
-
-.block button {
-  background:var(--accent);
-  font-weight:600;
+.card{
+  height:160px;
+  border-radius:22px;
+  background:linear-gradient(135deg,#1e2030,#0f1018);
+  padding:20px;
+  perspective:900px;
   cursor:pointer;
 }
-
-/* ===== HISTORY ===== */
-.history-item {
-  padding:12px 0;
-  border-bottom:1px solid #2a2a36;
+.card-inner{
+  position:relative;
+  width:100%;
+  height:100%;
+  transform-style:preserve-3d;
+  transition:0.8s;
 }
-
-.history-item:last-child {
-  border:none;
+.card.flip .card-inner{
+  transform:rotateY(180deg);
 }
-
-.in { color:#2ecc71; }
-.out { color:#ff4d4f; }
-
-.logout {
+.card-side{
+  position:absolute;
+  width:100%;
+  height:100%;
+  backface-visibility:hidden;
+}
+.card-back{
+  transform:rotateY(180deg);
+}
+.history{
   margin-top:14px;
-  background:#2a2a36 !important;
-  color:white;
+  font-size:14px;
+  opacity:.85;
+}
+.history div{
+  margin-top:6px;
 }
 </style>
 </head>
 
 <body>
 
-<!-- ===== AUTH ===== -->
-<div class="auth" id="auth">
-  <h1>PayBank</h1>
-  <input id="email" placeholder="Email">
-  <input id="password" type="password" placeholder="Пароль">
-  <button onclick="login()">Войти</button>
+<div class="center" id="login">
+  <div class="panel">
+    <h2>PayBank</h2>
+    <input id="email" placeholder="Email">
+    <input id="password" placeholder="Пароль" type="password">
+    <button onclick="login()">Войти</button>
+  </div>
 </div>
 
-<!-- ===== APP ===== -->
-<div class="app hidden" id="app">
+<div class="center" id="app" style="display:none">
+  <div class="panel">
 
-  <!-- CARD -->
-  <div class="card-wrap">
-    <div class="card" id="bankCard" onclick="flipCard()">
-      <div class="card-face">
-        <div class="balance-title">Баланс</div>
-        <div class="balance-amount" id="balance">0 ₽</div>
-      </div>
-      <div class="card-face card-back">
-        <div class="balance-title">Номер карты</div>
-        <div class="balance-amount" id="cardNumber"></div>
+    <div class="card" onclick="flipCard()">
+      <div class="card-inner" id="cardInner">
+        <div class="card-side">
+          <div>Баланс</div>
+          <h1 id="balance"></h1>
+        </div>
+        <div class="card-side card-back">
+          <div>Номер карты</div>
+          <h2 id="cardNumber"></h2>
+        </div>
       </div>
     </div>
-  </div>
 
-  <!-- TRANSFER -->
-  <div class="block">
-    <select id="to">
-      <option value="">Получатель</option>
-    </select>
-    <input id="amount" type="number" placeholder="Сумма">
+    <select id="users"></select>
+    <input id="amount" placeholder="Сумма">
     <input id="comment" placeholder="Комментарий">
-    <button onclick="transfer()">Перевести</button>
+    <button onclick="send()">Перевести</button>
+
+    <div class="history" id="history"></div>
+
+    <button class="exit" onclick="logout()">Выйти</button>
+
   </div>
-
-  <!-- HISTORY -->
-  <div class="block" id="history"></div>
-
-  <button class="block logout" onclick="logout()">Выйти</button>
-
 </div>
 
 <script>
-const API = 'https://script.google.com/macros/s/AKfycbwZEBJyhpvNpjA9cuv1hfMy51IvvILbLR6-fh27IKiMRQ2azsyzCROTuIJeWYX9Gu9ytw/exec';
+const API = 'https://script.google.com/macros/s/AKfycbyK7agYOvdt2OCd9kplgIhb-ApRzAWICXUJ4vzpe5h6e1w8PcXBALxVqtAAdoqoVdZvPg/exec';
+let me = null;
 
-let userEmail = '';
-
-async function login() {
-  const email = emailInput.value.trim();
-  const password = passwordInput.value.trim();
-
-  const r = await fetch(API, {
+function login(){
+  fetch(API,{
     method:'POST',
-    body:JSON.stringify({ action:'login', email, password })
-  });
+    body:JSON.stringify({
+      action:'login',
+      email:email.value,
+      password:password.value
+    })
+  })
+  .then(r=>r.json())
+  .then(d=>{
+    if(!d.ok){ alert('Неверные данные'); return; }
 
-  const d = await r.json();
-  if (!d.success) return alert('Неверные данные');
+    me = d;
+    login.style.display='none';
+    app.style.display='flex';
 
-  userEmail = email;
-  localStorage.setItem('user', email);
+    balance.innerText = d.balance + ' ₽';
+    cardNumber.innerText = d.card;
 
-  balance.textContent = d.balance + ' ₽';
-  cardNumber.textContent = d.card;
-
-  auth.classList.add('hidden');
-  app.classList.remove('hidden');
-
-  loadUsers();
-  loadHistory();
-}
-
-function flipCard() {
-  bankCard.classList.toggle('flipped');
-}
-
-async function loadUsers() {
-  const list = [
-    'ilyasvaliev@mail.ru',
-    'prokhormart@mail.ru',
-    'romankisel@mail.ru',
-    'artemant@mail.ru'
-  ];
-
-  to.innerHTML = '<option value="">Получатель</option>';
-  list.filter(e => e !== userEmail).forEach(e => {
-    const o = document.createElement('option');
-    o.value = e;
-    o.textContent = e;
-    to.appendChild(o);
+    loadUsers();
+    loadHistory();
   });
 }
 
-async function transfer() {
-  const amountVal = Number(amount.value);
-  if (!to.value || amountVal <= 0) return;
+function loadUsers(){
+  fetch(API,{
+    method:'POST',
+    body:JSON.stringify({
+      action:'getUsers',
+      email:me.email
+    })
+  })
+  .then(r=>r.json())
+  .then(d=>{
+    users.innerHTML = d.map(u=>`<option>${u}</option>`).join('');
+  });
+}
 
-  await fetch(API, {
+function send(){
+  fetch(API,{
     method:'POST',
     body:JSON.stringify({
       action:'transfer',
-      from:userEmail,
-      to:to.value,
-      amount:amountVal,
+      from:me.email,
+      to:users.value,
+      amount:Number(amount.value),
       comment:comment.value
     })
+  })
+  .then(r=>r.json())
+  .then(d=>{
+    if(d.error){ alert(d.error); return; }
+    balance.innerText = d.balance + ' ₽';
+    loadHistory();
   });
-
-  comment.value='';
-  amount.value='';
-  loadHistory();
 }
 
-async function loadHistory() {
-  const r = await fetch(API,{
+function loadHistory(){
+  fetch(API,{
     method:'POST',
-    body:JSON.stringify({ action:'history', email:userEmail })
-  });
-  const d = await r.json();
-
-  history.innerHTML='<h3>История</h3>';
-  d.history.forEach(h=>{
-    const div=document.createElement('div');
-    const type=h[1]===userEmail?'out':'in';
-    div.className='history-item '+type;
-    div.innerHTML=`${type==='out'?'⬇':'⬆'} ${h[3]} ₽<br><small>${h[4]}</small>`;
-    history.appendChild(div);
+    body:JSON.stringify({
+      action:'history',
+      email:me.email
+    })
+  })
+  .then(r=>r.json())
+  .then(d=>{
+    history.innerHTML = d.map(r=>{
+      const sign = r[1]===me.email ? '−' : '+';
+      return `<div>${sign}${r[3]} ₽ · ${r[4]}</div>`;
+    }).join('');
   });
 }
 
-function logout() {
-  localStorage.clear();
+function flipCard(){
+  document.querySelector('.card').classList.toggle('flip');
+}
+
+function logout(){
   location.reload();
 }
-
-const emailInput=document.getElementById('email');
-const passwordInput=document.getElementById('password');
 </script>
 
 </body>
