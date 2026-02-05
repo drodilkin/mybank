@@ -1,292 +1,221 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🏦 Виртуальный Банк с Google Form</title>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { 
-            font-family: Arial, sans-serif; 
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 20px;
-        }
-        .container { 
-            max-width: 500px; 
-            margin: 0 auto; 
-            background: white; 
-            padding: 30px; 
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-        }
-        h1 { color: #333; margin-bottom: 30px; text-align: center; }
-        input, select { 
-            width: 100%; 
-            padding: 12px; 
-            margin: 10px 0; 
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            font-size: 16px;
-        }
-        button { 
-            width: 100%; 
-            padding: 14px; 
-            background: linear-gradient(to right, #667eea, #764ba2);
-            color: white; 
-            border: none; 
-            border-radius: 8px;
-            font-size: 16px;
-            cursor: pointer;
-            margin: 10px 0;
-        }
-        .balance { 
-            font-size: 32px; 
-            text-align: center; 
-            margin: 20px 0;
-            color: #28a745;
-            font-weight: bold;
-        }
-        .message { 
-            padding: 10px; 
-            margin: 10px 0; 
-            border-radius: 5px; 
-            text-align: center;
-        }
-        .success { background: #d4edda; color: #155724; }
-        .error { background: #f8d7da; color: #721c24; }
-        .info { background: #d1ecf1; color: #0c5460; }
-        .logout-btn { background: #dc3545; }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <h1>🏦 Виртуальный Банк</h1>
-        
-        <div id="loginScreen">
-            <h3>Вход в систему</h3>
-            <input type="text" id="loginEmail" placeholder="Email" value="tilyas@mail.ru">
-            <input type="password" id="loginPassword" placeholder="Пароль" value="80223">
-            <button onclick="login()">Войти</button>
+<script>
+    // ВАШ URL из шага 3
+    const API_URL = 'ВАШ_URL_ВЕБ_ПРИЛОЖЕНИЯ';
+    
+    let currentUser = null;
+    let allUsers = [];
+    
+    // ========== ВАША GOOGLE FORM ==========
+    const GOOGLE_FORM_ID = '1FAIpQLScTjPMG7gOVc1xVXLdRm9_j4aaTn-ZFETokrIRvev11AxteTA';
+    
+    async function saveToGoogleForm(from, to, amount) {
+        try {
+            const url = `https://docs.google.com/forms/d/e/${GOOGLE_FORM_ID}/formResponse`;
+            const fieldIds = [
+                'entry.1361860196', // От кого
+                'entry.1065046570', // Кому  
+                'entry.1166974658', // Сумма
+                'entry.839337160'   // Дата
+            ];
             
-            <div class="message info">
-                <strong>Пользователи:</strong><br>
-                • tilyas@mail.ru / 80223<br>
-                • Prokhor@mail.ru / 71601<br>
-                • Roma@mail.ru / 23312<br>
-                • Artem@mail.ru / 94331
-            </div>
+            const formData = new FormData();
+            formData.append(fieldIds[0], from);
+            formData.append(fieldIds[1], to);
+            formData.append(fieldIds[2], amount.toString());
+            formData.append(fieldIds[3], new Date().toLocaleDateString('ru-RU'));
             
-            <div id="loginMessage" class="message"></div>
-        </div>
-        
-        <div id="bankScreen" style="display:none">
-            <h3>👋 <span id="userName"></span></h3>
-            <div class="balance" id="balance">50000 ₿</div>
+            await fetch(url, {
+                method: 'POST',
+                mode: 'no-cors',
+                body: formData
+            });
             
-            <h4>💸 Перевод</h4>
-            <select id="toUser">
-                <option value="">Выберите получателя</option>
-            </select>
-            <input type="number" id="amount" placeholder="Сумма" min="1">
+            console.log('✅ Данные отправлены в Google Form');
+            return true;
             
-            <button onclick="transfer()">Отправить перевод</button>
-            <button onclick="logout()" class="logout-btn">Выйти</button>
+        } catch (error) {
+            console.log('⚠️ Ошибка отправки в Google Form:', error);
+            return false;
+        }
+    }
+    
+    // ========== ФУНКЦИИ БАНКА ==========
+    
+    function showMessage(elementId, text, type) {
+        const element = document.getElementById(elementId);
+        element.innerHTML = text;
+        element.className = `message ${type}`;
+        
+        if (type !== 'info') {
+            setTimeout(() => {
+                element.textContent = '';
+                element.className = 'message';
+            }, 4000);
+        }
+    }
+    
+    async function login() {
+        const email = document.getElementById('loginEmail').value.toLowerCase().trim();
+        const password = document.getElementById('loginPassword').value.trim();
+        
+        try {
+            const response = await fetch(API_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    action: 'login',
+                    email: email,
+                    password: password
+                })
+            });
             
-            <div id="bankMessage" class="message"></div>
-        </div>
-    </div>
-
-    <script>
-        // ДАННЫЕ ПОЛЬЗОВАТЕЛЕЙ
-        const users = [
-            {id: 1, email: 'tilyas@mail.ru', password: '80223', balance: 50000},
-            {id: 2, email: 'prokhor@mail.ru', password: '71601', balance: 50000},
-            {id: 3, email: 'roma@mail.ru', password: '23312', balance: 50000},
-            {id: 4, email: 'artem@mail.ru', password: '94331', balance: 50000}
-        ];
-        
-        let currentUser = null;
-        
-        // ========== ВАША GOOGLE FORM ==========
-        const GOOGLE_FORM_ID = '1FAIpQLScTjPMG7gOVc1xVXLdRm9_j4aaTn-ZFETokrIRvev11AxteTA';
-        
-        // Сохранить перевод в Google Form
-        async function saveToGoogleForm(from, to, amount) {
-            try {
-                console.log('Отправка в Google Form:', {from, to, amount});
+            const result = await response.json();
+            
+            if (result.success) {
+                currentUser = result.user;
                 
-                // URL вашей формы
-                const url = `https://docs.google.com/forms/d/e/${GOOGLE_FORM_ID}/formResponse`;
-                
-                // Пробуем разные ID полей (нужно определить ваши)
-                const fieldIds = [
-                    'entry.1361860196', // Возможный ID для "От кого"
-                    'entry.1065046570', // Возможный ID для "Кому"  
-                    'entry.1166974658', // Возможный ID для "Сумма"
-                    'entry.839337160'  // Возможный ID для "Дата"
-                ];
-                
-                // Создаем данные
-                const formData = new FormData();
-                formData.append(fieldIds[0], from);
-                formData.append(fieldIds[1], to);
-                formData.append(fieldIds[2], amount.toString());
-                formData.append(fieldIds[3], new Date().toLocaleDateString('ru-RU'));
-                
-                // Отправляем (no-cors для обхода ограничений)
-                await fetch(url, {
-                    method: 'POST',
-                    mode: 'no-cors',
-                    body: formData
-                });
-                
-                console.log('✅ Данные отправлены в Google Form');
-                return true;
-                
-            } catch (error) {
-                console.log('⚠️ Ошибка отправки в Google Form:', error);
-                return false;
-            }
-        }
-        
-        // ========== ФУНКЦИИ БАНКА ==========
-        
-        function showMessage(elementId, text, type) {
-            const element = document.getElementById(elementId);
-            element.textContent = text;
-            element.className = `message ${type}`;
-            
-            if (type !== 'info') {
-                setTimeout(() => {
-                    element.textContent = '';
-                    element.className = 'message';
-                }, 4000);
-            }
-        }
-        
-        function login() {
-            const email = document.getElementById('loginEmail').value.toLowerCase().trim();
-            const password = document.getElementById('loginPassword').value.trim();
-            
-            const user = users.find(u => u.email === email && u.password === password);
-            
-            if (user) {
-                currentUser = user;
+                // Загружаем всех пользователей
+                await loadAllUsers();
                 
                 // Переключаем экраны
                 document.getElementById('loginScreen').style.display = 'none';
                 document.getElementById('bankScreen').style.display = 'block';
                 document.getElementById('userName').textContent = email;
-                document.getElementById('balance').textContent = `${user.balance} ₿`;
-                
-                // Заполняем список получателей
-                const select = document.getElementById('toUser');
-                select.innerHTML = '<option value="">Выберите получателя</option>';
-                
-                users.forEach(u => {
-                    if (u.email !== email) {
-                        const option = document.createElement('option');
-                        option.value = u.email;
-                        option.textContent = `${u.email} (${u.balance} ₿)`;
-                        select.appendChild(option);
-                    }
-                });
+                document.getElementById('balance').textContent = `${currentUser.balance} ₿`;
                 
                 showMessage('loginMessage', '✅ Успешный вход!', 'success');
                 
             } else {
                 showMessage('loginMessage', '❌ Неверный email или пароль', 'error');
             }
+            
+        } catch (error) {
+            showMessage('loginMessage', '❌ Ошибка соединения с сервером', 'error');
+            console.error('Ошибка входа:', error);
         }
-        
-        async function transfer() {
-            if (!currentUser) return;
-            
-            const toEmail = document.getElementById('toUser').value;
-            const amount = parseInt(document.getElementById('amount').value);
-            
-            if (!toEmail) {
-                showMessage('bankMessage', 'Выберите получателя', 'error');
-                return;
-            }
-            
-            if (!amount || amount <= 0) {
-                showMessage('bankMessage', 'Введите сумму', 'error');
-                return;
-            }
-            
-            if (amount > currentUser.balance) {
-                showMessage('bankMessage', `❌ Недостаточно средств! Доступно: ${currentUser.balance} ₿`, 'error');
-                return;
-            }
-            
-            if (toEmail === currentUser.email) {
-                showMessage('bankMessage', '❌ Нельзя переводить себе', 'error');
-                return;
-            }
-            
-            const receiver = users.find(u => u.email === toEmail);
-            if (!receiver) {
-                showMessage('bankMessage', 'Получатель не найден', 'error');
-                return;
-            }
-            
-            // ВЫПОЛНЯЕМ ПЕРЕВОД
-            currentUser.balance -= amount;
-            receiver.balance += amount;
-            
-            // Обновляем отображение
-            document.getElementById('balance').textContent = `${currentUser.balance} ₿`;
-            
-            // Обновляем список получателей (балансы изменились)
-            const select = document.getElementById('toUser');
-            select.innerHTML = '<option value="">Выберите получателя</option>';
-            users.forEach(u => {
-                if (u.email !== currentUser.email) {
-                    const option = document.createElement('option');
-                    option.value = u.email;
-                    option.textContent = `${u.email} (${u.balance} ₿)`;
-                    select.appendChild(option);
-                }
+    }
+    
+    async function loadAllUsers() {
+        try {
+            const response = await fetch(API_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'getUsers' })
             });
             
-            // СОХРАНЯЕМ В GOOGLE FORM
-            const saved = await saveToGoogleForm(currentUser.email, receiver.email, amount);
+            const result = await response.json();
+            allUsers = result.users;
             
-            if (saved) {
+            // Обновляем список получателей
+            updateRecipientsList();
+            
+        } catch (error) {
+            console.error('Ошибка загрузки пользователей:', error);
+        }
+    }
+    
+    function updateRecipientsList() {
+        const select = document.getElementById('toUser');
+        select.innerHTML = '<option value="">Выберите получателя</option>';
+        
+        allUsers.forEach(user => {
+            if (user.email !== currentUser.email) {
+                const option = document.createElement('option');
+                option.value = user.email;
+                option.textContent = `${user.email} (${user.balance} ₿)`;
+                select.appendChild(option);
+            }
+        });
+    }
+    
+    async function transfer() {
+        if (!currentUser) return;
+        
+        const toEmail = document.getElementById('toUser').value;
+        const amount = parseInt(document.getElementById('amount').value);
+        
+        // Проверки
+        if (!toEmail) {
+            showMessage('bankMessage', '❌ Выберите получателя', 'error');
+            return;
+        }
+        
+        if (!amount || amount <= 0) {
+            showMessage('bankMessage', '❌ Введите сумму', 'error');
+            return;
+        }
+        
+        if (amount > currentUser.balance) {
+            showMessage('bankMessage', `❌ Недостаточно средств! Доступно: ${currentUser.balance} ₿`, 'error');
+            return;
+        }
+        
+        if (toEmail === currentUser.email) {
+            showMessage('bankMessage', '❌ Нельзя переводить себе', 'error');
+            return;
+        }
+        
+        try {
+            // Отправляем перевод на сервер
+            const response = await fetch(API_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    action: 'transfer',
+                    fromEmail: currentUser.email,
+                    toEmail: toEmail,
+                    amount: amount
+                })
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                // Обновляем текущего пользователя
+                currentUser.balance = result.newFromBalance;
+                
+                // Обновляем всех пользователей
+                await loadAllUsers();
+                
+                // Обновляем баланс на экране
+                document.getElementById('balance').textContent = `${currentUser.balance} ₿`;
+                
+                // Сохраняем в Google Form
+                await saveToGoogleForm(currentUser.email, toEmail, amount);
+                
                 showMessage('bankMessage', 
                     `✅ Перевод ${amount} ₿ → ${toEmail}<br>
-                    <small>Сохранено в Google Form</small>`, 
+                    <small>Баланс обновлен у всех пользователей</small>`, 
                     'success'
                 );
+                
+                // Очищаем поля
+                document.getElementById('amount').value = '';
+                document.getElementById('toUser').selectedIndex = 0;
+                
             } else {
-                showMessage('bankMessage', 
-                    `✅ Перевод ${amount} ₿ → ${toEmail}<br>
-                    <small>Сохранено локально</small>`, 
-                    'success'
-                );
+                showMessage('bankMessage', `❌ Ошибка: ${result.error}`, 'error');
             }
             
-            // Очищаем поля
-            document.getElementById('amount').value = '';
-            document.getElementById('toUser').selectedIndex = 0;
+        } catch (error) {
+            showMessage('bankMessage', '❌ Ошибка соединения с сервером', 'error');
+            console.error('Ошибка перевода:', error);
         }
-        
-        function logout() {
-            currentUser = null;
-            document.getElementById('loginScreen').style.display = 'block';
-            document.getElementById('bankScreen').style.display = 'none';
-            document.getElementById('loginEmail').value = '';
-            document.getElementById('loginPassword').value = '';
-            document.getElementById('loginMessage').textContent = '';
-        }
-        
-        // При загрузке
-        window.onload = function() {
-            console.log('Банк готов к работе!');
-            console.log('Google Form ID:', GOOGLE_FORM_ID);
-        };
-    </script>
-</body>
-</html>
+    }
+    
+    function logout() {
+        currentUser = null;
+        allUsers = [];
+        document.getElementById('loginScreen').style.display = 'block';
+        document.getElementById('bankScreen').style.display = 'none';
+        document.getElementById('loginEmail').value = '';
+        document.getElementById('loginPassword').value = '';
+        document.getElementById('loginMessage').textContent = '';
+    }
+    
+    // При загрузке
+    window.onload = function() {
+        console.log('🏦 Банк готов к работе!');
+        console.log('API URL:', API_URL);
+    };
+</script>
