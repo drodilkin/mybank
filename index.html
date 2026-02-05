@@ -2,116 +2,167 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<title>🏦 Виртуальный Банк</title>
+<title>PayBank</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
+:root {
+  --bg: #0b0b10;
+  --card: #181820;
+  --accent: #ffd600;
+  --text: #ffffff;
+  --muted: #9b9ba3;
+  --danger: #ff4d4f;
+  --success: #2ecc71;
+}
+
+* {
+  box-sizing: border-box;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
 body {
-  font-family: Arial, sans-serif;
-  background: linear-gradient(135deg, #667eea, #764ba2);
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
   min-height: 100vh;
   display: flex;
   justify-content: center;
   align-items: center;
 }
 
-.container {
-  background: white;
-  padding: 30px;
-  border-radius: 12px;
+.app {
   width: 100%;
-  max-width: 400px;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+  max-width: 420px;
+  background: var(--card);
+  border-radius: 22px;
+  padding: 24px;
+  box-shadow: 0 20px 50px rgba(0,0,0,.5);
 }
 
-h1, h3 {
+h1 {
   text-align: center;
+  margin-bottom: 20px;
+  font-weight: 600;
 }
 
 input, select, button {
   width: 100%;
-  padding: 12px;
-  margin-top: 10px;
+  padding: 14px;
+  border-radius: 14px;
+  border: none;
   font-size: 16px;
+  margin-top: 12px;
+}
+
+input, select {
+  background: #242430;
+  color: white;
 }
 
 button {
-  background: #667eea;
-  color: white;
-  border: none;
-  border-radius: 6px;
+  background: var(--accent);
+  color: black;
+  font-weight: 600;
   cursor: pointer;
 }
 
-button:hover {
-  background: #5a6fe0;
+button.secondary {
+  background: #2a2a36;
+  color: white;
 }
 
 .balance {
-  font-size: 28px;
+  font-size: 36px;
   text-align: center;
   margin: 20px 0;
-  color: #28a745;
 }
 
 .message {
-  margin-top: 10px;
-  padding: 10px;
+  margin-top: 12px;
+  padding: 12px;
+  border-radius: 12px;
   text-align: center;
-  border-radius: 6px;
 }
 
-.success { background: #d4edda; color: #155724; }
-.error { background: #f8d7da; color: #721c24; }
+.error { background: rgba(255,77,79,.15); color: var(--danger); }
+.success { background: rgba(46,204,113,.15); color: var(--success); }
+
+.hidden { display: none; }
+
+.admin-panel {
+  margin-top: 20px;
+  border-top: 1px solid #2a2a36;
+  padding-top: 16px;
+}
 </style>
 </head>
 
 <body>
 
-<div class="container">
+<div class="app">
 
   <!-- LOGIN -->
   <div id="loginScreen">
-    <h1>🏦 Банк</h1>
+    <h1>PayBank</h1>
     <input id="email" placeholder="Email">
     <input id="password" type="password" placeholder="Пароль">
     <button onclick="login()">Войти</button>
     <div id="loginMsg" class="message"></div>
   </div>
 
-  <!-- BANK -->
-  <div id="bankScreen" style="display:none">
-    <h3 id="userEmail"></h3>
+  <!-- USER -->
+  <div id="userScreen" class="hidden">
+    <h1 id="userTitle"></h1>
     <div class="balance" id="balance">0 ₿</div>
 
     <select id="toUser">
       <option value="">Получатель (email)</option>
-      <option value="tilyas@mail.ru">tilyas@mail.ru</option>
-      <option value="prokhor@mail.ru">prokhor@mail.ru</option>
-      <option value="roma@mail.ru">roma@mail.ru</option>
-      <option value="artem@mail.ru">artem@mail.ru</option>
-      <option value="test@mail.ru">test@mail.ru</option>
     </select>
 
     <input id="amount" type="number" placeholder="Сумма">
-
     <button onclick="transfer()">Перевести</button>
-    <button onclick="logout()" style="background:#dc3545">Выйти</button>
+    <button class="secondary" onclick="logout()">Выйти</button>
 
-    <div id="bankMsg" class="message"></div>
+    <div id="userMsg" class="message"></div>
+  </div>
+
+  <!-- ADMIN -->
+  <div id="adminScreen" class="hidden">
+    <h1>Админ</h1>
+
+    <input id="adminTarget" placeholder="Email пользователя">
+    <input id="adminAmount" type="number" placeholder="Сумма">
+    <button onclick="adminAdd()">Пополнить</button>
+
+    <button class="secondary" onclick="logout()">Выйти</button>
+    <div id="adminMsg" class="message"></div>
   </div>
 
 </div>
 
 <script>
-const API_URL = 'https://script.google.com/macros/s/AKfycbzBRaaGfxEBHQL16nxPR_Y3dbG2nTF_Q8ui0XMyJ_DCFmHuuFovzlI1bO3wT8iE1SHs-w/exec';
+// ================= НАСТРОЙКИ =================
+const API_URL = 'ТВОЯ_APPS_SCRIPT_ССЫЛКА';
+
+const ADMIN_EMAIL = 'super_admin_928374@bank.local';
+const ADMIN_PASSWORD = 'myUltraSecretPass';
+
+// =============================================
 
 let currentUser = null;
 
 // ===== LOGIN =====
 async function login() {
-  const email = document.getElementById('email').value.toLowerCase().trim();
-  const password = document.getElementById('password').value.trim();
+  const email = emailInput().toLowerCase();
+  const password = passwordInput();
+
+  // ADMIN LOGIN
+  if (email === ADMIN_EMAIL && password === ADMIN_PASSWORD) {
+    show('loginScreen', false);
+    show('adminScreen', true);
+    return;
+  }
 
   const res = await fetch(API_URL, {
     method: 'POST',
@@ -125,25 +176,43 @@ async function login() {
   const data = await res.json();
 
   if (!data.success) {
-    show('loginMsg', '❌ Неверный логин или пароль', 'error');
+    msg('loginMsg', '❌ Неверный логин или пароль', 'error');
     return;
   }
 
-  currentUser = data.email;
+  currentUser = email;
 
-  document.getElementById('loginScreen').style.display = 'none';
-  document.getElementById('bankScreen').style.display = 'block';
-  document.getElementById('userEmail').textContent = data.email;
+  show('loginScreen', false);
+  show('userScreen', true);
+  document.getElementById('userTitle').textContent = email;
   document.getElementById('balance').textContent = data.balance + ' ₿';
+
+  loadUsers();
+}
+
+// ===== LOAD USERS =====
+async function loadUsers() {
+  const list = document.getElementById('toUser');
+  list.innerHTML = '<option value="">Получатель (email)</option>';
+
+  // вручную — чтобы админ не светился
+  ['tilyas@mail.ru','prokhor@mail.ru','roma@mail.ru','artem@mail.ru','test@mail.ru']
+    .filter(e => e !== currentUser)
+    .forEach(e => {
+      const o = document.createElement('option');
+      o.value = e;
+      o.textContent = e;
+      list.appendChild(o);
+    });
 }
 
 // ===== TRANSFER =====
 async function transfer() {
-  const to = document.getElementById('toUser').value;
-  const amount = Number(document.getElementById('amount').value);
+  const to = toUser.value;
+  const amount = Number(amountInput());
 
   if (!to || amount <= 0) {
-    show('bankMsg', '❌ Проверь данные', 'error');
+    msg('userMsg', '❌ Проверь данные', 'error');
     return;
   }
 
@@ -160,25 +229,55 @@ async function transfer() {
   const data = await res.json();
 
   if (!data.success) {
-    show('bankMsg', '❌ Ошибка перевода', 'error');
+    msg('userMsg', '❌ Ошибка перевода', 'error');
     return;
   }
 
-  show('bankMsg', '✅ Перевод выполнен', 'success');
-  setTimeout(() => location.reload(), 1000);
+  msg('userMsg', '✅ Перевод выполнен', 'success');
+  setTimeout(() => location.reload(), 1200);
 }
 
-// ===== LOGOUT =====
-function logout() {
-  location.reload();
+// ===== ADMIN ADD =====
+async function adminAdd() {
+  const to = document.getElementById('adminTarget').value.toLowerCase();
+  const amount = Number(document.getElementById('adminAmount').value);
+
+  if (!to || amount <= 0) {
+    msg('adminMsg', '❌ Проверь данные', 'error');
+    return;
+  }
+
+  await fetch(API_URL, {
+    method: 'POST',
+    body: JSON.stringify({
+      action: 'transfer',
+      from: to,
+      to: to,
+      amount: -amount
+    })
+  });
+
+  msg('adminMsg', '✅ Баланс изменён', 'success');
 }
 
-// ===== MESSAGE =====
-function show(id, text, type) {
+// ===== HELPERS =====
+function show(id, state) {
+  document.getElementById(id).classList.toggle('hidden', !state);
+}
+
+function msg(id, text, type) {
   const el = document.getElementById(id);
   el.textContent = text;
   el.className = 'message ' + type;
 }
+
+function logout() {
+  location.reload();
+}
+
+const emailInput = () => document.getElementById('email').value.trim();
+const passwordInput = () => document.getElementById('password').value.trim();
+const amountInput = () => document.getElementById('amount').value;
 </script>
 
 </body>
