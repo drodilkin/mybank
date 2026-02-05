@@ -13,6 +13,7 @@
   --yellow:#ffdd2d;
   --text:#ffffff;
   --muted:#8b8d98;
+  --error:#ff5a5a;
 }
 
 *{box-sizing:border-box}
@@ -20,7 +21,7 @@
 body{
   margin:0;
   min-height:100vh;
-  background:radial-gradient(circle at top, #1a1b22, #0b0b0f 70%);
+  background:radial-gradient(circle at top,#1a1b22,#0b0b0f 70%);
   display:flex;
   align-items:center;
   justify-content:center;
@@ -28,31 +29,35 @@ body{
   color:var(--text);
 }
 
-/* CARD */
-.login-card{
+.screen{
+  width:100%;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+}
+
+.hidden{display:none}
+
+.card{
   width:100%;
   max-width:380px;
   background:linear-gradient(180deg,#1a1b22,#14151b);
   border-radius:28px;
   padding:32px 28px 36px;
-  box-shadow:
-    0 20px 60px rgba(0,0,0,.6),
-    inset 0 1px 0 rgba(255,255,255,.04);
+  box-shadow:0 20px 60px rgba(0,0,0,.6);
 }
 
-/* TITLE */
-.login-card h1{
-  margin:0 0 28px;
-  font-size:26px;
-  font-weight:600;
+h1{
   text-align:center;
+  font-size:26px;
+  margin-bottom:26px;
+  font-weight:600;
 }
 
-/* INPUT */
 .input{
+  width:100%;
   background:var(--input);
   border:none;
-  width:100%;
   padding:16px 18px;
   margin-bottom:14px;
   border-radius:16px;
@@ -61,17 +66,9 @@ body{
   outline:none;
 }
 
-.input::placeholder{
-  color:var(--muted);
-}
+.input::placeholder{color:var(--muted)}
 
-.input:focus{
-  box-shadow:0 0 0 2px rgba(255,221,45,.15);
-}
-
-/* BUTTON */
 .btn{
-  margin-top:10px;
   width:100%;
   padding:16px;
   border:none;
@@ -81,42 +78,158 @@ body{
   font-size:17px;
   font-weight:600;
   cursor:pointer;
-  transition:.2s;
+  margin-top:8px;
 }
 
-.btn:hover{
-  transform:translateY(-1px);
-  box-shadow:0 6px 20px rgba(255,221,45,.35);
-}
-
-.btn:active{
-  transform:translateY(0);
-}
-
-/* FOOTER */
-.hint{
-  margin-top:18px;
+.msg{
   text-align:center;
-  font-size:13px;
-  color:var(--muted);
+  margin-top:12px;
+  font-size:14px;
+  color:var(--error);
+}
+
+.pin-dots{
+  display:flex;
+  justify-content:center;
+  gap:12px;
+  margin:22px 0;
+}
+
+.dot{
+  width:14px;
+  height:14px;
+  border-radius:50%;
+  background:#333;
+}
+
+.dot.active{background:var(--yellow)}
+
+.logout{
+  background:#2a2b33;
+  color:#fff;
 }
 </style>
 </head>
 
 <body>
 
-<div class="login-card">
-  <h1>Вход</h1>
-
-  <input class="input" type="email" placeholder="Email">
-  <input class="input" type="password" placeholder="Пароль">
-
-  <button class="btn">Войти</button>
-
-  <div class="hint">
-    PayBank • безопасный вход
+<!-- LOGIN -->
+<div class="screen" id="loginScreen">
+  <div class="card">
+    <h1>Вход</h1>
+    <input id="email" class="input" placeholder="Email">
+    <input id="password" type="password" class="input" placeholder="Пароль">
+    <button class="btn" onclick="login()">Войти</button>
+    <div class="msg" id="loginMsg"></div>
   </div>
 </div>
+
+<!-- CREATE PIN -->
+<div class="screen hidden" id="createPinScreen">
+  <div class="card">
+    <h1>Придумай PIN</h1>
+    <div class="pin-dots" id="createDots"></div>
+    <input id="createPin" class="input" maxlength="4" inputmode="numeric">
+    <button class="btn" onclick="savePin()">Сохранить</button>
+  </div>
+</div>
+
+<!-- ENTER PIN -->
+<div class="screen hidden" id="pinScreen">
+  <div class="card">
+    <h1>Введите PIN</h1>
+    <div class="pin-dots" id="pinDots"></div>
+    <input id="pinInput" class="input" maxlength="4" inputmode="numeric">
+    <button class="btn" onclick="checkPin()">Войти</button>
+    <div class="msg" id="pinMsg"></div>
+  </div>
+</div>
+
+<!-- APP -->
+<div class="screen hidden" id="appScreen">
+  <div class="card">
+    <h1>PayBank</h1>
+    <p style="text-align:center;color:var(--muted)">
+      Вы вошли в аккаунт
+    </p>
+    <button class="btn logout" onclick="logout()">Выйти</button>
+  </div>
+</div>
+
+<script>
+const API_URL = 'ВСТАВЬ_СЮДА_API_URL';
+
+// автологин
+window.onload = () => {
+  if(localStorage.getItem('pin')){
+    loginScreen.classList.add('hidden');
+    pinScreen.classList.remove('hidden');
+    renderDots('pinDots',0);
+  }
+};
+
+/* LOGIN */
+async function login(){
+  loginMsg.textContent='';
+  const emailVal=email.value.trim().toLowerCase();
+  const pass=password.value.trim();
+
+  const res = await fetch(API_URL,{
+    method:'POST',
+    body:JSON.stringify({action:'login',email:emailVal,password:pass})
+  });
+  const data = await res.json();
+
+  if(!data.success){
+    loginMsg.textContent='Неверный email или пароль';
+    return;
+  }
+
+  localStorage.setItem('email',emailVal);
+  loginScreen.classList.add('hidden');
+  createPinScreen.classList.remove('hidden');
+  renderDots('createDots',0);
+}
+
+/* CREATE PIN */
+function savePin(){
+  const pin=createPin.value;
+  if(pin.length!==4) return;
+  localStorage.setItem('pin',pin);
+  createPinScreen.classList.add('hidden');
+  appScreen.classList.remove('hidden');
+}
+
+/* ENTER PIN */
+function checkPin(){
+  if(pinInput.value===localStorage.getItem('pin')){
+    pinScreen.classList.add('hidden');
+    appScreen.classList.remove('hidden');
+  }else{
+    pinMsg.textContent='Неверный PIN';
+  }
+}
+
+/* DOTS */
+function renderDots(id,count){
+  const el=document.getElementById(id);
+  el.innerHTML='';
+  for(let i=0;i<4;i++){
+    const d=document.createElement('div');
+    d.className='dot'+(i<count?' active':'');
+    el.appendChild(d);
+  }
+}
+
+createPin.oninput=()=>renderDots('createDots',createPin.value.length);
+pinInput.oninput=()=>renderDots('pinDots',pinInput.value.length);
+
+/* LOGOUT */
+function logout(){
+  localStorage.clear();
+  location.reload();
+}
+</script>
 
 </body>
 </html>
