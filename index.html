@@ -7,13 +7,13 @@
 
 <style>
 :root {
-  --bg: #0b0b10;
-  --card: #181820;
-  --accent: #ffd600;
-  --text: #ffffff;
-  --muted: #9b9ba3;
-  --danger: #ff4d4f;
-  --success: #2ecc71;
+  --bg:#0b0b10;
+  --card:#181820;
+  --accent:#ffd600;
+  --text:#fff;
+  --muted:#9b9ba3;
+  --danger:#ff4d4f;
+  --success:#2ecc71;
 }
 
 * {
@@ -53,11 +53,6 @@ body {
   to { transform: rotate(360deg); }
 }
 
-#loader p {
-  margin-top: 16px;
-  color: var(--muted);
-}
-
 /* ===== APP ===== */
 .app {
   display: none;
@@ -77,8 +72,7 @@ body {
 
 h1 {
   text-align: center;
-  margin-bottom: 20px;
-  font-weight: 600;
+  margin-bottom: 12px;
 }
 
 input, select, button {
@@ -97,7 +91,6 @@ input, select {
 
 button {
   background: var(--accent);
-  color: black;
   font-weight: 600;
   cursor: pointer;
 }
@@ -110,8 +103,35 @@ button.secondary {
 .balance {
   font-size: 36px;
   text-align: center;
-  margin: 20px 0;
+  margin: 12px 0;
 }
+
+/* ===== HISTORY ===== */
+.history {
+  margin-top: 20px;
+}
+
+.history h3 {
+  font-size: 16px;
+  color: var(--muted);
+  margin-bottom: 10px;
+}
+
+.history-item {
+  background: #242430;
+  padding: 12px;
+  border-radius: 12px;
+  margin-bottom: 8px;
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+}
+
+.history-item.in { border-left: 4px solid var(--success); }
+.history-item.out { border-left: 4px solid var(--danger); }
+
+.amount.in { color: var(--success); }
+.amount.out { color: var(--danger); }
 
 .message {
   margin-top: 12px;
@@ -129,18 +149,11 @@ button.secondary {
 
 <body>
 
-<!-- ===== LOADER ===== -->
 <div id="loader">
   <div class="spinner"></div>
   <p>Загрузка PayBank…</p>
 </div>
 
-<!-- ===== SOUNDS ===== -->
-<audio id="sound-click" src="https://assets.mixkit.co/sfx/preview/mixkit-modern-click-box-check-1120.mp3"></audio>
-<audio id="sound-transfer" src="https://assets.mixkit.co/sfx/preview/mixkit-positive-interface-beep-221.mp3"></audio>
-<audio id="sound-error" src="https://assets.mixkit.co/sfx/preview/mixkit-wrong-answer-fail-notification-946.mp3"></audio>
-
-<!-- ===== APP ===== -->
 <div class="app" id="app">
 
   <!-- LOGIN -->
@@ -148,7 +161,7 @@ button.secondary {
     <h1>PayBank</h1>
     <input id="email" placeholder="Email">
     <input id="password" type="password" placeholder="Пароль">
-    <button onclick="playSound('sound-click'); login()">Войти</button>
+    <button onclick="login()">Войти</button>
     <div id="loginMsg" class="message"></div>
   </div>
 
@@ -159,192 +172,142 @@ button.secondary {
 
     <select id="toUser"></select>
     <input id="amount" type="number" placeholder="Сумма">
+    <button onclick="transfer()">Перевести</button>
+    <button class="secondary" onclick="logout()">Выйти</button>
 
-    <button onclick="playSound('sound-click'); transfer()">Перевести</button>
-    <button class="secondary" onclick="playSound('sound-click'); logout()">Выйти</button>
+    <div class="history">
+      <h3>История операций</h3>
+      <div id="historyList"></div>
+    </div>
 
     <div id="userMsg" class="message"></div>
-  </div>
-
-  <!-- ADMIN -->
-  <div class="card hidden" id="adminScreen">
-    <h1>Админ</h1>
-    <input id="adminTarget" placeholder="Email пользователя">
-    <input id="adminAmount" type="number" placeholder="Сумма">
-    <button onclick="playSound('sound-click'); adminAdd()">Пополнить</button>
-    <button class="secondary" onclick="playSound('sound-click'); logout()">Выйти</button>
-    <div id="adminMsg" class="message"></div>
   </div>
 
 </div>
 
 <script>
-// ===== НАСТРОЙКИ =====
-const API_URL = 'https://script.google.com/macros/s/AKfycbzS_4F765vEVD94zHFmwAiOJWY9nBBLU3WNV6Rpqg3ZMPa1Nz8XQZi_q2lr0M46nS20Pw/exec';
-
-const ADMIN_EMAIL = 'Bank';
-const ADMIN_PASSWORD = 'SUPERPUPER123';
+const API_URL = 'https://script.google.com/macros/s/AKfycbwZkienhfxpqxGiX73xaPbaqekExIhVRuv4xMCkXrCsb6QQxe_-1g8RLwKUdJ8j_mFX-g/exec';
 
 const USERS = [
-  { name: 'Роман Киселев', email: 'romankisel@mail.ru' },
-  { name: 'Ильяс Валиев', email: 'ilyasvaliev@mail.ru' },
-  { name: 'Артем Антонов', email: 'artemant@mail.ru' },
-  { name: 'Прохор Мартьянов', email: 'prokhormart@mail.ru' }
+  { name:'Роман Киселев', email:'romankisel@mail.ru' },
+  { name:'Ильяс Валиев', email:'ilyasvaliev@mail.ru' },
+  { name:'Артем Антонов', email:'artemant@mail.ru' },
+  { name:'Прохор Мартьянов', email:'prokhormart@mail.ru' }
 ];
 
 let currentUserEmail = '';
-let currentUserName = '';
 
-// ===== LOADER =====
 window.onload = () => {
   setTimeout(() => {
     loader.style.display = 'none';
     app.style.display = 'flex';
-  }, 1200);
+  }, 1000);
 };
 
-// ===== SOUND =====
-function playSound(id) {
-  const s = document.getElementById(id);
-  if (!s) return;
-  s.currentTime = 0;
-  s.play().catch(() => {});
-}
-
-// ===== LOGIN =====
 async function login() {
   const email = emailInput.value.toLowerCase().trim();
   const password = passwordInput.value.trim();
 
-  if (email === ADMIN_EMAIL && password === ADMIN_PASSWORD) {
-    loginScreen.classList.add('hidden');
-    adminScreen.classList.remove('hidden');
-    return;
-  }
-
   const res = await fetch(API_URL, {
     method: 'POST',
-    body: JSON.stringify({ action: 'login', email, password })
+    body: JSON.stringify({ action:'login', email, password })
   });
 
   const data = await res.json();
 
   if (!data.success) {
-    playSound('sound-error');
-    msg('loginMsg', '❌ Неверные данные', 'error');
+    msg('loginMsg','❌ Неверные данные','error');
     return;
   }
 
   currentUserEmail = email;
-  currentUserName = USERS.find(u => u.email === email)?.name || email;
-
-  userName.textContent = currentUserName;
+  userName.textContent = USERS.find(u=>u.email===email)?.name || email;
   balance.textContent = data.balance + ' ₿';
 
   fillRecipients();
+  loadHistory();
 
   loginScreen.classList.add('hidden');
   userScreen.classList.remove('hidden');
 }
 
-// ===== RECIPIENTS =====
 function fillRecipients() {
   toUser.innerHTML = '<option value="">Получатель</option>';
-  USERS.forEach(u => {
-    if (u.email !== currentUserEmail) {
-      const opt = document.createElement('option');
-      opt.value = u.email;
-      opt.textContent = u.name;
-      toUser.appendChild(opt);
-    }
+  USERS.filter(u=>u.email!==currentUserEmail).forEach(u=>{
+    const o=document.createElement('option');
+    o.value=u.email;
+    o.textContent=u.name;
+    toUser.appendChild(o);
   });
 }
 
-// ===== ПОЛУЧЕНИЕ БАЛАНСА =====
-async function updateBalance() {
-  const res = await fetch(API_URL, {
-    method: 'POST',
-    body: JSON.stringify({ action: 'getBalance', email: currentUserEmail })
-  });
-
-  const data = await res.json();
-  if (data.success) {
-    balance.textContent = data.balance + ' ₿';
-  }
-}
-
-// ===== TRANSFER (ФИКС) =====
 async function transfer() {
   const to = toUser.value;
   const amount = Number(amountInput.value);
 
   if (!to || amount <= 0) {
-    playSound('sound-error');
-    msg('userMsg', '❌ Проверь данные', 'error');
-    return;
-  }
-
-  const res = await fetch(API_URL, {
-    method: 'POST',
-    body: JSON.stringify({ action: 'transfer', from: currentUserEmail, to, amount })
-  });
-
-  const data = await res.json();
-
-  if (!data.success) {
-    playSound('sound-error');
-    msg('userMsg', '❌ Ошибка перевода', 'error');
-    return;
-  }
-
-  playSound('sound-transfer');
-  msg('userMsg', '✅ Перевод выполнен', 'success');
-  amountInput.value = '';
-
-  // 🔥 сразу обновляем баланс
-  updateBalance();
-}
-
-// ===== ADMIN =====
-async function adminAdd() {
-  const to = adminTarget.value.toLowerCase();
-  const amount = Number(adminAmount.value);
-
-  if (!to || amount <= 0) {
-    playSound('sound-error');
-    msg('adminMsg', '❌ Ошибка данных', 'error');
+    msg('userMsg','❌ Проверь данные','error');
     return;
   }
 
   await fetch(API_URL, {
-    method: 'POST',
-    body: JSON.stringify({
-      action: 'transfer',
-      from: to,
-      to,
-      amount: -amount
-    })
+    method:'POST',
+    body:JSON.stringify({ action:'transfer', from:currentUserEmail, to, amount })
   });
 
-  playSound('sound-transfer');
-  msg('adminMsg', '✅ Баланс изменён', 'success');
+  msg('userMsg','✅ Перевод выполнен','success');
+  amountInput.value='';
+  updateBalance();
+  loadHistory();
 }
 
-// ===== HELPERS =====
-function msg(id, text, type) {
-  const el = document.getElementById(id);
-  el.textContent = text;
-  el.className = 'message ' + type;
+async function updateBalance() {
+  const res = await fetch(API_URL, {
+    method:'POST',
+    body:JSON.stringify({ action:'getBalance', email:currentUserEmail })
+  });
+  const data = await res.json();
+  balance.textContent = data.balance + ' ₿';
 }
 
-function logout() {
-  location.reload();
+async function loadHistory() {
+  const res = await fetch(API_URL, {
+    method:'POST',
+    body:JSON.stringify({ action:'history', email:currentUserEmail })
+  });
+  const data = await res.json();
+
+  historyList.innerHTML='';
+  if (data.history.length === 0) {
+    historyList.innerHTML='<p style="color:#9b9ba3">Нет операций</p>';
+    return;
+  }
+
+  data.history.reverse().forEach(op=>{
+    const isIn = op.to === currentUserEmail;
+    const div = document.createElement('div');
+    div.className = 'history-item ' + (isIn?'in':'out');
+    div.innerHTML = `
+      <span>${isIn ? '⬇️ от '+op.fromName : '⬆️ → '+op.toName}</span>
+      <span class="amount ${isIn?'in':'out'}">
+        ${isIn?'+':'-'}${op.amount} ₿
+      </span>
+    `;
+    historyList.appendChild(div);
+  });
 }
 
-// inputs
-const emailInput = document.getElementById('email');
-const passwordInput = document.getElementById('password');
-const amountInput = document.getElementById('amount');
+function msg(id,text,type){
+  const el=document.getElementById(id);
+  el.textContent=text;
+  el.className='message '+type;
+}
+
+function logout(){ location.reload(); }
+
+const emailInput=document.getElementById('email');
+const passwordInput=document.getElementById('password');
+const amountInput=document.getElementById('amount');
 </script>
 
 </body>
