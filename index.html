@@ -48,14 +48,20 @@ border-radius:14px;
 
 .card{
 width:100%;
-height:160px;
+height:170px;
 border-radius:22px;
-background:var(--card);
+background:linear-gradient(135deg,#1e1e28,#121218);
 padding:20px;
-transition:transform .7s;
+transition:.5s;
 transform-style:preserve-3d;
 cursor:pointer;
 position:relative;
+box-shadow:0 0 0 rgba(255,214,0,0);
+}
+
+.card:hover{
+transform:translateY(-6px);
+box-shadow:0 0 25px rgba(255,214,0,0.15);
 }
 
 .card.flipped{transform:rotateY(180deg);}
@@ -90,7 +96,21 @@ border-radius:14px;
 .block input,.block select{background:var(--input);color:white;}
 .block button{background:var(--accent);font-weight:600;cursor:pointer;}
 
-.history-item{padding:12px 0;border-bottom:1px solid #2a2a36;}
+.history-item{
+padding:12px 0;
+border-bottom:1px solid #2a2a36;
+opacity:0;
+transform:translateY(10px);
+animation:fadeIn .35s forwards;
+}
+
+@keyframes fadeIn{
+to{
+opacity:1;
+transform:translateY(0);
+}
+}
+
 .in{color:#2ecc71;}
 .out{color:#ff4d4f;}
 
@@ -179,7 +199,6 @@ app.classList.remove('hidden');
 
 loadUsers();
 loadHistory();
-
 startAutoUpdate();
 }
 
@@ -222,10 +241,25 @@ to.appendChild(o);
 
 }
 
+function addTransactionInstant(toUser,amountVal){
+
+const div=document.createElement('div');
+div.className='history-item out';
+
+div.innerHTML=`
+<b>Перевод: ${getName(toUser)} — ${amountVal} ₽</b><br>
+<small>только что</small>
+`;
+
+history.prepend(div);
+}
+
 async function transfer(){
 
 const amountVal=Number(amount.value);
 if(!to.value||amountVal<=0) return;
+
+addTransactionInstant(to.value,amountVal);
 
 const r=await fetch(API,{
 method:'POST',
@@ -237,10 +271,6 @@ amount:amountVal,
 comment:comment.value
 })
 });
-
-const d=await r.json();
-
-if(!d.success) return alert('Ошибка перевода');
 
 await refreshBalance();
 await loadHistory();
