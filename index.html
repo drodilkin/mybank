@@ -2,296 +2,308 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>PayBank</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
-
-*{box-sizing:border-box}
-
-body{
-margin:0;
-font-family:Inter,Arial;
-background:#0b0b0b;
-color:white;
-display:flex;
-justify-content:center;
+:root {
+  --bg:#0b0b10;
+  --card:#17171f;
+  --input:#222230;
+  --accent:#ffd600;
+  --text:#fff;
+  --muted:#9b9ba3;
 }
 
-.app{
-width:100%;
-max-width:430px;
-padding:15px;
+* {
+  box-sizing:border-box;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
 }
 
-.card{
-background:#171717;
-border-radius:22px;
-padding:20px;
-margin-top:15px;
-box-shadow:0 0 25px #000;
+body {
+  margin:0;
+  background:var(--bg);
+  color:var(--text);
+  min-height:100vh;
+  display:flex;
+  justify-content:center;
+  align-items:center;
 }
 
-h1{
-margin:0;
-text-align:center;
+.hidden { display:none; }
+
+/* ===== AUTH ===== */
+.auth {
+  background:var(--card);
+  padding:28px;
+  border-radius:22px;
+  width:100%;
+  max-width:360px;
+  box-shadow:0 20px 60px rgba(0,0,0,.6);
 }
 
-input{
-width:100%;
-padding:15px;
-margin-top:10px;
-border-radius:14px;
-border:none;
-background:#262626;
-color:white;
-font-size:16px;
+.auth h1 {
+  text-align:center;
+  margin-bottom:20px;
 }
 
-button{
-width:100%;
-padding:15px;
-margin-top:12px;
-border-radius:14px;
-border:none;
-background:#ffd400;
-font-weight:bold;
-font-size:16px;
-cursor:pointer;
+.auth input, .auth button {
+  width:100%;
+  margin-top:12px;
+  padding:14px;
+  border:none;
+  border-radius:14px;
+  font-size:16px;
 }
 
-.smallbtn{
-background:#333;
-color:white;
+.auth input {
+  background:var(--input);
+  color:white;
 }
 
-.balance{
-font-size:34px;
-font-weight:bold;
-margin-top:10px;
+.auth button {
+  background:var(--accent);
+  font-weight:600;
+  cursor:pointer;
 }
 
-.row{
-display:flex;
-gap:10px;
+/* ===== APP ===== */
+.app {
+  width:100%;
+  max-width:420px;
+  padding:16px;
 }
 
-.row button{
-flex:1;
+/* ===== CARD ===== */
+.card-wrap {
+  perspective:1000px;
 }
 
-.history{
-margin-top:10px;
+.card {
+  width:100%;
+  height:160px;
+  border-radius:22px;
+  background:var(--card);
+  padding:20px;
+  transition:transform .7s;
+  transform-style:preserve-3d;
+  cursor:pointer;
 }
 
-.tx{
-background:#222;
-padding:10px;
-border-radius:12px;
-margin-top:8px;
-font-size:14px;
+.card.flipped {
+  transform:rotateY(180deg);
 }
 
-.err{
-background:#3a1414;
-padding:12px;
-border-radius:12px;
-margin-top:10px;
-display:none;
+.card-face {
+  position:absolute;
+  inset:0;
+  backface-visibility:hidden;
 }
 
-.loader{
-display:none;
-text-align:center;
-margin-top:10px;
+.card-back {
+  transform:rotateY(180deg);
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
 }
 
+.balance-title {
+  color:var(--muted);
+}
+
+.balance-amount {
+  font-size:34px;
+  margin-top:6px;
+}
+
+/* ===== TRANSFER ===== */
+.block {
+  background:var(--card);
+  border-radius:22px;
+  padding:18px;
+  margin-top:16px;
+}
+
+.block input, .block select, .block button {
+  width:100%;
+  margin-top:12px;
+  padding:14px;
+  border:none;
+  border-radius:14px;
+  font-size:15px;
+}
+
+.block input, .block select {
+  background:var(--input);
+  color:white;
+}
+
+.block button {
+  background:var(--accent);
+  font-weight:600;
+  cursor:pointer;
+}
+
+/* ===== HISTORY ===== */
+.history-item {
+  padding:12px 0;
+  border-bottom:1px solid #2a2a36;
+}
+
+.history-item:last-child {
+  border:none;
+}
+
+.in { color:#2ecc71; }
+.out { color:#ff4d4f; }
+
+.logout {
+  margin-top:14px;
+  background:#2a2a36 !important;
+  color:white;
+}
 </style>
 </head>
 
 <body>
 
-<div class="app">
-
-<!-- LOGIN -->
-<div id="login" class="card">
-<h1>PayBank</h1>
-<input id="email" placeholder="Email">
-<input id="password" type="password" placeholder="Пароль">
-<button onclick="login()">Войти</button>
-<div id="err" class="err">Неверные данные</div>
-<div id="load" class="loader">Загрузка...</div>
+<!-- ===== AUTH ===== -->
+<div class="auth" id="auth">
+  <h1>PayBank</h1>
+  <input id="email" placeholder="Email">
+  <input id="password" type="password" placeholder="Пароль">
+  <button onclick="login()">Войти</button>
 </div>
 
-<!-- BANK -->
-<div id="bank" style="display:none">
+<!-- ===== APP ===== -->
+<div class="app hidden" id="app">
 
-<div class="card">
-<div>Баланс</div>
-<div id="balance" class="balance">0₽</div>
-<div>Карта: <span id="card"></span></div>
+  <!-- CARD -->
+  <div class="card-wrap">
+    <div class="card" id="bankCard" onclick="flipCard()">
+      <div class="card-face">
+        <div class="balance-title">Баланс</div>
+        <div class="balance-amount" id="balance">0 ₽</div>
+      </div>
+      <div class="card-face card-back">
+        <div class="balance-title">Номер карты</div>
+        <div class="balance-amount" id="cardNumber"></div>
+      </div>
+    </div>
+  </div>
 
-<div class="row">
-<button class="smallbtn" onclick="loadHistory()">История</button>
-<button class="smallbtn" onclick="logout()">Выйти</button>
-</div>
+  <!-- TRANSFER -->
+  <div class="block">
+    <select id="to">
+      <option value="">Получатель</option>
+    </select>
+    <input id="amount" type="number" placeholder="Сумма">
+    <input id="comment" placeholder="Комментарий">
+    <button onclick="transfer()">Перевести</button>
+  </div>
 
-</div>
+  <!-- HISTORY -->
+  <div class="block" id="history"></div>
 
-<div class="card">
-<h3>Перевод</h3>
-<input id="toCard" placeholder="Карта получателя">
-<input id="amount" type="number" placeholder="Сумма">
-<button onclick="transfer()">Отправить</button>
-</div>
-
-<div class="card">
-<h3>История операций</h3>
-<div id="history" class="history"></div>
-</div>
-
-</div>
+  <button class="block logout" onclick="logout()">Выйти</button>
 
 </div>
 
 <script>
+const API = 'https://script.google.com/macros/s/AKfycbxFgVoN5qrUVPLbQtpCBDsAXZ03KCGpspAxdBajHv6hU8ZFOxRMX1_jqGevoV4qN4a7AA/exec';
 
-const API="https://script.google.com/macros/s/AKfycbz3ffBzR-nkCFzKObwsT0z5b303SBf-xUg0yas0450ssya4rW74fsF9dZlD21vYuJFKLQ/exec";
-let user=null;
+let userEmail = '';
 
-function showLoader(v){
-document.getElementById("load").style.display=v?"block":"none";
+async function login() {
+  const email = emailInput.value.trim();
+  const password = passwordInput.value.trim();
+
+  const r = await fetch(API, {
+    method:'POST',
+    body:JSON.stringify({ action:'login', email, password })
+  });
+
+  const d = await r.json();
+  if (!d.success) return alert('Неверные данные');
+
+  userEmail = email;
+  localStorage.setItem('user', email);
+
+  balance.textContent = d.balance + ' ₽';
+  cardNumber.textContent = d.card;
+
+  auth.classList.add('hidden');
+  app.classList.remove('hidden');
+
+  loadUsers();
+  loadHistory();
 }
 
-function showError(v){
-document.getElementById("err").style.display=v?"block":"none";
+function flipCard() {
+  bankCard.classList.toggle('flipped');
 }
 
-async function api(data){
+async function loadUsers() {
+  const list = [
+    'ilyasvaliev@mail.ru',
+    'prokhormart@mail.ru',
+    'romankisel@mail.ru',
+    'artemant@mail.ru'
+  ];
 
-const r=await fetch(API,{
-method:"POST",
-body:JSON.stringify(data),
-headers:{
-"Content-Type":"text/plain;charset=utf-8"
-}
-});
-
-return await r.json();
-}
-
-async function login(){
-
-showLoader(true);
-showError(false);
-
-const email=document.getElementById("email").value;
-const password=document.getElementById("password").value;
-
-const res=await api({
-action:"login",
-email,
-password
-});
-
-showLoader(false);
-
-if(!res.ok){
-showError(true);
-return;
+  to.innerHTML = '<option value="">Получатель</option>';
+  list.filter(e => e !== userEmail).forEach(e => {
+    const o = document.createElement('option');
+    o.value = e;
+    o.textContent = e;
+    to.appendChild(o);
+  });
 }
 
-user=res;
-localStorage.setItem("user",JSON.stringify(res));
+async function transfer() {
+  const amountVal = Number(amount.value);
+  if (!to.value || amountVal <= 0) return;
 
-openBank();
+  await fetch(API, {
+    method:'POST',
+    body:JSON.stringify({
+      action:'transfer',
+      from:userEmail,
+      to:to.value,
+      amount:amountVal,
+      comment:comment.value
+    })
+  });
+
+  comment.value='';
+  amount.value='';
+  loadHistory();
 }
 
-function openBank(){
+async function loadHistory() {
+  const r = await fetch(API,{
+    method:'POST',
+    body:JSON.stringify({ action:'history', email:userEmail })
+  });
+  const d = await r.json();
 
-document.getElementById("login").style.display="none";
-document.getElementById("bank").style.display="block";
-
-updateUI();
-loadHistory();
+  history.innerHTML='<h3>История</h3>';
+  d.history.forEach(h=>{
+    const div=document.createElement('div');
+    const type=h[1]===userEmail?'out':'in';
+    div.className='history-item '+type;
+    div.innerHTML=`${type==='out'?'⬇':'⬆'} ${h[3]} ₽<br><small>${h[4]}</small>`;
+    history.appendChild(div);
+  });
 }
 
-function updateUI(){
-
-document.getElementById("balance").innerText=
-Number(user.balance).toLocaleString()+" ₽";
-
-document.getElementById("card").innerText=user.card;
-
+function logout() {
+  localStorage.clear();
+  location.reload();
 }
 
-async function transfer(){
-
-const card=document.getElementById("toCard").value;
-const amount=document.getElementById("amount").value;
-
-const res=await api({
-action:"transfer",
-from:user.email,
-card,
-amount
-});
-
-if(res.ok){
-
-user.balance-=Number(amount);
-localStorage.setItem("user",JSON.stringify(user));
-updateUI();
-loadHistory();
-
-alert("Перевод выполнен");
-
-}else{
-alert("Ошибка перевода");
-}
-}
-
-async function loadHistory(){
-
-const res=await api({
-action:"history",
-email:user.email
-});
-
-const h=document.getElementById("history");
-h.innerHTML="";
-
-if(!res.list) return;
-
-res.list.reverse().forEach(tx=>{
-
-h.innerHTML+=`
-<div class="tx">
-${tx.date}<br>
-${tx.from} → ${tx.to}<br>
-${tx.amount} ₽
-</div>
-`;
-
-});
-}
-
-function logout(){
-localStorage.removeItem("user");
-location.reload();
-}
-
-window.onload=()=>{
-
-const saved=localStorage.getItem("user");
-
-if(saved){
-user=JSON.parse(saved);
-openBank();
-}
-
-};
-
+const emailInput=document.getElementById('email');
+const passwordInput=document.getElementById('password');
 </script>
 
 </body>
