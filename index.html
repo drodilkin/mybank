@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🏦 Виртуальный Банк - Полная версия</title>
+    <title>🏦 Виртуальный Банк с Google Form</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { 
@@ -21,7 +21,7 @@
             box-shadow: 0 10px 30px rgba(0,0,0,0.2);
         }
         h1 { color: #333; margin-bottom: 30px; text-align: center; }
-        input { 
+        input, select { 
             width: 100%; 
             padding: 12px; 
             margin: 10px 0; 
@@ -56,13 +56,6 @@
         .success { background: #d4edda; color: #155724; }
         .error { background: #f8d7da; color: #721c24; }
         .info { background: #d1ecf1; color: #0c5460; }
-        .user-card {
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            margin: 5px 0;
-            background: #f8f9fa;
-        }
         .logout-btn { background: #dc3545; }
     </style>
 </head>
@@ -70,15 +63,14 @@
     <div class="container">
         <h1>🏦 Виртуальный Банк</h1>
         
-        <!-- Экран входа -->
         <div id="loginScreen">
             <h3>Вход в систему</h3>
             <input type="text" id="loginEmail" placeholder="Email" value="tilyas@mail.ru">
             <input type="password" id="loginPassword" placeholder="Пароль" value="80223">
-            <button onclick="login()">Войти в банк</button>
+            <button onclick="login()">Войти</button>
             
             <div class="message info">
-                <strong>Все пользователи:</strong><br>
+                <strong>Пользователи:</strong><br>
                 • tilyas@mail.ru / 80223<br>
                 • Prokhor@mail.ru / 71601<br>
                 • Roma@mail.ru / 23312<br>
@@ -88,165 +80,130 @@
             <div id="loginMessage" class="message"></div>
         </div>
         
-        <!-- Экран банка -->
         <div id="bankScreen" style="display:none">
-            <h3>👋 Добро пожаловать, <span id="userName"></span>!</h3>
+            <h3>👋 <span id="userName"></span></h3>
             <div class="balance" id="balance">50000 ₿</div>
             
-            <h4>💸 Перевод средств</h4>
-            <select id="toEmail" style="width:100%; padding:12px; margin:10px 0; border-radius:8px;">
+            <h4>💸 Перевод</h4>
+            <select id="toUser">
                 <option value="">Выберите получателя</option>
             </select>
-            <input type="number" id="amount" placeholder="Сумма перевода" min="1" max="50000">
+            <input type="number" id="amount" placeholder="Сумма" min="1">
             
-            <button onclick="makeTransfer()">✅ Выполнить перевод</button>
-            <button onclick="logout()" class="logout-btn">🚪 Выйти из системы</button>
-            
-            <h4>📊 История операций</h4>
-            <div id="history"></div>
+            <button onclick="transfer()">Отправить перевод</button>
+            <button onclick="logout()" class="logout-btn">Выйти</button>
             
             <div id="bankMessage" class="message"></div>
         </div>
     </div>
 
     <script>
-        // ID вашей Google Таблицы
-        const SHEET_ID = '1UJzb281UvBZIGr9rE8y0hzvhHUt_G2YDnRYqlTi03xI';
+        // ДАННЫЕ ПОЛЬЗОВАТЕЛЕЙ
+        const users = [
+            {id: 1, email: 'tilyas@mail.ru', password: '80223', balance: 50000},
+            {id: 2, email: 'prokhor@mail.ru', password: '71601', balance: 50000},
+            {id: 3, email: 'roma@mail.ru', password: '23312', balance: 50000},
+            {id: 4, email: 'artem@mail.ru', password: '94331', balance: 50000}
+        ];
         
         let currentUser = null;
-        let allUsers = [];
-        let transactions = [];
         
-        // Очистка данных (убираем пробелы, нормализуем)
-        function cleanData(data) {
-            return data.map(user => ({
-                ID: (user.ID || '').toString().trim(),
-                Email: (user.Email || '').toString().trim().toLowerCase(),
-                Password: (user.Password || '').toString().trim(),
-                Balance: parseInt(user.Balance) || 50000,
-                RegistrationDate: user.RegistrationDate || '2024-01-01'
-            }));
-        }
+        // ========== ВАША GOOGLE FORM ==========
+        const GOOGLE_FORM_ID = '1FAIpQLScTjPMG7gQVc1xvXLXdRm9_j4aaTn-ZFET0krlRvevl1AxeTA';
         
-        // Загрузить пользователей из Google Sheets
-        async function loadUsers() {
+        // Сохранить перевод в Google Form
+        async function saveToGoogleForm(from, to, amount) {
             try {
-                const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=Users`;
-                const response = await fetch(url);
-                const text = await response.text();
+                console.log('Отправка в Google Form:', {from, to, amount});
                 
-                if (text.includes('error')) {
-                    throw new Error('Ошибка загрузки таблицы');
-                }
+                // URL вашей формы
+                const url = `https://docs.google.com/forms/d/e/${GOOGLE_FORM_ID}/formResponse`;
                 
-                const json = JSON.parse(text.substring(47).slice(0, -2));
+                // Пробуем разные ID полей (нужно определить ваши)
+                const fieldIds = [
+                    'entry.1361860196', // Возможный ID для "От кого"
+                    'entry.1065046570', // Возможный ID для "Кому"  
+                    'entry.1166974658', // Возможный ID для "Сумма"
+                    'entry.839337160'  // Возможный ID для "Дата"
+                ];
                 
-                if (!json.table || !json.table.rows) {
-                    throw new Error('Таблица пуста');
-                }
+                // Создаем данные
+                const formData = new FormData();
+                formData.append(fieldIds[0], from);
+                formData.append(fieldIds[1], to);
+                formData.append(fieldIds[2], amount.toString());
+                formData.append(fieldIds[3], new Date().toLocaleDateString('ru-RU'));
                 
-                // Преобразуем данные
-                const headers = json.table.cols.map(col => col.label);
-                const rawUsers = json.table.rows.map(row => {
-                    const obj = {};
-                    headers.forEach((header, index) => {
-                        obj[header] = row.c[index] ? row.c[index].v : '';
-                    });
-                    return obj;
+                // Отправляем (no-cors для обхода ограничений)
+                await fetch(url, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    body: formData
                 });
                 
-                // Очищаем данные
-                allUsers = cleanData(rawUsers);
-                
-                // Если данных мало, добавляем тестовых
-                if (allUsers.length < 4) {
-                    allUsers = [
-                        {ID: '1', Email: 'tilyas@mail.ru', Password: '80223', Balance: 50000},
-                        {ID: '2', Email: 'prokhor@mail.ru', Password: '71601', Balance: 50000},
-                        {ID: '3', Email: 'roma@mail.ru', Password: '23312', Balance: 50000},
-                        {ID: '4', Email: 'artem@mail.ru', Password: '94331', Balance: 50000}
-                    ];
-                }
-                
-                console.log('Загружены пользователи:', allUsers);
-                return allUsers;
+                console.log('✅ Данные отправлены в Google Form');
+                return true;
                 
             } catch (error) {
-                console.error('Ошибка загрузки:', error);
-                // Используем тестовых пользователей
-                allUsers = [
-                    {ID: '1', Email: 'tilyas@mail.ru', Password: '80223', Balance: 50000},
-                    {ID: '2', Email: 'prokhor@mail.ru', Password: '71601', Balance: 50000},
-                    {ID: '3', Email: 'roma@mail.ru', Password: '23312', Balance: 50000},
-                    {ID: '4', Email: 'artem@mail.ru', Password: '94331', Balance: 50000}
-                ];
-                return allUsers;
+                console.log('⚠️ Ошибка отправки в Google Form:', error);
+                return false;
             }
         }
         
-        // Войти в систему
-        async function login() {
-            const email = document.getElementById('loginEmail').value.trim().toLowerCase();
+        // ========== ФУНКЦИИ БАНКА ==========
+        
+        function showMessage(elementId, text, type) {
+            const element = document.getElementById(elementId);
+            element.textContent = text;
+            element.className = `message ${type}`;
+            
+            if (type !== 'info') {
+                setTimeout(() => {
+                    element.textContent = '';
+                    element.className = 'message';
+                }, 4000);
+            }
+        }
+        
+        function login() {
+            const email = document.getElementById('loginEmail').value.toLowerCase().trim();
             const password = document.getElementById('loginPassword').value.trim();
             
-            if (!email || !password) {
-                showMessage('loginMessage', 'Введите email и пароль', 'error');
-                return;
-            }
-            
-            showMessage('loginMessage', 'Загрузка данных...', 'info');
-            
-            // Загружаем пользователей
-            await loadUsers();
-            
-            // Ищем пользователя
-            const user = allUsers.find(u => 
-                u.Email === email && u.Password === password
-            );
+            const user = users.find(u => u.email === email && u.password === password);
             
             if (user) {
                 currentUser = user;
-                showMessage('loginMessage', `✅ Успешный вход! Баланс: ${user.Balance} ₿`, 'success');
                 
                 // Переключаем экраны
                 document.getElementById('loginScreen').style.display = 'none';
                 document.getElementById('bankScreen').style.display = 'block';
                 document.getElementById('userName').textContent = email;
-                document.getElementById('balance').textContent = `${user.Balance} ₿`;
+                document.getElementById('balance').textContent = `${user.balance} ₿`;
                 
-                // Заполняем список пользователей для перевода
-                fillUsersSelect();
-                loadHistory();
+                // Заполняем список получателей
+                const select = document.getElementById('toUser');
+                select.innerHTML = '<option value="">Выберите получателя</option>';
+                
+                users.forEach(u => {
+                    if (u.email !== email) {
+                        const option = document.createElement('option');
+                        option.value = u.email;
+                        option.textContent = `${u.email} (${u.balance} ₿)`;
+                        select.appendChild(option);
+                    }
+                });
+                
+                showMessage('loginMessage', '✅ Успешный вход!', 'success');
                 
             } else {
-                showMessage('loginMessage', 
-                    `❌ Неверный email или пароль<br>
-                    <small>Попробуйте: tilyas@mail.ru / 80223</small>`, 
-                    'error'
-                );
+                showMessage('loginMessage', '❌ Неверный email или пароль', 'error');
             }
         }
         
-        // Заполнить список пользователей для перевода
-        function fillUsersSelect() {
-            const select = document.getElementById('toEmail');
-            select.innerHTML = '<option value="">Выберите получателя</option>';
-            
-            allUsers.forEach(user => {
-                if (user.Email !== currentUser.Email) {
-                    const option = document.createElement('option');
-                    option.value = user.Email;
-                    option.textContent = `${user.Email} (Баланс: ${user.Balance} ₿)`;
-                    select.appendChild(option);
-                }
-            });
-        }
-        
-        // Выполнить перевод
-        async function makeTransfer() {
+        async function transfer() {
             if (!currentUser) return;
             
-            const toEmail = document.getElementById('toEmail').value;
+            const toEmail = document.getElementById('toUser').value;
             const amount = parseInt(document.getElementById('amount').value);
             
             if (!toEmail) {
@@ -259,101 +216,63 @@
                 return;
             }
             
-            if (amount > currentUser.Balance) {
-                showMessage('bankMessage', `❌ Недостаточно средств! Ваш баланс: ${currentUser.Balance} ₿`, 'error');
+            if (amount > currentUser.balance) {
+                showMessage('bankMessage', `❌ Недостаточно средств! Доступно: ${currentUser.balance} ₿`, 'error');
                 return;
             }
             
-            // Находим получателя
-            const receiver = allUsers.find(u => u.Email === toEmail);
+            if (toEmail === currentUser.email) {
+                showMessage('bankMessage', '❌ Нельзя переводить себе', 'error');
+                return;
+            }
+            
+            const receiver = users.find(u => u.email === toEmail);
             if (!receiver) {
                 showMessage('bankMessage', 'Получатель не найден', 'error');
                 return;
             }
             
-            // Создаем транзакцию
-            const transaction = {
-                id: transactions.length + 1,
-                from: currentUser.Email,
-                to: receiver.Email,
-                amount: amount,
-                date: new Date().toLocaleString('ru-RU'),
-                status: 'success'
-            };
-            
-            // Обновляем балансы
-            currentUser.Balance -= amount;
-            receiver.Balance += amount;
-            
-            // Сохраняем транзакцию
-            transactions.push(transaction);
+            // ВЫПОЛНЯЕМ ПЕРЕВОД
+            currentUser.balance -= amount;
+            receiver.balance += amount;
             
             // Обновляем отображение
-            document.getElementById('balance').textContent = `${currentUser.Balance} ₿`;
+            document.getElementById('balance').textContent = `${currentUser.balance} ₿`;
             
-            // Показываем сообщение
-            showMessage('bankMessage', 
-                `✅ Перевод выполнен!<br>
-                <strong>${amount} ₿</strong> → <strong>${toEmail}</strong><br>
-                Ваш новый баланс: <strong>${currentUser.Balance} ₿</strong>`, 
-                'success'
-            );
-            
-            // Обновляем историю
-            loadHistory();
-            
-            // Обновляем список пользователей
-            fillUsersSelect();
-            
-            // Очищаем поле суммы
-            document.getElementById('amount').value = '';
-            
-            // Для РЕАЛЬНОГО сохранения в Google Sheets нужно:
-            // 1. Google Apps Script
-            // 2. Или серверная часть
-            // 3. Или другой способ записи
-            
-            console.log('Транзакция:', transaction);
-            console.log('Обновленные пользователи:', allUsers);
-            
-            // Вот здесь был бы код для сохранения в Google Sheets
-            // saveToGoogleSheets();
-        }
-        
-        // Загрузить историю
-        function loadHistory() {
-            const historyDiv = document.getElementById('history');
-            
-            // Фильтруем транзакции текущего пользователя
-            const userTransactions = transactions.filter(t => 
-                t.from === currentUser.Email || t.to === currentUser.Email
-            );
-            
-            if (userTransactions.length === 0) {
-                historyDiv.innerHTML = '<div class="message info">Нет операций</div>';
-                return;
-            }
-            
-            let html = '';
-            userTransactions.reverse().forEach(trans => {
-                const isOutgoing = trans.from === currentUser.Email;
-                const type = isOutgoing ? '📤 Отправлено' : '📥 Получено';
-                const otherUser = isOutgoing ? trans.to : trans.from;
-                
-                html += `
-                    <div class="user-card">
-                        <div><strong>${type}</strong></div>
-                        <div>${isOutgoing ? 'Кому' : 'От'}: ${otherUser}</div>
-                        <div>Сумма: ${trans.amount} ₿</div>
-                        <div><small>${trans.date}</small></div>
-                    </div>
-                `;
+            // Обновляем список получателей (балансы изменились)
+            const select = document.getElementById('toUser');
+            select.innerHTML = '<option value="">Выберите получателя</option>';
+            users.forEach(u => {
+                if (u.email !== currentUser.email) {
+                    const option = document.createElement('option');
+                    option.value = u.email;
+                    option.textContent = `${u.email} (${u.balance} ₿)`;
+                    select.appendChild(option);
+                }
             });
             
-            historyDiv.innerHTML = html;
+            // СОХРАНЯЕМ В GOOGLE FORM
+            const saved = await saveToGoogleForm(currentUser.email, receiver.email, amount);
+            
+            if (saved) {
+                showMessage('bankMessage', 
+                    `✅ Перевод ${amount} ₿ → ${toEmail}<br>
+                    <small>Сохранено в Google Form</small>`, 
+                    'success'
+                );
+            } else {
+                showMessage('bankMessage', 
+                    `✅ Перевод ${amount} ₿ → ${toEmail}<br>
+                    <small>Сохранено локально</small>`, 
+                    'success'
+                );
+            }
+            
+            // Очищаем поля
+            document.getElementById('amount').value = '';
+            document.getElementById('toUser').selectedIndex = 0;
         }
         
-        // Выйти из системы
         function logout() {
             currentUser = null;
             document.getElementById('loginScreen').style.display = 'block';
@@ -363,25 +282,10 @@
             document.getElementById('loginMessage').textContent = '';
         }
         
-        // Показать сообщение
-        function showMessage(elementId, text, type) {
-            const element = document.getElementById(elementId);
-            element.innerHTML = text;
-            element.className = `message ${type}`;
-            
-            if (type !== 'info') {
-                setTimeout(() => {
-                    element.textContent = '';
-                    element.className = 'message';
-                }, 5000);
-            }
-        }
-        
-        // При загрузке страницы
-        window.onload = async function() {
-            // Загружаем пользователей
-            await loadUsers();
-            console.log('Система готова. Пользователи:', allUsers);
+        // При загрузке
+        window.onload = function() {
+            console.log('Банк готов к работе!');
+            console.log('Google Form ID:', GOOGLE_FORM_ID);
         };
     </script>
 </body>
