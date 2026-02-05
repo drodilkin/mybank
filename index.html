@@ -6,326 +6,302 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
-:root {
-  --bg: #0b0b10;
-  --card: #181820;
-  --accent: #ffd600;
-  --text: #ffffff;
-  --muted: #9b9ba3;
-  --danger: #ff4d4f;
-  --success: #2ecc71;
+:root{
+  --bg:#0b0b10;
+  --card:#181820;
+  --accent:#ffd600;
+  --text:#fff;
+  --muted:#9b9ba3;
+  --danger:#ff4d4f;
+  --success:#2ecc71;
 }
 
-* {
-  box-sizing: border-box;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+*{
+  box-sizing:border-box;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
 }
 
-body {
-  margin: 0;
-  background: var(--bg);
-  color: var(--text);
-  min-height: 100vh;
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--text);
+  min-height:100vh;
 }
 
-/* ===== LOADER ===== */
-#loader {
-  position: fixed;
-  inset: 0;
-  background: var(--bg);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  z-index: 999;
+/* LOADER */
+#loader{
+  position:fixed;
+  inset:0;
+  background:var(--bg);
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  z-index:999;
 }
 
-.spinner {
-  width: 48px;
-  height: 48px;
-  border: 4px solid #2a2a36;
-  border-top: 4px solid var(--accent);
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
+.spinner{
+  width:48px;
+  height:48px;
+  border:4px solid #2a2a36;
+  border-top:4px solid var(--accent);
+  border-radius:50%;
+  animation:spin 1s linear infinite;
 }
 
-@keyframes spin {
-  to { transform: rotate(360deg); }
+@keyframes spin{to{transform:rotate(360deg)}}
+
+#loader p{color:var(--muted);margin-top:16px}
+
+/* APP */
+.app{
+  display:none;
+  min-height:100vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
 }
 
-#loader p {
-  margin-top: 16px;
-  color: var(--muted);
+.card{
+  width:100%;
+  max-width:420px;
+  background:var(--card);
+  border-radius:22px;
+  padding:24px;
+  box-shadow:0 20px 50px rgba(0,0,0,.5);
 }
 
-/* ===== APP ===== */
-.app {
-  display: none;
-  min-height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+h1{text-align:center;margin-bottom:20px}
+
+input,select,button{
+  width:100%;
+  padding:14px;
+  border-radius:14px;
+  border:none;
+  font-size:16px;
+  margin-top:12px;
 }
 
-.card {
-  width: 100%;
-  max-width: 420px;
-  background: var(--card);
-  border-radius: 22px;
-  padding: 24px;
-  box-shadow: 0 20px 50px rgba(0,0,0,.5);
+input,select{
+  background:#242430;
+  color:#fff;
 }
 
-h1 {
-  text-align: center;
-  margin-bottom: 20px;
-  font-weight: 600;
+button{
+  background:var(--accent);
+  color:#000;
+  font-weight:600;
+  cursor:pointer;
 }
 
-input, select, button {
-  width: 100%;
-  padding: 14px;
-  border-radius: 14px;
-  border: none;
-  font-size: 16px;
-  margin-top: 12px;
+button.secondary{
+  background:#2a2a36;
+  color:#fff;
 }
 
-input, select {
-  background: #242430;
-  color: white;
+.balance{
+  font-size:36px;
+  text-align:center;
+  margin:20px 0;
 }
 
-button {
-  background: var(--accent);
-  color: black;
-  font-weight: 600;
-  cursor: pointer;
+.message{
+  margin-top:12px;
+  padding:12px;
+  border-radius:12px;
+  text-align:center;
 }
 
-button.secondary {
-  background: #2a2a36;
-  color: white;
-}
-
-.balance {
-  font-size: 36px;
-  text-align: center;
-  margin: 20px 0;
-}
-
-.message {
-  margin-top: 12px;
-  padding: 12px;
-  border-radius: 12px;
-  text-align: center;
-}
-
-.error { background: rgba(255,77,79,.15); color: var(--danger); }
-.success { background: rgba(46,204,113,.15); color: var(--success); }
-
-.hidden { display: none; }
+.error{background:rgba(255,77,79,.15);color:var(--danger)}
+.success{background:rgba(46,204,113,.15);color:var(--success)}
+.hidden{display:none}
 </style>
 </head>
 
 <body>
 
-<!-- ===== LOADER ===== -->
+<!-- LOADER -->
 <div id="loader">
   <div class="spinner"></div>
   <p>Загрузка PayBank…</p>
 </div>
 
-<!-- ===== SOUNDS ===== -->
-<audio id="sound-click" src="https://assets.mixkit.co/sfx/preview/mixkit-modern-click-box-check-1120.mp3"></audio>
-<audio id="sound-transfer" src="https://assets.mixkit.co/sfx/preview/mixkit-positive-interface-beep-221.mp3"></audio>
-<audio id="sound-error" src="https://assets.mixkit.co/sfx/preview/mixkit-wrong-answer-fail-notification-946.mp3"></audio>
+<!-- SOUNDS -->
+<audio id="sound-click" src="https://assets.mixkit.co/sfx/preview/mixkit-modern-click-box-check-1120.mp3" preload="auto"></audio>
+<audio id="sound-transfer" src="https://assets.mixkit.co/sfx/preview/mixkit-positive-interface-beep-221.mp3" preload="auto"></audio>
+<audio id="sound-error" src="https://assets.mixkit.co/sfx/preview/mixkit-wrong-answer-fail-notification-946.mp3" preload="auto"></audio>
 
-<!-- ===== APP ===== -->
 <div class="app" id="app">
 
-  <!-- LOGIN -->
-  <div class="card" id="loginScreen">
-    <h1>PayBank</h1>
-    <input id="email" placeholder="Email">
-    <input id="password" type="password" placeholder="Пароль">
-    <button onclick="playSound('sound-click'); login()">Войти</button>
-    <div id="loginMsg" class="message"></div>
-  </div>
+<!-- LOGIN -->
+<div class="card" id="loginScreen">
+  <h1>PayBank</h1>
+  <input id="email" placeholder="Email">
+  <input id="password" type="password" placeholder="Пароль">
+  <button onclick="userAction(login)">Войти</button>
+  <div id="loginMsg" class="message"></div>
+</div>
 
-  <!-- USER -->
-  <div class="card hidden" id="userScreen">
-    <h1 id="userName"></h1>
-    <div class="balance" id="balance">0 ₿</div>
+<!-- USER -->
+<div class="card hidden" id="userScreen">
+  <h1 id="userName"></h1>
+  <div class="balance" id="balance">0 ₿</div>
 
-    <select id="toUser"></select>
-    <input id="amount" type="number" placeholder="Сумма">
+  <select id="toUser"></select>
+  <input id="amount" type="number" placeholder="Сумма">
 
-    <button onclick="playSound('sound-click'); transfer()">Перевести</button>
-    <button class="secondary" onclick="playSound('sound-click'); logout()">Выйти</button>
+  <button onclick="userAction(transfer)">Перевести</button>
+  <button class="secondary" onclick="userAction(logout)">Выйти</button>
 
-    <div id="userMsg" class="message"></div>
-  </div>
+  <div id="userMsg" class="message"></div>
+</div>
 
-  <!-- ADMIN -->
-  <div class="card hidden" id="adminScreen">
-    <h1>Админ</h1>
-    <input id="adminTarget" placeholder="Email пользователя">
-    <input id="adminAmount" type="number" placeholder="Сумма">
-    <button onclick="playSound('sound-click'); adminAdd()">Пополнить</button>
-    <button class="secondary" onclick="playSound('sound-click'); logout()">Выйти</button>
-    <div id="adminMsg" class="message"></div>
-  </div>
+<!-- ADMIN -->
+<div class="card hidden" id="adminScreen">
+  <h1>Админ</h1>
+  <input id="adminTarget" placeholder="Email пользователя">
+  <input id="adminAmount" type="number" placeholder="Сумма">
+  <button onclick="userAction(adminAdd)">Пополнить</button>
+  <button class="secondary" onclick="userAction(logout)">Выйти</button>
+  <div id="adminMsg" class="message"></div>
+</div>
 
 </div>
 
 <script>
-// ===== НАСТРОЙКИ =====
+/* ================= НАСТРОЙКИ ================= */
 const API_URL = 'https://script.google.com/macros/s/AKfycbzBRaaGfxEBHQL16nxPR_Y3dbG2nTF_Q8ui0XMyJ_DCFmHuuFovzlI1bO3wT8iE1SHs-w/exec';
-
 const ADMIN_EMAIL = 'admin_secret@bank.local';
 const ADMIN_PASSWORD = 'superSecret123';
 
-// Пользователи (ИМЯ → EMAIL)
 const USERS = [
-  { name: 'Роман Киселев', email: 'romankisel@mail.ru' },
-  { name: 'Ильяс Валиев', email: 'ilyasvaliev@mail.ru' },
-  { name: 'Артем Антонов', email: 'artemant@mail.ru' },
-  { name: 'Прохор Мартьянов', email: 'prokhormart@mail.ru' }
+  {name:'Роман Киселев',email:'romankisel@mail.ru'},
+  {name:'Ильяс Валиев',email:'ilyasvaliev@mail.ru'},
+  {name:'Артем Антонов',email:'artemant@mail.ru'},
+  {name:'Прохор Мартьянов',email:'prokhormart@mail.ru'}
 ];
 
-let currentUserEmail = '';
-let currentUserName = '';
+/* ================= SOUND ================= */
+let soundEnabled=false;
 
-// ===== LOADER =====
-window.onload = () => {
-  setTimeout(() => {
-    loader.style.display = 'none';
-    app.style.display = 'flex';
-  }, 1200);
-};
-
-// ===== SOUND =====
-function playSound(id) {
-  const s = document.getElementById(id);
-  if (!s) return;
-  s.currentTime = 0;
-  s.play().catch(() => {});
+function initSound(){
+  if(soundEnabled) return;
+  ['sound-click','sound-transfer','sound-error'].forEach(id=>{
+    const a=document.getElementById(id);
+    a.volume=0.6;
+    a.play().then(()=>{
+      a.pause();a.currentTime=0;
+    }).catch(()=>{});
+  });
+  soundEnabled=true;
 }
 
-// ===== LOGIN =====
-async function login() {
-  const email = emailInput.value.toLowerCase().trim();
-  const password = passwordInput.value.trim();
+function playSound(id){
+  if(!soundEnabled) return;
+  const a=document.getElementById(id);
+  a.currentTime=0;
+  a.play().catch(()=>{});
+}
 
-  if (email === ADMIN_EMAIL && password === ADMIN_PASSWORD) {
+function userAction(fn){
+  initSound();
+  playSound('sound-click');
+  fn();
+}
+
+/* ================= APP ================= */
+let currentEmail='';
+window.onload=()=>{
+  setTimeout(()=>{
+    loader.style.display='none';
+    app.style.display='flex';
+  },1000);
+};
+
+async function login(){
+  const email=emailInput.value.toLowerCase().trim();
+  const pass=passwordInput.value.trim();
+
+  if(email===ADMIN_EMAIL && pass===ADMIN_PASSWORD){
     loginScreen.classList.add('hidden');
     adminScreen.classList.remove('hidden');
     return;
   }
 
-  const res = await fetch(API_URL, {
-    method: 'POST',
-    body: JSON.stringify({ action: 'login', email, password })
-  });
+  const r=await fetch(API_URL,{method:'POST',body:JSON.stringify({action:'login',email,pass})});
+  const d=await r.json();
 
-  const data = await res.json();
-
-  if (!data.success) {
+  if(!d.success){
     playSound('sound-error');
-    msg('loginMsg', '❌ Неверные данные', 'error');
-    return;
+    return msg('loginMsg','❌ Неверные данные','error');
   }
 
-  currentUserEmail = email;
-  currentUserName = USERS.find(u => u.email === email)?.name || email;
-
-  userName.textContent = currentUserName;
-  balance.textContent = data.balance + ' ₿';
-
-  fillRecipients();
+  currentEmail=email;
+  userName.textContent=USERS.find(u=>u.email===email)?.name||email;
+  balance.textContent=d.balance+' ₿';
+  fillUsers();
 
   loginScreen.classList.add('hidden');
   userScreen.classList.remove('hidden');
 }
 
-// ===== RECIPIENTS =====
-function fillRecipients() {
-  toUser.innerHTML = '<option value="">Получатель</option>';
-  USERS.forEach(u => {
-    if (u.email !== currentUserEmail) {
-      const opt = document.createElement('option');
-      opt.value = u.email;
-      opt.textContent = u.name;
-      toUser.appendChild(opt);
+function fillUsers(){
+  toUser.innerHTML='<option value="">Получатель</option>';
+  USERS.forEach(u=>{
+    if(u.email!==currentEmail){
+      const o=document.createElement('option');
+      o.value=u.email;
+      o.textContent=u.name;
+      toUser.appendChild(o);
     }
   });
 }
 
-// ===== TRANSFER =====
-async function transfer() {
-  const to = toUser.value;
-  const amount = Number(amountInput.value);
-
-  if (!to || amount <= 0) {
+async function transfer(){
+  const to=toUser.value;
+  const amount=Number(amountInput.value);
+  if(!to||amount<=0){
     playSound('sound-error');
-    msg('userMsg', '❌ Проверь данные', 'error');
-    return;
+    return msg('userMsg','❌ Проверь данные','error');
   }
 
-  const res = await fetch(API_URL, {
-    method: 'POST',
-    body: JSON.stringify({ action: 'transfer', from: currentUserEmail, to, amount })
-  });
+  const r=await fetch(API_URL,{method:'POST',body:JSON.stringify({action:'transfer',from:currentEmail,to,amount})});
+  const d=await r.json();
 
-  const data = await res.json();
-
-  if (!data.success) {
+  if(!d.success){
     playSound('sound-error');
-    msg('userMsg', '❌ Ошибка перевода', 'error');
-    return;
+    return msg('userMsg','❌ Ошибка','error');
   }
 
   playSound('sound-transfer');
-  msg('userMsg', '✅ Перевод выполнен', 'success');
-  setTimeout(() => location.reload(), 1200);
+  msg('userMsg','✅ Перевод выполнен','success');
+  setTimeout(()=>location.reload(),1200);
 }
 
-// ===== ADMIN =====
-async function adminAdd() {
-  const to = adminTarget.value.toLowerCase();
-  const amount = Number(adminAmount.value);
-
-  if (!to || amount <= 0) {
+async function adminAdd(){
+  const to=adminTarget.value;
+  const amount=Number(adminAmount.value);
+  if(!to||amount<=0){
     playSound('sound-error');
-    msg('adminMsg', '❌ Ошибка данных', 'error');
-    return;
+    return msg('adminMsg','❌ Ошибка','error');
   }
-
-  await fetch(API_URL, {
-    method: 'POST',
-    body: JSON.stringify({ action: 'transfer', from: to, to, amount: -amount })
-  });
-
+  await fetch(API_URL,{method:'POST',body:JSON.stringify({action:'transfer',from:to,to,amount:-amount})});
   playSound('sound-transfer');
-  msg('adminMsg', '✅ Баланс изменён', 'success');
+  msg('adminMsg','✅ Готово','success');
 }
 
-// ===== HELPERS =====
-function msg(id, text, type) {
-  const el = document.getElementById(id);
-  el.textContent = text;
-  el.className = 'message ' + type;
+function msg(id,text,type){
+  const e=document.getElementById(id);
+  e.textContent=text;
+  e.className='message '+type;
 }
 
-function logout() {
-  location.reload();
-}
+function logout(){location.reload();}
 
-// inputs shortcuts
-const emailInput = document.getElementById('email');
-const passwordInput = document.getElementById('password');
-const amountInput = document.getElementById('amount');
+/* shortcuts */
+const emailInput=document.getElementById('email');
+const passwordInput=document.getElementById('password');
+const amountInput=document.getElementById('amount');
 </script>
 
 </body>
