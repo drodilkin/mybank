@@ -181,6 +181,7 @@ button.secondary {
 <script>
 // ===== НАСТРОЙКИ =====
 const API_URL = 'https://script.google.com/macros/s/AKfycbzS_4F765vEVD94zHFmwAiOJWY9nBBLU3WNV6Rpqg3ZMPa1Nz8XQZi_q2lr0M46nS20Pw/exec';
+
 const ADMIN_EMAIL = 'Bank';
 const ADMIN_PASSWORD = 'SUPERPUPER123';
 
@@ -259,7 +260,20 @@ function fillRecipients() {
   });
 }
 
-// ===== TRANSFER (БЕЗ RELOAD) =====
+// ===== ПОЛУЧЕНИЕ БАЛАНСА =====
+async function updateBalance() {
+  const res = await fetch(API_URL, {
+    method: 'POST',
+    body: JSON.stringify({ action: 'getBalance', email: currentUserEmail })
+  });
+
+  const data = await res.json();
+  if (data.success) {
+    balance.textContent = data.balance + ' ₿';
+  }
+}
+
+// ===== TRANSFER (ФИКС) =====
 async function transfer() {
   const to = toUser.value;
   const amount = Number(amountInput.value);
@@ -272,12 +286,7 @@ async function transfer() {
 
   const res = await fetch(API_URL, {
     method: 'POST',
-    body: JSON.stringify({
-      action: 'transfer',
-      from: currentUserEmail,
-      to,
-      amount
-    })
+    body: JSON.stringify({ action: 'transfer', from: currentUserEmail, to, amount })
   });
 
   const data = await res.json();
@@ -290,12 +299,10 @@ async function transfer() {
 
   playSound('sound-transfer');
   msg('userMsg', '✅ Перевод выполнен', 'success');
-
-  if (data.newBalance !== undefined) {
-    balance.textContent = data.newBalance + ' ₿';
-  }
-
   amountInput.value = '';
+
+  // 🔥 сразу обновляем баланс
+  updateBalance();
 }
 
 // ===== ADMIN =====
