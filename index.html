@@ -28,91 +28,26 @@ align-items:center;
 }
 
 .hidden{display:none;}
-
-.auth{
-background:var(--card);
-padding:28px;
-border-radius:22px;
-width:100%;
-max-width:360px;
-box-shadow:0 20px 60px rgba(0,0,0,.6);
-}
-
-.auth input,.auth button{
-width:100%;
-margin-top:12px;
-padding:14px;
-border:none;
-border-radius:14px;
-font-size:16px;
-}
-
+.auth{background:var(--card);padding:28px;border-radius:22px;width:100%;max-width:360px;}
+.auth input,.auth button{width:100%;margin-top:12px;padding:14px;border:none;border-radius:14px;}
 .auth input{background:var(--input);color:white;}
 .auth button{background:var(--accent);font-weight:600;cursor:pointer;}
 
 .app{width:100%;max-width:420px;padding:16px;}
 
-.card-wrap{perspective:1000px;}
-
-.card{
-width:100%;
-height:160px;
-border-radius:22px;
-background:var(--card);
-padding:20px;
-transition:transform .7s;
-transform-style:preserve-3d;
-cursor:pointer;
-position:relative;
-}
-
-.card.flipped{transform:rotateY(180deg);}
-
-.card-face{
-position:absolute;
-inset:0;
-padding:20px;
-backface-visibility:hidden;
-}
-
-.card-back{
-transform:rotateY(180deg);
-display:flex;
-flex-direction:column;
-justify-content:center;
-}
-
+.card{background:var(--card);padding:20px;border-radius:22px;}
 .balance-title{color:var(--muted);}
-.balance-amount{font-size:34px;margin-top:6px;}
+.balance-amount{font-size:34px;}
 
-.block{
-background:var(--card);
-border-radius:22px;
-padding:18px;
-margin-top:16px;
-}
-
-.block input,.block select,.block button{
-width:100%;
-margin-top:12px;
-padding:14px;
-border:none;
-border-radius:14px;
-font-size:15px;
-}
-
+.block{background:var(--card);border-radius:22px;padding:18px;margin-top:16px;}
+.block input,.block select,.block button{width:100%;margin-top:12px;padding:14px;border:none;border-radius:14px;}
 .block input,.block select{background:var(--input);color:white;}
 .block button{background:var(--accent);font-weight:600;cursor:pointer;}
 
 .history-item{padding:12px 0;border-bottom:1px solid #2a2a36;}
 .in{color:#2ecc71;}
 .out{color:#ff4d4f;}
-
-.logout{
-margin-top:14px;
-background:#2a2a36 !important;
-color:white;
-}
+.logout{background:#2a2a36!important;color:white;}
 </style>
 </head>
 
@@ -127,21 +62,13 @@ color:white;
 
 <div class="app hidden" id="app">
 
-<div class="card-wrap">
-<div class="card" id="bankCard" onclick="flipCard()">
-<div class="card-face">
+<div class="card">
 <div class="balance-title">Баланс</div>
 <div class="balance-amount" id="balance">0 ₽</div>
 </div>
-<div class="card-face card-back">
-<div class="balance-title">Номер карты</div>
-<div class="balance-amount" id="cardNumber"></div>
-</div>
-</div>
-</div>
 
 <div class="block">
-<select id="to"><option value="">Получатель</option></select>
+<select id="to"></select>
 <input id="amount" type="number" placeholder="Сумма">
 <input id="comment" placeholder="Комментарий">
 <button onclick="transfer()">Перевести</button>
@@ -170,25 +97,19 @@ const names={
 'artemant@mail.ru':'Артем'
 };
 
-function getName(email){
-return names[email]||email;
-}
+function getName(e){return names[e]||e;}
 
 async function login(){
 const email=emailInput.value.trim();
 const password=passwordInput.value.trim();
 
-const r=await fetch(API,{
-method:'POST',
-body:JSON.stringify({action:'login',email,password})
-});
-
+const r=await fetch(API,{method:'POST',body:JSON.stringify({action:'login',email,password})});
 const d=await r.json();
-if(!d.success) return alert('Неверные данные');
+
+if(!d.success) return alert('Ошибка входа');
 
 userEmail=email;
 balance.textContent=d.balance+' ₽';
-cardNumber.textContent=d.card;
 
 auth.classList.add('hidden');
 app.classList.remove('hidden');
@@ -197,16 +118,9 @@ loadUsers();
 loadHistory();
 }
 
-function flipCard(){
-bankCard.classList.toggle('flipped');
-}
-
 async function loadUsers(){
-const list=Object.keys(names);
-
 to.innerHTML='<option value="">Получатель</option>';
-
-list.filter(e=>e!==userEmail).forEach(e=>{
+Object.keys(names).filter(e=>e!==userEmail).forEach(e=>{
 const o=document.createElement('option');
 o.value=e;
 o.textContent=getName(e);
@@ -215,6 +129,7 @@ to.appendChild(o);
 }
 
 async function transfer(){
+
 const amountVal=Number(amount.value);
 if(!to.value||amountVal<=0) return;
 
@@ -231,10 +146,10 @@ comment:comment.value
 
 const d=await r.json();
 
+if(!d.success) return alert('Ошибка перевода');
+
 if(d.balance!==undefined){
 balance.textContent=d.balance+' ₽';
-}else{
-await refreshBalance();
 }
 
 comment.value='';
@@ -243,14 +158,8 @@ amount.value='';
 await loadHistory();
 }
 
-async function refreshBalance(){
-const r=await fetch(API,{
-method:'POST',
-body:JSON.stringify({action:'login',email:userEmail,password:''})
-});
-}
-
 async function loadHistory(){
+
 const r=await fetch(API,{
 method:'POST',
 body:JSON.stringify({action:'history',email:userEmail})
@@ -261,13 +170,12 @@ lastHistory=d.history||[];
 
 history.innerHTML='<h3>История операций</h3>';
 
-lastHistory.reverse().forEach(h=>{
+lastHistory.forEach(h=>{
 
 const from=h[1];
 const toUser=h[2];
 const amountVal=h[3];
-const commentVal=h[4]||'';
-const dateVal=h[0]||'';
+const dateVal=new Date(h[0]).toLocaleString();
 
 const type=from===userEmail?'out':'in';
 
@@ -279,8 +187,7 @@ div.innerHTML=`
 ?`Перевод: ${getName(toUser)} — ${amountVal} ₽`
 :`Зачисление: ${getName(from)} — ${amountVal} ₽`
 }</b><br>
-<small>${commentVal}</small><br>
-<small>${new Date(dateVal).toLocaleString()}</small>
+<small>${dateVal}</small>
 `;
 
 history.appendChild(div);
@@ -288,6 +195,7 @@ history.appendChild(div);
 }
 
 function downloadStatement(){
+
 let text='Выписка PayBank\n\n';
 
 lastHistory.forEach(h=>{
@@ -311,7 +219,6 @@ a.click();
 }
 
 function logout(){
-localStorage.clear();
 location.reload();
 }
 
