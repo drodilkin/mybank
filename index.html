@@ -6,203 +6,108 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
-:root{
-  --bg:#0c0c0f;
-  --card:#1a1a1f;
-  --soft:#24242b;
-  --accent:#ffdd2d;
-  --text:#fff;
-  --muted:#9b9ba3;
-}
-
-*{box-sizing:border-box;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
-
 body{
   margin:0;
-  background:var(--bg);
-  color:var(--text);
+  background:#0c0c0f;
+  color:#fff;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
 }
-
-.hidden{display:none}
-
-/* ===== LOGIN ===== */
-.login{
+.screen{
   min-height:100vh;
   display:flex;
   justify-content:center;
   align-items:center;
-  padding:20px;
 }
-
-.login-card{
+.card{
   width:100%;
-  max-width:380px;
-  background:var(--card);
+  max-width:360px;
+  background:#1a1a1f;
   border-radius:24px;
   padding:24px;
 }
-
-.login-card h1{
-  text-align:center;
-  margin-bottom:20px;
-}
-
-input{
+h1{text-align:center}
+input,button{
   width:100%;
   padding:14px;
   margin-top:12px;
   border:none;
   border-radius:14px;
-  background:var(--soft);
-  color:#fff;
   font-size:16px;
 }
-
-button{
-  width:100%;
-  padding:14px;
-  margin-top:16px;
-  border:none;
-  border-radius:16px;
-  background:var(--accent);
-  font-weight:600;
-  font-size:16px;
-  cursor:pointer;
-}
-
-.message{
-  margin-top:12px;
-  text-align:center;
-  color:#ff6b6b;
-}
-
-/* ===== DASHBOARD ===== */
-.app{
-  min-height:100vh;
-  padding:20px;
-}
-
-.header{
+input{background:#24242b;color:#fff;text-align:center}
+button{background:#ffdd2d;color:#000;font-weight:600}
+.pin-dots{
   display:flex;
-  justify-content:space-between;
-  align-items:center;
-  margin-bottom:20px;
+  justify-content:center;
+  gap:10px;
+  margin:20px 0;
 }
-
-.header h2{margin:0}
-
-.card{
-  background:var(--card);
-  border-radius:24px;
-  padding:20px;
-  margin-bottom:16px;
+.dot{
+  width:14px;
+  height:14px;
+  border-radius:50%;
+  background:#333;
 }
-
-.balance{
-  font-size:34px;
-  font-weight:600;
-  margin-top:6px;
-}
-
-.actions{
-  display:flex;
-  gap:12px;
-  margin-bottom:16px;
-}
-
-.action{
-  flex:1;
-  background:var(--soft);
-  border-radius:18px;
-  padding:14px;
-  text-align:center;
-  font-size:14px;
-  cursor:pointer;
-}
-
-.transfer input, .transfer select{
-  background:var(--soft);
-}
-
-.history{
-  margin-top:10px;
-}
-
-.history-item{
-  padding:10px 0;
-  border-bottom:1px solid #2a2a30;
-  font-size:14px;
-}
-
-.plus{color:#2ecc71}
-.minus{color:#ff6b6b}
-
-.logout{
-  margin-top:20px;
-  background:#2a2a30;
-  color:#fff;
-}
+.dot.active{background:#ffdd2d}
+.msg{text-align:center;margin-top:10px;color:#ff6b6b}
+.hidden{display:none}
 </style>
 </head>
 
 <body>
 
 <!-- LOGIN -->
-<div class="login" id="loginScreen">
-  <div class="login-card">
-    <h1>PayBank</h1>
+<div class="screen" id="loginScreen">
+  <div class="card">
+    <h1>Вход</h1>
     <input id="email" placeholder="Email">
     <input id="password" type="password" placeholder="Пароль">
     <button onclick="login()">Войти</button>
-    <div id="loginMsg" class="message"></div>
+    <div class="msg" id="loginMsg"></div>
+  </div>
+</div>
+
+<!-- CREATE PIN -->
+<div class="screen hidden" id="createPinScreen">
+  <div class="card">
+    <h1>Придумай PIN</h1>
+    <div class="pin-dots" id="createDots"></div>
+    <input id="createPinInput" maxlength="4" inputmode="numeric">
+    <button onclick="savePin()">Сохранить</button>
+  </div>
+</div>
+
+<!-- ENTER PIN -->
+<div class="screen hidden" id="pinScreen">
+  <div class="card">
+    <h1>Введите PIN</h1>
+    <div class="pin-dots" id="pinDots"></div>
+    <input id="pinInput" maxlength="4" inputmode="numeric">
+    <button onclick="checkPin()">Войти</button>
+    <div class="msg" id="pinMsg"></div>
   </div>
 </div>
 
 <!-- APP -->
-<div class="app hidden" id="appScreen">
-
-  <div class="header">
-    <h2 id="userName">Пользователь</h2>
-    <span style="color:var(--muted)">PayBank</span>
-  </div>
-
+<div class="screen hidden" id="appScreen">
   <div class="card">
-    <div style="color:var(--muted)">Основной счёт</div>
-    <div class="balance" id="balance">0 ₽</div>
+    <h1>PayBank</h1>
+    <p style="text-align:center">Ты в системе 🎉</p>
+    <button onclick="logout()">Выйти</button>
   </div>
-
-  <div class="actions">
-    <div class="action">💸 Перевод</div>
-    <div class="action">📜 История</div>
-    <div class="action">⚙️</div>
-  </div>
-
-  <div class="card transfer">
-    <select id="toUser"></select>
-    <input id="amount" type="number" placeholder="Сумма">
-    <button onclick="transfer()">Отправить</button>
-  </div>
-
-  <div class="card">
-    <h3 style="margin-top:0">История</h3>
-    <div class="history" id="history"></div>
-  </div>
-
-  <button class="logout" onclick="logout()">Выйти</button>
-
 </div>
 
 <script>
-const API_URL = 'ВСТАВЬ_СЮДА_API_URL';
+const API_URL = 'ТВОЙ_API_URL';
 
-const USERS = [
-  {name:'Роман',email:'romankisel@mail.ru'},
-  {name:'Ильяс',email:'ilyasvaliev@mail.ru'},
-  {name:'Артем',email:'artemant@mail.ru'},
-  {name:'Прохор',email:'prokhormart@mail.ru'}
-];
+let pinBuffer='';
 
-let currentUser='';
+window.onload=()=>{
+  if(localStorage.getItem('pin')){
+    loginScreen.classList.add('hidden');
+    pinScreen.classList.remove('hidden');
+  }
+};
 
 /* LOGIN */
 async function login(){
@@ -220,67 +125,49 @@ async function login(){
     return;
   }
 
-  currentUser=emailVal;
-  userName.textContent=USERS.find(u=>u.email===emailVal)?.name || emailVal;
-  balance.textContent=data.balance+' ₽';
-
-  fillUsers();
-  loadHistory();
-
+  localStorage.setItem('email',emailVal);
   loginScreen.classList.add('hidden');
+  createPinScreen.classList.remove('hidden');
+  renderDots('createDots',0);
+}
+
+/* CREATE PIN */
+function savePin(){
+  const pin=createPinInput.value;
+  if(pin.length!==4) return;
+  localStorage.setItem('pin',pin);
+  createPinScreen.classList.add('hidden');
   appScreen.classList.remove('hidden');
 }
 
-function fillUsers(){
-  toUser.innerHTML='<option value="">Кому</option>';
-  USERS.forEach(u=>{
-    if(u.email!==currentUser){
-      const o=document.createElement('option');
-      o.value=u.email;
-      o.textContent=u.name;
-      toUser.appendChild(o);
-    }
-  });
-}
-
-/* TRANSFER */
-async function transfer(){
-  const to=toUser.value;
-  const amountVal=Number(amount.value);
-
-  if(!to||amountVal<=0) return;
-
-  const res=await fetch(API_URL,{
-    method:'POST',
-    body:JSON.stringify({action:'transfer',from:currentUser,to,amount:amountVal})
-  });
-  const data=await res.json();
-
-  if(data.success){
-    balance.textContent=data.balance+' ₽';
-    amount.value='';
-    loadHistory();
+/* ENTER PIN */
+function checkPin(){
+  const pin=pinInput.value;
+  if(pin===localStorage.getItem('pin')){
+    pinScreen.classList.add('hidden');
+    appScreen.classList.remove('hidden');
+  }else{
+    pinMsg.textContent='Неверный PIN';
   }
 }
 
-/* HISTORY */
-async function loadHistory(){
-  const res=await fetch(API_URL,{
-    method:'POST',
-    body:JSON.stringify({action:'history',email:currentUser})
-  });
-  const data=await res.json();
-
-  history.innerHTML='';
-  data.history.reverse().forEach(h=>{
+/* DOTS */
+function renderDots(id,count){
+  const el=document.getElementById(id);
+  el.innerHTML='';
+  for(let i=0;i<4;i++){
     const d=document.createElement('div');
-    d.className='history-item '+(h.amount.startsWith('+')?'plus':'minus');
-    d.textContent=`${h.time} — ${h.text} ${h.amount}`;
-    history.appendChild(d);
-  });
+    d.className='dot'+(i<count?' active':'');
+    el.appendChild(d);
+  }
 }
 
+createPinInput.oninput=()=>renderDots('createDots',createPinInput.value.length);
+pinInput.oninput=()=>renderDots('pinDots',pinInput.value.length);
+
+/* LOGOUT */
 function logout(){
+  localStorage.clear();
   location.reload();
 }
 </script>
