@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Profit Bank | Ultimate Terminal</title>
+    <title>Profit Bank | Премиальный Терминал</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -43,10 +43,10 @@
         }
         @keyframes scanMove { 0% { top: 0; } 50% { top: 100%; } 100% { top: 0; } }
 
-        /* --- UI ELEMENTS --- */
+        /* --- ИНТЕРФЕЙС --- */
         .container { width: 100%; max-width: 480px; margin: 0 auto; padding: 20px; }
 
-        /* КАРТА v8.0 */
+        /* КАРТА */
         .card-wrap { perspective: 1000px; height: 240px; margin-bottom: 30px; }
         .card-inner {
             position: relative; width: 100%; height: 100%; transition: transform 0.8s;
@@ -94,6 +94,7 @@
         .msg { display: flex; gap: 10px; align-items: flex-start; }
         .msg.me { flex-direction: row-reverse; }
         .msg-bubble { background: var(--panel); padding: 12px 16px; border-radius: 18px; max-width: 75%; }
+        .msg.me { justify-content: flex-end; }
         .msg.me .msg-bubble { background: var(--accent); color: #000; }
         .msg-sender { display: block; font-size: 9px; font-weight: 800; text-transform: uppercase; margin-bottom: 4px; opacity: 0.6; }
 
@@ -108,12 +109,12 @@
         .hist-date { font-size: 10px; color: var(--muted); }
         .hist-amt { font-weight: 800; font-size: 15px; }
 
-        /* ПРОФИЛЬ ФУНКЦИИ */
+        /* ПРОФИЛЬ */
         .stat-bar { height: 8px; background: #222; border-radius: 4px; margin: 10px 0 20px; overflow: hidden; }
         .stat-fill { height: 100%; background: var(--accent); width: 65%; box-shadow: 0 0 10px var(--accent); }
         .prof-row { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--glass); font-size: 13px; }
 
-        /* AUTH */
+        /* ВХОД */
         #authScreen { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
         .auth-card { background: var(--card); padding: 40px 30px; border-radius: 35px; width: 100%; max-width: 400px; text-align: center; border: 1px solid var(--glass); }
 
@@ -125,17 +126,17 @@
         <div class="scanner">
             <span style="font-size: 30px;">🏦</span>
         </div>
-        <h3 id="procText" style="margin-top: 30px; letter-spacing: 2px;">PROCESSOR...</h3>
+        <h3 id="procText" style="margin-top: 30px; letter-spacing: 2px;">ОБРАБОТКА...</h3>
         <p id="procSub" style="color: var(--muted); font-size: 12px;">Подписание транзакции ключом RSA-256</p>
     </div>
 
     <div id="authScreen">
         <div class="auth-card">
             <h1 style="font-family:'Orbitron'; color:var(--accent); font-size:32px; margin-bottom:5px;">PROFIT</h1>
-            <p style="color:var(--muted); font-size:12px; margin-bottom:35px;">Защищенный Банк</p>
-            <input type="email" id="email" placeholder="Terminal ID (Email)">
-            <input type="password" id="password" placeholder="Access Key">
-            <button class="btn-main" onclick="login()">Авторизация</button>
+            <p style="color:var(--muted); font-size:12px; margin-bottom:35px;">ЗАЩИЩЕННЫЙ ТЕРМИНАЛ</p>
+            <input type="email" id="email" placeholder="ID Терминала (Email)">
+            <input type="password" id="password" placeholder="Ключ доступа">
+            <button class="btn-main" onclick="login()">АВТОРИЗОВАТЬСЯ</button>
         </div>
     </div>
 
@@ -148,83 +149,86 @@
                         <img id="myAva" src="https://via.placeholder.com/70" class="avatar">
                         <div style="text-align:right;">
                             <div style="font-family:'Orbitron'; font-size:12px; color:var(--accent);">PLATINUM</div>
-                            <div style="font-size:10px; opacity:0.5;">DEBIT CARD</div>
+                            <div style="font-size:10px; opacity:0.5;">ДЕБЕТОВАЯ КАРТА</div>
                         </div>
                     </div>
                     <div>
-                        <div class="balance-label">Available Balance</div>
+                        <div class="balance-label">Доступный остаток</div>
                         <div class="balance-val" id="myBalance">0 ₽</div>
-                        <div id="myName" style="margin-top:15px; font-weight:700; font-size:14px; text-transform:uppercase;">User Name</div>
+                        <div id="myName" style="margin-top:15px; font-weight:700; font-size:14px; text-transform:uppercase;">Имя пользователя</div>
                     </div>
                 </div>
                 <div class="card-back">
-                    <div class="balance-label">Virtual Number</div>
+                    <div class="balance-label">Виртуальный номер</div>
                     <div id="myCard" style="font-family:monospace; font-size:20px; letter-spacing:3px; margin:20px 0;">0000 0000 0000 0000</div>
-                    <div style="font-size:10px; color:var(--accent); letter-spacing:5px;">PROTECTED BY PROFIT</div>
+                    <div style="font-size:10px; color:var(--accent); letter-spacing:5px;">ЗАЩИЩЕНО PROFIT SYSTEM</div>
                 </div>
             </div>
         </div>
 
         <nav class="nav-dock">
-            <button class="nav-btn active" onclick="showTab('pay', this)">PAY</button>
-            <button class="nav-btn" onclick="showTab('chat', this)">CHAT</button>
-            <button class="nav-btn" onclick="showTab('hist', this)">HISTORY</button>
-            <button class="nav-btn" onclick="showTab('prof', this)">NODE</button>
+            <button class="nav-btn active" onclick="showTab('pay', this)">ПЕРЕВОД</button>
+            <button class="nav-btn" onclick="showTab('chat', this)">ЧАТ</button>
+            <button class="nav-btn" onclick="showTab('hist', this)">ИСТОРИЯ</button>
+            <button class="nav-btn" onclick="showTab('prof', this)">УЗЕЛ</button>
         </nav>
 
         <div id="tab-pay" class="section-card tab-content">
-            <h2>Send Assets</h2>
+            <h2>Отправить активы</h2>
             <select id="toEmail"></select>
-            <input type="number" id="amount" placeholder="0.00 ₽">
-            <input type="text" id="comment" placeholder="Transaction note">
-            <button class="btn-main" onclick="startTransfer()">EXECUTE TRANSFER</button>
+            <input type="number" id="amount" placeholder="Сумма 0.00 ₽">
+            <input type="text" id="comment" placeholder="Комментарий к транзакции">
+            <button class="btn-main" onclick="startTransfer()">ВЫПОЛНИТЬ ПЕРЕВОД</button>
         </div>
 
         <div id="tab-chat" class="section-card tab-content hidden">
-            <h2>Secure Channel</h2>
+            <h2>Защищенный канал</h2>
             <div id="chatBox"></div>
             <div style="display:flex; gap:10px;">
-                <input type="text" id="chatMsg" placeholder="Type message..." style="margin-bottom:0;">
+                <input type="text" id="chatMsg" placeholder="Сообщение..." style="margin-bottom:0;">
                 <button class="btn-main" style="width:60px;" onclick="sendChat()">></button>
             </div>
         </div>
 
         <div id="tab-hist" class="section-card tab-content hidden">
-            <h2>Ledger History</h2>
+            <h2>Реестр операций</h2>
             <div id="histList"></div>
         </div>
 
         <div id="tab-prof" class="section-card tab-content hidden">
-            <h2>Node Configuration</h2>
+            <h2>Конфигурация узла</h2>
             
             <div style="text-align:center; margin-bottom:25px;">
-                <button class="btn-main" style="background:var(--panel); color:var(--accent); border:1px dashed var(--accent);" onclick="takePhoto()">📸 UPDATE BIOMETRICS</button>
+                <button class="btn-main" style="background:var(--panel); color:var(--accent); border:1px dashed var(--accent);" onclick="takePhoto()">📸 ОБНОВИТЬ БИОМЕТРИЮ</button>
             </div>
 
-            <div class="prof-row"><span>Status</span><span style="color:var(--success);">ACTIVE / ENCRYPTED</span></div>
-            <div class="prof-row"><span>Network Limit</span><span>500,000 ₽ / day</span></div>
+            <div class="prof-row"><span>Статус</span><span style="color:var(--success);">АКТИВЕН / ЗАШИФРОВАН</span></div>
+            <div class="prof-row"><span>Дневной лимит</span><span>500,000 ₽</span></div>
             <div class="stat-bar"><div class="stat-fill"></div></div>
 
-            <div class="prof-row"><span>Security Level</span><span>Tier 4 (Premium)</span></div>
-            <div class="prof-row"><span>Notifications</span><span>PUSH / ON</span></div>
+            <div class="prof-row"><span>Уровень защиты</span><span>Уровень 4 (Премиум)</span></div>
+            <div class="prof-row"><span>Уведомления</span><span>ВКЛЮЧЕНЫ</span></div>
             
-            <input type="password" id="newPass" placeholder="New Access Key" style="margin-top:20px;">
-            <button class="btn-main" style="background:var(--panel);" onclick="updatePass()">UPDATE KEY</button>
+            <input type="password" id="newPass" placeholder="Новый ключ доступа" style="margin-top:20px;">
+            <button class="btn-main" style="background:var(--panel);" onclick="updatePass()">ОБНОВИТЬ КЛЮЧ</button>
             
-            <button onclick="location.reload()" style="width:100%; margin-top:30px; background:none; border:none; color:var(--error); font-weight:800; font-size:12px; cursor:pointer;">TERMINATE SESSION [LOGOUT]</button>
+            <button onclick="location.reload()" style="width:100%; margin-top:30px; background:none; border:none; color:var(--error); font-weight:800; font-size:12px; cursor:pointer;">ЗАВЕРШИТЬ СЕССИЮ [ВЫХОД]</button>
         </div>
 
     </div>
 
     <script>
-        const API = 'https://script.google.com/macros/s/AKfycbzsLK9FxBEOFl4XDliOBm-qdmCRJL_Du4uOUjQrGqIdghrvqdt2_4YSbeNeSON2hDxrqg/exec';
+        // ВСТАВЬ СВОЮ ССЫЛКУ ТУТ
+        const API = 'https://script.google.com/macros/s/AKfycbzsLK9FxBEOFl4XDliOBm-qdmCRJL_Du4uOUjQrGqIdghrvqdt2_4YSbeNeSON2hDxrqg/exec'; 
+        
         let me = { email: '', name: '', avatar: '' };
         
+        // Словарь имен для истории
         const directory = {
             'ilyasvaliev@mail.ru': 'Ильяс Валиев',
-            'prokhormart@mail.ru': 'Прохор Мартьянов',
-            'romankisel@mail.ru': 'Роман Киселев',
-            'artemant@mail.ru': 'Артем Антонов'
+            'prokhormart@mail.ru': 'Прохор Март',
+            'romankisel@mail.ru': 'Роман Кисель',
+            'artemant@mail.ru': 'Артем Ант'
         };
 
         function showTab(name, btn) {
@@ -245,7 +249,7 @@
 
                 if(d.success) {
                     me = { email, name: directory[email] || email, avatar: d.avatar };
-                    document.getElementById('myBalance').innerText = d.balance.toLocaleString() + ' ₽';
+                    document.getElementById('myBalance').innerText = Number(d.balance).toLocaleString() + ' ₽';
                     document.getElementById('myCard').innerText = d.card;
                     document.getElementById('myName').innerText = me.name;
                     if(d.avatar) document.getElementById('myAva').src = d.avatar;
@@ -255,38 +259,37 @@
 
                     initReceivers();
                     sync();
-                    setInterval(sync, 4000);
-                } else { alert("ACCESS DENIED"); }
-            } catch(e) { alert("API CONNECTION ERROR"); }
+                    setInterval(sync, 4500);
+                } else { alert("ДОСТУП ЗАПРЕЩЕН: Неверные данные"); }
+            } catch(e) { alert("ОШИБКА ПОДКЛЮЧЕНИЯ К API"); }
         }
 
         function initReceivers() {
             const sel = document.getElementById('toEmail');
-            sel.innerHTML = '<option value="">SELECT TARGET</option>';
+            sel.innerHTML = '<option value="">ВЫБЕРИТЕ ПОЛУЧАТЕЛЯ</option>';
             for(let em in directory) {
                 if(em !== me.email) sel.innerHTML += `<option value="${em}">${directory[em]}</option>`;
             }
         }
 
-        // АНИМИРОВАННЫЙ ПЕРЕВОД
         async function startTransfer() {
             const to = document.getElementById('toEmail').value;
             const amt = document.getElementById('amount').value;
             const comm = document.getElementById('comment').value;
-            if(!to || amt <= 0) return alert("CHECK DATA");
+            if(!to || amt <= 0) return alert("ПРОВЕРЬТЕ ДАННЫЕ");
 
             const overlay = document.getElementById('processingOverlay');
             const procText = document.getElementById('procText');
             
             overlay.classList.add('active');
-            procText.innerText = "AUTHORIZING...";
+            procText.innerText = "АВТОРИЗАЦИЯ...";
 
             try {
                 const res = await fetch(API, { method: 'POST', body: JSON.stringify({ action: 'transfer', from: me.email, to, amount: amt, comment: comm }) });
                 const d = await res.json();
 
                 if(d.success) {
-                    procText.innerText = "SUCCESS";
+                    procText.innerText = "ГОТОВО";
                     procText.style.color = "var(--success)";
                     setTimeout(() => {
                         overlay.classList.remove('active');
@@ -295,7 +298,7 @@
                         sync();
                     }, 1500);
                 } else {
-                    procText.innerText = "REJECTED";
+                    procText.innerText = "ОТКАЗАНО";
                     procText.style.color = "var(--error)";
                     setTimeout(() => overlay.classList.remove('active'), 1500);
                 }
@@ -304,47 +307,47 @@
 
         async function sync() {
             if(!me.email) return;
-            const resH = await fetch(API, { method: 'POST', body: JSON.stringify({ action: 'history', email: me.email }) });
-            const dH = await resH.json();
-            
-            const balRes = await fetch(API, { method: 'POST', body: JSON.stringify({ action: 'balance', email: me.email }) });
-            const balD = await balRes.json();
-            document.getElementById('myBalance').innerText = (balD.balance || 0).toLocaleString() + ' ₽';
+            try {
+                const resH = await fetch(API, { method: 'POST', body: JSON.stringify({ action: 'history', email: me.email }) });
+                const dH = await resH.json();
+                
+                const balRes = await fetch(API, { method: 'POST', body: JSON.stringify({ action: 'balance', email: me.email }) });
+                const balD = await balRes.json();
+                document.getElementById('myBalance').innerText = Number(balD.balance || 0).toLocaleString() + ' ₽';
 
-            // История с именами
-            const hList = document.getElementById('histList');
-            hList.innerHTML = dH.history.map(h => {
-                const isOut = h[1] === me.email;
-                const partnerEmail = isOut ? h[2] : h[1];
-                const partnerName = directory[partnerEmail] || partnerEmail;
-                return `
-                    <div class="history-item">
-                        <div class="hist-icon" style="background:${isOut?'#30151a':'#153020'}; color:${isOut?'var(--error)':'var(--success)'}">
-                            ${isOut ? '↑' : '↓'}
+                const hList = document.getElementById('histList');
+                hList.innerHTML = dH.history.map(h => {
+                    const isOut = h[1].toLowerCase() === me.email.toLowerCase();
+                    const partnerEmail = isOut ? h[2] : h[1];
+                    const partnerName = directory[partnerEmail] || partnerEmail;
+                    return `
+                        <div class="history-item">
+                            <div class="hist-icon" style="background:${isOut?'#30151a':'#153020'}; color:${isOut?'var(--error)':'var(--success)'}">
+                                ${isOut ? '↑' : '↓'}
+                            </div>
+                            <div class="hist-data">
+                                <span class="hist-name">${partnerName}</span>
+                                <span class="hist-date">${h[4] || 'Перевод'}</span>
+                            </div>
+                            <div class="hist-amt" style="color:${isOut?'var(--error)':'var(--success)'}">
+                                ${isOut ? '-' : '+'}${h[3]}
+                            </div>
                         </div>
-                        <div class="hist-data">
-                            <span class="hist-name">${partnerName}</span>
-                            <span class="hist-date">${h[4] || 'Transfer'}</span>
-                        </div>
-                        <div class="hist-amt" style="color:${isOut?'var(--error)':'var(--success)'}">
-                            ${isOut ? '-' : '+'}${h[3]}
+                    `;
+                }).join('');
+
+                const resC = await fetch(API, { method: 'POST', body: JSON.stringify({ action: 'chat', sub: 'get' }) });
+                const dC = await resC.json();
+                document.getElementById('chatBox').innerHTML = dC.messages.map(m => `
+                    <div class="msg ${m[1] === me.name ? 'me' : ''}">
+                        <img src="${m[3] || 'https://via.placeholder.com/35'}" style="width:35px; height:35px; border-radius:50%; border:1px solid var(--accent);">
+                        <div class="msg-bubble">
+                            <span class="msg-sender">${m[1]}</span>
+                            <div style="font-size:14px;">${m[2]}</div>
                         </div>
                     </div>
-                `;
-            }).join('');
-
-            // Чат
-            const resC = await fetch(API, { method: 'POST', body: JSON.stringify({ action: 'chat', sub: 'get' }) });
-            const dC = await resC.json();
-            document.getElementById('chatBox').innerHTML = dC.messages.map(m => `
-                <div class="msg ${m[1] === me.name ? 'me' : ''}">
-                    <img src="${m[3] || 'https://via.placeholder.com/35'}" style="width:35px; height:35px; border-radius:50%;">
-                    <div class="msg-bubble">
-                        <span class="msg-sender">${m[1]}</span>
-                        <div style="font-size:14px;">${m[2]}</div>
-                    </div>
-                </div>
-            `).join('');
+                `).join('');
+            } catch(e) { console.log("Синхронизация..."); }
         }
 
         async function sendChat() {
@@ -366,16 +369,16 @@
                     document.getElementById('myAva').src = img;
                     await fetch(API, { method: 'POST', body: JSON.stringify({ action: 'updateAvatar', email: me.email, image: img }) });
                     stream.getTracks().forEach(t => t.stop());
-                    alert("BIOMETRICS SYNCED");
+                    alert("БИОМЕТРИЯ ОБНОВЛЕНА");
                 }, 1500);
-            } catch(e) { alert("CAMERA ERROR"); }
+            } catch(e) { alert("ОШИБКА КАМЕРЫ"); }
         }
 
         async function updatePass() {
             const newPassword = document.getElementById('newPass').value;
             if(!newPassword) return;
             await fetch(API, { method: 'POST', body: JSON.stringify({ action: 'changePassword', email: me.email, newPassword }) });
-            alert("ACCESS KEY UPDATED");
+            alert("КЛЮЧ ДОСТУПА ОБНОВЛЕН");
         }
     </script>
 </body>
