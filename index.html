@@ -3,15 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>PROFIT BANK ULTIMATE v11.0.1</title>
+    <title>PROFIT BANK ULTIMATE TERMINAL v11.0.3</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;600;800&family=Unbounded:wght@400;700;900&display=swap" rel="stylesheet">
     
     <style>
-        /* ОСНОВНЫЕ ПЕРЕМЕННЫЕ СИСТЕМЫ 
-           Здесь задаются цвета и шрифты
+        /* БЛОК ГЛОБАЛЬНЫХ ПЕРЕМЕННЫХ (CSS VARIABLES)
+           Определяет цветовую схему и типографику системы
         */
         :root {
             --accent: #ffd600;
@@ -29,14 +29,16 @@
             --font-main: 'Manrope', sans-serif;
         }
 
-        /* ГЛОБАЛЬНЫЕ СБРОСЫ */
+        /* БАЗОВЫЕ СТИЛИ И СБРОСЫ 
+           Убираем стандартные отступы браузера
+        */
         * { 
             box-sizing: border-box; 
             outline: none; 
             margin: 0;
             padding: 0;
             -webkit-tap-highlight-color: transparent; 
-            letter-spacing: -0.02em;
+            letter-spacing: -0.01em;
         }
         
         body {
@@ -44,16 +46,19 @@
             color: var(--text-main);
             font-family: var(--font-main);
             height: 100vh;
+            width: 100vw;
             overflow: hidden;
             display: flex;
             flex-direction: column;
             -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
         }
 
-        /* --- БЛОК АНИМАЦИЙ --- */
-        @keyframes slideIn { 
+        /* БЛОК ДЕКЛАРАЦИИ АНИМАЦИЙ 
+        */
+        @keyframes slideInUp { 
             from { 
-                transform: translateY(50px); 
+                transform: translateY(100px); 
                 opacity: 0; 
             } 
             to { 
@@ -62,18 +67,45 @@
             } 
         }
 
-        /* --- ЭКРАН АВТОРИЗАЦИИ --- */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes nfcPulse {
+            0% { 
+                transform: scale(1); 
+                opacity: 1; 
+                box-shadow: 0 0 0 0 rgba(255, 214, 0, 0.4); 
+            }
+            70% { 
+                transform: scale(1.1); 
+                opacity: 0.7; 
+                box-shadow: 0 0 0 30px rgba(255, 214, 0, 0); 
+            }
+            100% { 
+                transform: scale(1); 
+                opacity: 1; 
+                box-shadow: 0 0 0 0 rgba(255, 214, 0, 0);
+            }
+        }
+
+        /* ИНТЕРФЕЙС АВТОРИЗАЦИИ 
+        */
         #auth-view {
             position: fixed;
-            inset: 0;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
             z-index: 9999;
             background: var(--bg);
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            padding: 30px;
-            transition: 1s cubic-bezier(0.85, 0, 0.15, 1);
+            padding: 40px;
+            transition: transform 1.2s cubic-bezier(0.85, 0, 0.15, 1);
         }
 
         #auth-view.hidden { 
@@ -82,140 +114,160 @@
 
         .auth-container {
             width: 100%;
-            max-width: 400px;
+            max-width: 420px;
             text-align: center;
-            animation: slideIn 0.8s ease-out;
         }
 
-        .main-logo {
+        .main-logo-text {
             font-family: var(--font-header);
-            font-size: 38px;
+            font-size: 42px;
             font-weight: 900;
             color: var(--accent);
-            letter-spacing: 2px;
-            margin-bottom: 10px;
-            padding-bottom: 10px;
             text-transform: uppercase;
+            margin-bottom: 50px;
+            letter-spacing: 4px;
         }
 
-        /* --- ПОЛЯ ВВОДА И КНОПКИ --- */
+        /* ЭЛЕМЕНТЫ ВВОДА (INPUTS) 
+        */
         .input-group {
-            margin-bottom: 25px;
+            margin-bottom: 30px;
             text-align: left;
         }
 
         .input-group label {
             display: block;
-            font-size: 11px;
+            font-size: 10px;
             font-family: var(--font-header);
             color: var(--text-dim);
-            margin-left: 15px;
-            margin-bottom: 8px;
+            margin-left: 18px;
+            margin-bottom: 10px;
             text-transform: uppercase;
-            font-weight: 400;
+            letter-spacing: 1px;
         }
 
         input, 
         select, 
         textarea {
             width: 100%;
-            padding: 20px 25px;
-            background: #000;
+            padding: 22px 28px;
+            background: #000000;
             border: 1px solid #1a1a1a;
-            border-radius: 22px;
-            color: #fff;
+            border-radius: 24px;
+            color: #ffffff;
             font-size: 16px;
             font-family: var(--font-main);
-            transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             font-weight: 500;
+            transition: all 0.4s ease;
         }
 
         input:focus {
             border-color: var(--accent);
-            box-shadow: 0 0 25px rgba(255, 214, 0, 0.1);
+            box-shadow: 0 0 30px rgba(255, 214, 0, 0.1);
         }
 
         .primary-btn {
             width: 100%;
-            padding: 22px;
+            padding: 24px;
             background: var(--accent);
             border: none;
-            border-radius: 22px;
+            border-radius: 24px;
             font-family: var(--font-header);
-            font-weight: 700;
-            font-size: 13px;
-            cursor: pointer;
-            color: #000;
+            font-weight: 800;
+            font-size: 12px;
+            color: #000000;
             text-transform: uppercase;
-            transition: 0.3s;
+            cursor: pointer;
+            transition: transform 0.2s ease;
             margin-top: 10px;
         }
 
         .primary-btn:active {
-            transform: scale(0.95);
+            transform: scale(0.96);
         }
 
-        /* --- ОСНОВНОЙ КОНТЕЙНЕР ПРИЛОЖЕНИЯ --- */
+        /* ГЛАВНЫЙ КОНТЕЙНЕР ПРИЛОЖЕНИЯ 
+        */
         .app-container {
             flex: 1;
             padding: 25px;
             overflow-y: auto;
             display: flex;
             flex-direction: column;
-            padding-bottom: 120px;
+            padding-bottom: 140px;
         }
 
-        /* КАРТА БАЛАНСА */
+        /* БЛОК КАРТЫ И БАЛАНСА 
+        */
         .wallet-card {
-            background: linear-gradient(135deg, #1a1a25 0%, #050508 100%);
-            padding: 45px 35px;
+            background: linear-gradient(145deg, #12121a 0%, #050508 100%);
+            padding: 50px 35px;
             border-radius: 45px;
             border: 1px solid var(--border);
-            margin-bottom: 40px;
+            margin-bottom: 45px;
             position: relative;
-            overflow: hidden;
-            box-shadow: 0 30px 60px rgba(0,0,0,0.5);
+            display: none; /* Скрыто по умолчанию для вкладки Транзакции */
         }
 
-        .balance-label {
+        /* Контроль видимости баланса */
+        body.show-header-balance .wallet-card {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .balance-title {
             font-family: var(--font-header);
             font-size: 10px;
             color: var(--text-dim);
             text-transform: uppercase;
-            font-weight: 400;
+            margin-bottom: 10px;
         }
 
         .balance-value { 
             font-family: var(--font-header);
-            font-size: 44px;
-            font-weight: 700; 
-            margin: 15px 0;
-            display: flex;
-            align-items: baseline;
+            font-size: 46px;
+            font-weight: 700;
+            color: #fff;
         }
 
         .balance-value span {
-            font-size: 20px;
             color: var(--accent);
-            margin-left: 12px;
+            margin-left: 10px;
+            font-size: 24px;
         }
 
-        /* --- СЕКЦИИ (ВКЛАДКИ) --- */
-        .view-section {
-            display: none;
+        .card-meta {
+            margin-top: 20px;
+            font-family: var(--font-header);
+            font-size: 11px;
+            color: var(--accent);
+            opacity: 0.5;
+            letter-spacing: 2px;
         }
 
-        .view-section.active {
-            display: block;
-            animation: slideIn 0.5s ease-out;
+        /* СЕКЦИИ КОНТЕНТА 
+        */
+        .view-section { 
+            display: none; 
         }
 
-        /* --- ЭЛЕМЕНТЫ ИСТОРИИ --- */
+        .view-section.active { 
+            display: block; 
+            animation: slideInUp 0.6s cubic-bezier(0.2, 1, 0.3, 1); 
+        }
+
+        /* ОТОБРАЖЕНИЕ ИСТОРИИ ТРАНЗАКЦИЙ 
+        */
+        .history-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
         .history-item {
             background: var(--glass);
-            padding: 22px;
-            border-radius: 28px;
-            margin-bottom: 15px;
+            padding: 24px;
+            border-radius: 30px;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -223,357 +275,473 @@
             backdrop-filter: blur(10px);
         }
 
-        .item-info {
+        .history-item .info {
             display: flex;
             flex-direction: column;
+            gap: 5px;
         }
 
-        .item-user {
+        .history-item .user-id {
             font-weight: 800;
             font-size: 15px;
-            color: #fff;
-            margin-bottom: 5px;
-            font-family: var(--font-main);
+            color: #ffffff;
         }
 
-        .item-comment {
+        .history-item .comment {
             font-size: 12px;
             color: var(--text-dim);
-            font-family: var(--font-main);
         }
 
-        .item-amount {
+        .history-item .amount {
             font-family: var(--font-header);
             font-weight: 700;
             font-size: 16px;
         }
 
-        .income { color: var(--success); }
-        .expense { color: var(--error); }
+        .amount.plus { color: var(--success); }
+        .amount.minus { color: var(--error); }
 
-        /* --- НИЖНЯЯ НАВИГАЦИЯ --- */
+        /* БЛОК NFC 
+        */
+        .nfc-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 60px 20px;
+            text-align: center;
+        }
+
+        .nfc-visual {
+            width: 160px;
+            height: 160px;
+            border: 3px solid var(--accent);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 40px;
+            animation: nfcPulse 2.5s infinite ease-in-out;
+        }
+
+        .nfc-visual span {
+            font-family: var(--font-header);
+            font-size: 24px;
+            font-weight: 900;
+            color: var(--accent);
+        }
+
+        /* НИЖНЯЯ ПАНЕЛЬ НАВИГАЦИИ 
+        */
         nav {
             position: fixed;
-            bottom: 35px;
-            left: 25px;
-            right: 25px;
-            background: rgba(15, 15, 19, 0.85);
-            backdrop-filter: blur(40px);
-            border-radius: 40px;
+            bottom: 30px;
+            left: 20px;
+            right: 20px;
+            background: rgba(15, 15, 19, 0.9);
+            backdrop-filter: blur(30px);
+            border-radius: 45px;
             display: flex;
-            padding: 10px;
+            padding: 12px;
             border: 1px solid var(--border);
             z-index: 1000;
         }
 
-        .nav-link {
+        .nav-item {
             flex: 1;
-            padding: 18px;
+            padding: 16px 5px;
             border: none;
             background: transparent;
             color: var(--text-dim);
-            font-weight: 700;
-            font-size: 10px;
             font-family: var(--font-header);
-            cursor: pointer;
-            transition: 0.4s;
+            font-size: 9px;
+            font-weight: 700;
             text-align: center;
             text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.3s ease;
         }
 
-        .nav-link.active {
+        .nav-item.active {
             color: var(--accent);
         }
 
-        /* --- СИСТЕМА УВЕДОМЛЕНИЙ --- */
-        #notification {
+        /* УВЕДОМЛЕНИЯ 
+        */
+        #toast-msg {
             position: fixed;
             top: -100px;
             left: 50%;
             transform: translateX(-50%);
             background: var(--accent);
             color: #000;
-            padding: 20px 40px;
-            border-radius: 50px;
+            padding: 22px 45px;
+            border-radius: 60px;
             font-family: var(--font-header);
-            font-weight: 700;
+            font-weight: 800;
             font-size: 11px;
-            z-index: 10000;
-            transition: 0.6s cubic-bezier(0.68, -0.55, 0.27, 1.55);
             text-transform: uppercase;
+            z-index: 10001;
+            transition: all 0.7s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
         }
     </style>
 </head>
-<body>
+<body class="">
 
-    <div id="notification">СИСТЕМА ГОТОВА</div>
+    <div id="toast-msg">СИСТЕМА ИНИЦИАЛИЗИРОВАНА</div>
 
     <section id="auth-view">
         <div class="auth-container">
-            <div class="main-logo">PROFIT</div>
-            <p style="color: var(--text-dim); font-family: var(--font-header); font-size: 9px; margin-bottom: 40px; text-transform: uppercase;">SECURE BANKING INTERFACE</p>
+            <div class="main-logo-text">PROFIT</div>
+            <p style="color: var(--text-dim); font-size: 10px; margin-top: -40px; margin-bottom: 50px; font-family: var(--font-header);">ENTER YOUR CREDENTIALS</p>
             
             <div class="input-group">
-                <label>Идентификатор (Email)</label>
-                <input type="email" id="login-email" placeholder="example@mail.com">
+                <label>Email ID</label>
+                <input type="email" id="f-email" placeholder="user@profit.com">
             </div>
             
             <div class="input-group">
-                <label>Ключ доступа (Пароль)</label>
-                <input type="password" id="login-pass" placeholder="••••••••">
+                <label>Security Key</label>
+                <input type="password" id="f-pass" placeholder="••••••••">
             </div>
             
-            <button class="primary-btn" onclick="core.handleLogin()">Авторизоваться в системе</button>
+            <button class="primary-btn" onclick="app.login()">Access System</button>
         </div>
     </section>
 
     <main class="app-container">
         
-        <div class="wallet-card" id="main-wallet">
-            <div class="balance-label">ДОСТУПНЫЕ АКТИВЫ</div>
-            <div class="balance-value" id="ui-balance">0<span>₽</span></div>
-            <div id="ui-card-number" style="font-family: var(--font-header); font-size: 11px; color: var(--accent); opacity: 0.4;">9771 0000 0000 0000</div>
+        <div class="wallet-card" id="balance-card-block">
+            <div class="balance-title">Current Assets</div>
+            <div class="balance-value" id="val-balance">0<span>₽</span></div>
+            <div class="card-meta" id="val-card-num">9771 0000 0000 0000</div>
         </div>
 
-        <div id="view-wallet" class="view-section active">
-            <h2 style="font-family: var(--font-header); font-size: 10px; color: var(--text-dim); margin-bottom: 25px; text-transform: uppercase;">НЕДАВНИЕ ОПЕРАЦИИ</h2>
-            <div id="history-feed">
+        <div id="scr-wallet" class="view-section active">
+            <h2 style="font-family: var(--font-header); font-size: 10px; color: var(--accent); margin-bottom: 30px; letter-spacing: 2px;">RECENT TRANSACTIONS</h2>
+            <div class="history-list" id="val-history">
                 </div>
         </div>
 
-        <div id="view-send" class="view-section">
+        <div id="scr-send" class="view-section">
+            <h2 style="font-family: var(--font-header); font-size: 10px; color: var(--text-dim); margin-bottom: 30px;">NEW TRANSFER</h2>
+            
             <div class="input-group">
-                <label>Получатель из базы данных</label>
-                <select id="send-to-select">
-                    <option value="">Поиск контактов...</option>
+                <label>Target User</label>
+                <select id="f-send-to">
+                    <option value="">Fetching users...</option>
                 </select>
             </div>
             
             <div class="input-group">
-                <label>Сумма перевода (₽)</label>
-                <input type="number" id="send-amount-val" placeholder="0.00">
+                <label>Amount (RUB)</label>
+                <input type="number" id="f-send-amount" placeholder="0.00">
             </div>
 
             <div class="input-group">
-                <label>Комментарий к транзакции</label>
-                <textarea id="send-comment-val" rows="3" placeholder="Укажите назначение платежа..."></textarea>
+                <label>Reference Note</label>
+                <textarea id="f-send-note" rows="3" placeholder="Transaction details..."></textarea>
             </div>
             
-            <button class="primary-btn" onclick="core.initTransfer()">Выполнить мгновенный перевод</button>
+            <button class="primary-btn" onclick="app.sendMoney()">Execute Transfer</button>
         </div>
 
-        <div id="view-settings" class="view-section">
-            <h2 style="font-family: var(--font-header); font-size: 12px; color: var(--accent); margin-bottom: 30px; text-transform: uppercase;">БЕЗОПАСНОСТЬ АККАУНТА</h2>
-            
-            <div class="input-group">
-                <label>Действующий пароль</label>
-                <input type="password" id="pass-old">
+        <div id="scr-nfc" class="view-section">
+            <div class="nfc-container">
+                <div class="nfc-visual">
+                    <span>NFC</span>
+                </div>
+                <h3 style="font-family: var(--font-header); font-size: 16px; margin-bottom: 15px; color: #fff;">READY TO SCAN</h3>
+                <p style="color: var(--text-dim); font-size: 13px; line-height: 1.6;">Place your device near a payment terminal or another PROFIT user to initiate contact-less sync.</p>
+                <button class="primary-btn" style="margin-top: 40px; background: transparent; border: 1px solid var(--accent); color: var(--accent);">Refresh Chip</button>
             </div>
-            
-            <div class="input-group">
-                <label>Новый секретный ключ</label>
-                <input type="password" id="pass-new">
-            </div>
-            
-            <button class="primary-btn" onclick="core.updatePassword()">Зафиксировать изменения</button>
-            
-            <button class="primary-btn" onclick="location.reload()" style="background: transparent; color: var(--error); border: 1px solid var(--error); margin-top: 30px;">Деавторизоваться</button>
         </div>
+
+        <div id="scr-settings" class="view-section">
+            <h2 style="font-family: var(--font-header); font-size: 12px; color: var(--accent); margin-bottom: 40px;">SECURITY CENTER</h2>
+            
+            <div class="input-group">
+                <label>Current Password</label>
+                <input type="password" id="f-old-pass">
+            </div>
+            
+            <div class="input-group">
+                <label>New Master Key</label>
+                <input type="password" id="f-new-pass">
+            </div>
+            
+            <button class="primary-btn" onclick="app.changePassword()">Apply Changes</button>
+            
+            <div style="margin-top: 50px; padding-top: 30px; border-top: 1px solid #1a1a1a;">
+                <p style="font-size: 11px; color: var(--text-dim); margin-bottom: 20px; text-align: center;">TERMINAL ID: PRF-990-221-X</p>
+                <button class="primary-btn" onclick="location.reload()" style="background: #111; color: var(--error); border: 1px solid #222;">Terminate Session</button>
+            </div>
+        </div>
+
     </main>
 
     <nav>
-        <button class="nav-link active" onclick="core.switchTab('wallet', this)">КОШЕЛЕК</button>
-        <button class="nav-link" onclick="core.switchTab('send', this)">ПЕРЕВОД</button>
-        <button class="nav-link" onclick="core.switchTab('settings', this)">ИНФО</button>
+        <button class="nav-item active" onclick="app.nav('wallet', this)">ТРАНЗАКЦИИ</button>
+        <button class="nav-item" onclick="app.nav('send', this)">ПЕРЕВОД</button>
+        <button class="nav-item" onclick="app.nav('nfc', this)">NFC</button>
+        <button class="nav-item" onclick="app.nav('settings', this)">ИНФО</button>
     </nav>
 
     <script>
         /**
-         * PROFIT BANK CORE ENGINE
-         * Управление всеми процессами приложения
+         * PROFIT CORE ENGINE v11.0.3
+         * Глобальный объект управления приложением
          */
-        const API_ENDPOINT = 'https://script.google.com/macros/s/AKfycbwtrKUhnNxU9yNGsIiw4KlbQe7pbOlQRx6msAVz44WzNZkpv1M_pNuurypisGWLEnXjIg/exec';
+        const CONFIG = {
+            API: 'https://script.google.com/macros/s/AKfycbwtrKUhnNxU9yNGsIiw4KlbQe7pbOlQRx6msAVz44WzNZkpv1M_pNuurypisGWLEnXjIg/exec',
+            RELOAD_INTERVAL: 15000 // 15 seconds
+        };
 
-        const core = {
-            session: null,
+        const app = {
+            user: null,
 
-            /** ФУНКЦИЯ УВЕДОМЛЕНИЙ */
-            showToast(text, isError = false) {
-                const t = document.getElementById('notification');
-                t.innerText = text;
-                t.style.background = isError ? 'var(--error)' : 'var(--accent)';
-                t.style.top = '40px';
+            /**
+             * ВЫВОД СИСТЕМНЫХ УВЕДОМЛЕНИЙ
+             */
+            notify(msg, error = false) {
+                console.log(`[SYSTEM]: ${msg}`);
+                const el = document.getElementById('toast-msg');
+                el.innerText = msg;
+                el.style.background = error ? 'var(--error)' : 'var(--accent)';
+                el.style.top = '45px';
                 
                 setTimeout(() => {
-                    t.style.top = '-100px';
-                }, 3000);
+                    el.style.top = '-100px';
+                }, 3500);
             },
 
-            /** ВХОД В СИСТЕМУ */
-            async handleLogin() {
-                const email = document.getElementById('login-email').value;
-                const pass = document.getElementById('login-pass').value;
-                
+            /**
+             * ПРОЦЕСС АВТОРИЗАЦИИ
+             */
+            async login() {
+                const email = document.getElementById('f-email').value;
+                const pass = document.getElementById('f-pass').value;
+
+                console.log("[AUTH]: Attempting login for", email);
+
                 if (!email || !pass) {
-                    return this.showToast("ЗАПОЛНИТЕ ВСЕ ПОЛЯ", true);
+                    this.notify("REQUIRED FIELDS EMPTY", true);
+                    return;
                 }
 
                 try {
-                    const res = await fetch(API_ENDPOINT, { 
-                        method: 'POST', 
-                        body: JSON.stringify({ action: 'login', email, pass }) 
+                    const response = await fetch(CONFIG.API, {
+                        method: 'POST',
+                        body: JSON.stringify({ action: 'login', email, pass })
                     });
-                    const data = await res.json();
                     
-                    if (data.success) {
-                        this.session = { email, ...data };
+                    const result = await response.json();
+                    console.log("[AUTH]: Response received", result);
+
+                    if (result.success) {
+                        this.user = { email, ...result };
                         document.getElementById('auth-view').classList.add('hidden');
-                        document.getElementById('ui-card-number').innerText = data.card;
-                        this.startEngine();
+                        document.getElementById('val-card-num').innerText = result.card;
+                        this.notify("ACCESS GRANTED");
+                        this.init();
                     } else {
-                        this.showToast(data.message, true);
+                        this.notify(result.message || "INVALID CREDENTIALS", true);
                     }
-                } catch (e) {
-                    this.showToast("СЕТЕВАЯ ОШИБКА", true);
+                } catch (err) {
+                    console.error("[AUTH ERROR]:", err);
+                    this.notify("CONNECTION FAILED", true);
                 }
             },
 
-            /** ЗАПУСК ФОНОВЫХ ПРОЦЕССОВ */
-            startEngine() {
-                this.syncData();
-                this.fetchUsers();
-                // Авто-обновление каждые 10 секунд
-                setInterval(() => this.syncData(), 10000);
+            /**
+             * ИНИЦИАЛИЗАЦИЯ ПОСЛЕ ВХОДА
+             */
+            init() {
+                console.log("[CORE]: Initializing engine...");
+                this.sync();
+                this.loadUsers();
+                
+                // Настройка фонового обновления
+                setInterval(() => {
+                    console.log("[CORE]: Background sync triggered");
+                    this.sync();
+                }, CONFIG.RELOAD_INTERVAL);
             },
 
-            /** ОБНОВЛЕНИЕ БАЛАНСА И ИСТОРИИ */
-            async syncData() {
+            /**
+             * СИНХРОНИЗАЦИЯ ДАННЫХ С СЕРВЕРОМ
+             */
+            async sync() {
+                if (!this.user) return;
+
                 try {
-                    const res = await fetch(API_ENDPOINT, { 
-                        method: 'POST', 
-                        body: JSON.stringify({ action: 'sync', email: this.session.email }) 
+                    const response = await fetch(CONFIG.API, {
+                        method: 'POST',
+                        body: JSON.stringify({ 
+                            action: 'sync', 
+                            email: this.user.email 
+                        })
                     });
-                    const data = await res.json();
                     
-                    const balEl = document.getElementById('ui-balance');
-                    balEl.innerHTML = `${data.balance.toLocaleString()}<span>₽</span>`;
+                    const data = await response.json();
                     
-                    const historyHtml = data.history.map(h => {
-                        const isExpense = h[1].toLowerCase() === this.session.email.toLowerCase();
-                        return `
-                            <div class="history-item">
-                                <div class="item-info">
-                                    <span class="item-user">${isExpense ? '→ ' + h[2] : '← ' + h[1]}</span>
-                                    <span class="item-comment">${h[4] || 'PROFIT TRANSACTION'}</span>
+                    // Обновление баланса
+                    const balDisplay = document.getElementById('val-balance');
+                    balDisplay.innerHTML = `${data.balance.toLocaleString()}<span>₽</span>`;
+
+                    // Отрисовка истории
+                    const historyContainer = document.getElementById('val-history');
+                    if (data.history && data.history.length > 0) {
+                        historyContainer.innerHTML = data.history.map(item => {
+                            const isOut = item[1].toLowerCase() === this.user.email.toLowerCase();
+                            return `
+                                <div class="history-item">
+                                    <div class="info">
+                                        <span class="user-id">${isOut ? 'TO: ' + item[2] : 'FROM: ' + item[1]}</span>
+                                        <span class="comment">${item[4] || 'PROFIT NETWORK TX'}</span>
+                                    </div>
+                                    <div class="amount ${isOut ? 'minus' : 'plus'}">
+                                        ${isOut ? '-' : '+'}${item[3].toLocaleString()}
+                                    </div>
                                 </div>
-                                <div class="item-amount ${isExpense ? 'expense' : 'income'}">
-                                    ${isExpense ? '-' : '+'}${h[3].toLocaleString()}
-                                </div>
-                            </div>
-                        `;
-                    }).join('');
-                    
-                    document.getElementById('history-feed').innerHTML = historyHtml || '<p style="color:#333; text-align:center;">ОПЕРАЦИЙ НЕТ</p>';
-                } catch(e) {
-                    console.error("Sync error");
+                            `;
+                        }).join('');
+                    } else {
+                        historyContainer.innerHTML = '<div style="text-align:center; padding:40px; color:#333;">NO DATA</div>';
+                    }
+                } catch (err) {
+                    console.warn("[SYNC ERROR]:", err);
                 }
             },
 
-            /** ПОЛУЧЕНИЕ СПИСКА КОНТАКТОВ */
-            async fetchUsers() {
+            /**
+             * ЗАГРУЗКА СПИСКА ПОЛЬЗОВАТЕЛЕЙ
+             */
+            async loadUsers() {
                 try {
-                    const res = await fetch(API_ENDPOINT, { 
-                        method: 'POST', 
-                        body: JSON.stringify({ action: 'get_users', myEmail: this.session.email }) 
+                    const response = await fetch(CONFIG.API, {
+                        method: 'POST',
+                        body: JSON.stringify({ 
+                            action: 'get_users', 
+                            myEmail: this.user.email 
+                        })
                     });
-                    const data = await res.json();
-                    const select = document.getElementById('send-to-select');
+                    const data = await response.json();
                     
-                    select.innerHTML = '<option value="">ВЫБЕРИТЕ ПОЛУЧАТЕЛЯ</option>' + 
-                        data.users.map(u => `<option value="${u.email}">${u.name} (${u.email})</option>`).join('');
-                } catch (e) {
-                    console.error("Users fetch error");
+                    const select = document.getElementById('f-send-to');
+                    let options = '<option value="">SELECT RECIPIENT</option>';
+                    
+                    data.users.forEach(u => {
+                        options += `<option value="${u.email}">${u.name} [${u.email}]</option>`;
+                    });
+                    
+                    select.innerHTML = options;
+                    console.log("[CORE]: Users loaded");
+                } catch (err) {
+                    console.error("[USERS ERROR]:", err);
                 }
             },
 
-            /** ИНИЦИАЦИЯ ПЕРЕВОДА */
-            async initTransfer() {
-                const to = document.getElementById('send-to-select').value;
-                const amount = document.getElementById('send-amount-val').value;
-                const comment = document.getElementById('send-comment-val').value;
+            /**
+             * ВЫПОЛНЕНИЕ ПЕРЕВОДА
+             */
+            async sendMoney() {
+                const to = document.getElementById('f-send-to').value;
+                const amount = document.getElementById('f-send-amount').value;
+                const comment = document.getElementById('f-send-note').value;
 
                 if (!to || !amount || amount <= 0) {
-                    return this.showToast("ПРОВЕРЬТЕ ДАННЫЕ", true);
+                    this.notify("INVALID TRANSFER DATA", true);
+                    return;
                 }
 
-                this.showToast("ОБРАБОТКА ТРАНЗАКЦИИ...");
-                this.switchTab('wallet', document.querySelector('.nav-link'));
-
-                try {
-                    const res = await fetch(API_ENDPOINT, { 
-                        method: 'POST', 
-                        body: JSON.stringify({ 
-                            action: 'transfer', 
-                            from: this.session.email, 
-                            to, 
-                            amount, 
-                            comment 
-                        }) 
-                    });
-                    const data = await res.json();
-                    
-                    if (data.success) {
-                        this.showToast("УСПЕШНО ПЕРЕВЕДЕНО");
-                        this.syncData();
-                        document.getElementById('send-amount-val').value = '';
-                        document.getElementById('send-comment-val').value = '';
-                    } else {
-                        this.showToast(data.message, true);
-                        this.syncData();
-                    }
-                } catch (e) {
-                    this.showToast("ОШИБКА ПЕРЕВОДА", true);
-                }
-            },
-
-            /** СМЕНА ПАРОЛЯ */
-            async updatePassword() {
-                const oldPass = document.getElementById('pass-old').value;
-                const newPass = document.getElementById('pass-new').value;
+                this.notify("PROCESS INITIATED...");
                 
-                if (!oldPass || !newPass) {
-                    return this.showToast("ЗАПОЛНИТЕ ПАРОЛИ", true);
-                }
-
                 try {
-                    const res = await fetch(API_ENDPOINT, { 
-                        method: 'POST', 
-                        body: JSON.stringify({ 
-                            action: 'change_pass', 
-                            email: this.session.email, 
-                            oldPass, 
-                            newPass 
-                        }) 
+                    const response = await fetch(CONFIG.API, {
+                        method: 'POST',
+                        body: JSON.stringify({
+                            action: 'transfer',
+                            from: this.user.email,
+                            to: to,
+                            amount: amount,
+                            comment: comment
+                        })
                     });
-                    const data = await res.json();
                     
-                    if (data.success) {
-                        this.showToast("КЛЮЧ ОБНОВЛЕН");
-                        document.getElementById('pass-old').value = '';
-                        document.getElementById('pass-new').value = '';
+                    const res = await response.json();
+                    
+                    if (res.success) {
+                        this.notify("TRANSFER SUCCESSFUL");
+                        // Сброс полей
+                        document.getElementById('f-send-amount').value = '';
+                        document.getElementById('f-send-note').value = '';
+                        this.sync();
+                        this.nav('wallet', document.querySelector('.nav-item'));
                     } else {
-                        this.showToast(data.message, true);
+                        this.notify(res.message, true);
                     }
-                } catch (e) {
-                    this.showToast("ОШИБКА ЗАПРОСА", true);
+                } catch (err) {
+                    this.notify("CRITICAL TX ERROR", true);
                 }
             },
 
-            /** ПЕРЕКЛЮЧЕНИЕ ЭКРАНОВ */
-            switchTab(id, btn) {
+            /**
+             * ИЗМЕНЕНИЕ ПАРОЛЯ
+             */
+            async changePassword() {
+                const oldP = document.getElementById('f-old-pass').value;
+                const newP = document.getElementById('f-new-pass').value;
+
+                if (!oldP || !newP) {
+                    this.notify("FILL ALL FIELDS", true);
+                    return;
+                }
+
+                try {
+                    const response = await fetch(CONFIG.API, {
+                        method: 'POST',
+                        body: JSON.stringify({
+                            action: 'change_pass',
+                            email: this.user.email,
+                            oldPass: oldP,
+                            newPass: newP
+                        })
+                    });
+                    const res = await response.json();
+                    
+                    if (res.success) {
+                        this.notify("PASSWORD UPDATED");
+                        document.getElementById('f-old-pass').value = '';
+                        document.getElementById('f-new-pass').value = '';
+                    } else {
+                        this.notify(res.message, true);
+                    }
+                } catch (err) {
+                    this.notify("REQUEST FAILED", true);
+                }
+            },
+
+            /**
+             * НАВИГАЦИЯ МЕЖДУ ЭКРАНАМИ
+             */
+            nav(target, btn) {
+                console.log(`[NAV]: Switching to ${target}`);
+                
+                // Логика видимости баланса (скрываем на Транзакциях)
+                if (target === 'wallet') {
+                    document.body.classList.remove('show-header-balance');
+                } else {
+                    document.body.classList.add('show-header-balance');
+                }
+
+                // Переключение классов активных вкладок
                 document.querySelectorAll('.view-section').forEach(s => s.classList.remove('active'));
-                document.getElementById('view-' + id).classList.add('active');
-                document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+                document.getElementById('scr-' + target).classList.add('active');
+                
+                // Переключение кнопок
+                document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
                 btn.classList.add('active');
             }
         };
