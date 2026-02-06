@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>PROFIT BANK ULTIMATE TERMINAL v12.0.0 - ENTERPRISE EDITION</title>
+    <title>PROFIT BANK ULTIMATE TERMINAL v12.0.1 - ENTERPRISE EDITION</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -283,12 +283,28 @@
             font-weight: 800; 
             display: flex;
             align-items: baseline;
+            margin-bottom: 10px;
         }
 
         .asset-balance-value span { 
             color: var(--accent-primary); 
             font-size: 24px; 
             margin-left: 12px; 
+        }
+
+        .asset-balance-nfc { 
+            font-family: var(--font-header-stack); 
+            font-size: 24px; 
+            font-weight: 600; 
+            display: flex;
+            align-items: baseline;
+            color: var(--status-success);
+        }
+
+        .asset-balance-nfc span { 
+            color: var(--status-success); 
+            font-size: 16px; 
+            margin-left: 8px; 
         }
 
         .asset-card-number {
@@ -497,6 +513,7 @@
         <div class="header-asset-card" id="global-header-card">
             <div class="asset-label">Verified Liquidity</div>
             <div class="asset-balance-value" id="display-balance">0<span>₽</span></div>
+            <div class="asset-balance-nfc" id="display-nfc-balance">0<span>₽</span></div>
             <div class="asset-card-number" id="display-card-id">9771 0000 0000 0000</div>
         </div>
 
@@ -610,7 +627,7 @@
     <script>
         /**
          * CORE ENGINE ARCHITECTURE
-         * Version: 12.0.0 Enterprise
+         * Version: 12.0.1 Enterprise
          */
         const SYSTEM_CONFIG = {
             ENDPOINT: 'https://script.google.com/macros/s/AKfycbyE8ayI6MGt6fBtl9bkG4bQ81UxEPP-pWbHdEc9eTRWOYGfh2O6Gz1dK3CYYJdw2bDoqw/exec',
@@ -623,7 +640,8 @@
                 active: false,
                 userEmail: null,
                 userName: null,
-                userCard: null
+                userCard: null,
+                userNfcId: null
             },
 
             /**
@@ -688,6 +706,7 @@
                         this.session.userEmail = email;
                         this.session.userName = data.name;
                         this.session.userCard = data.card;
+                        this.session.userNfcId = data.nfcId;
 
                         // UI Updates
                         document.getElementById('view-authentication').classList.add('system-hidden');
@@ -739,25 +758,29 @@
 
                     const data = await response.json();
                     
-                    // Update Balance UI
+                    // Update Main Balance UI
                     const balElement = document.getElementById('display-balance');
                     if (data.balance !== undefined) {
                         balElement.innerHTML = `${parseFloat(data.balance || 0).toLocaleString('ru-RU')}<span>₽</span>`;
                     }
 
-                    // Render Ledger (ИСПРАВЛЕНО)
+                    // Update NFC Balance UI
+                    const nfcBalElement = document.getElementById('display-nfc-balance');
+                    if (data.nfcBalance !== undefined) {
+                        nfcBalElement.innerHTML = `NFC: ${parseFloat(data.nfcBalance || 0).toLocaleString('ru-RU')}<span>₽</span>`;
+                    }
+
+                    // Render Ledger
                     const ledgerRoot = document.getElementById('ledger-feed-root');
                     if (data.history && data.history.length > 0) {
                         let ledgerHTML = '';
                         
                         data.history.forEach(item => {
-                            // item - это массив: [date, from, to, amount, comment]
                             const isOutgoing = String(item[1] || "").toLowerCase() === this.session.userEmail.toLowerCase();
                             const target = isOutgoing ? item[2] : item[1];
                             const flowClass = isOutgoing ? 'amount-neg' : 'amount-pos';
                             const prefix = isOutgoing ? '-' : '+';
                             
-                            // Форматируем дату
                             const date = new Date(item[0]);
                             const timeStr = date.toLocaleTimeString('ru-RU', {hour: '2-digit', minute:'2-digit'});
                             
@@ -805,7 +828,7 @@
                     
                     if (data.users && data.users.length > 0) {
                         data.users.forEach(u => {
-                            if (u.email !== this.session.userEmail) { // Исключаем текущего пользователя
+                            if (u.email !== this.session.userEmail) {
                                 htmlOptions += `<option value="${u.email}">${u.name} [${u.email}]</option>`;
                             }
                         });
@@ -901,12 +924,22 @@
                                 tagId: tagId,
                                 myEmail: CoreEngine.session.userEmail
                             };
-                        } else if (operationType === 'withdraw' || operationType === 'deposit') {
+                        } else if (operationType === 'withdraw') {
+                            // При списании с NFC - деньги поступают администратору
                             payload = {
                                 action: 'nfc_hardware_op',
                                 tagId: tagId,
                                 amount: amountValue,
-                                method: operationType,
+                                method: 'withdraw',
+                                adminEmail: CoreEngine.session.userEmail
+                            };
+                        } else if (operationType === 'deposit') {
+                            // При пополнении NFC - деньги списываются с администратора
+                            payload = {
+                                action: 'nfc_hardware_op',
+                                tagId: tagId,
+                                amount: amountValue,
+                                method: 'deposit',
                                 adminEmail: CoreEngine.session.userEmail
                             };
                         }
@@ -922,12 +955,15 @@
                             CoreEngine.pushNotification(data.message || "SUCCESS");
                             
                             if (operationType === 'identify' && data.owner) {
-                                alert(`ВЛАДЕЛЕЦ МЕТКИ:\nИмя: ${data.name}\nEmail: ${data.owner}`);
+                                alert(`ВЛАДЕЛЕЦ МЕТКИ:\nИмя: ${data.name}\nEmail: ${data.owner}\nБаланс NFC: ${data.nfcBalance} ₽`);
                             }
                             
-                            // Обновляем баланс если была операция с деньгами
+                            // Обновляем балансы
+                            CoreEngine.syncDataPack();
+                            
+                            // Очищаем поле суммы
                             if (['withdraw', 'deposit'].includes(operationType)) {
-                                CoreEngine.syncDataPack();
+                                document.getElementById('field-nfc-amount').value = '';
                             }
                         } else {
                             CoreEngine.pushNotification(data.message || "OPERATION FAILED", true);
@@ -981,7 +1017,7 @@
             },
             
             /**
-             * NFC HARDWARE INITIALIZATION (ИСПРАВЛЕННЫЙ)
+             * NFC HARDWARE INITIALIZATION
              */
             async initHardwareNFC() {
                 if (!('NDEFReader' in window)) {
@@ -1050,7 +1086,7 @@
         };
 
         // Initialize Console Message
-        console.log("%c PROFIT BANK KERNEL v12.0.0 ", "background: #ffd600; color: #000; font-weight: bold; padding: 5px;");
+        console.log("%c PROFIT BANK KERNEL v12.0.1 ", "background: #ffd600; color: #000; font-weight: bold; padding: 5px;");
         console.log("System standing by for user authentication...");
     </script>
 </body>
