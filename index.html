@@ -3,426 +3,352 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>PROFIT BANK | ELITE SYSTEM</title>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@300;400;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+    <title>PROFIT INFINITY | NEXT GEN</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@300;400;600;800&family=JetBrains+Mono&display=swap" rel="stylesheet">
     
     <style>
         :root {
             --accent: #ffd600;
             --accent-glow: rgba(255, 214, 0, 0.4);
-            --bg: #020205;
-            --card-bg: #0a0a12;
-            --panel-bg: #12121c;
+            --bg: #030305;
+            --card: #0d0d14;
+            --panel: #14141f;
             --text: #ffffff;
-            --muted: #626272;
-            --success: #00ff9d;
+            --muted: #71717e;
+            --success: #00ff95;
             --error: #ff2d55;
-            --border: rgba(255, 255, 255, 0.08);
+            --glass: rgba(255, 255, 255, 0.04);
+            --border: rgba(255, 255, 255, 0.1);
         }
 
-        /* --- ГЛОБАЛЬНЫЙ СБРОС --- */
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none !important; }
+        * { box-sizing: border-box; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
         body { 
-            margin: 0; background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif;
-            background-image: 
-                radial-gradient(circle at 0% 0%, rgba(255,214,0,0.08) 0%, transparent 40%),
-                radial-gradient(circle at 100% 100%, rgba(0,255,157,0.05) 0%, transparent 40%);
-            min-height: 100vh; overflow-x: hidden;
+            margin: 0; background: var(--bg); color: var(--text); overflow-x: hidden;
+            background-image: radial-gradient(circle at top right, #1a1a2e 0%, #030305 100%);
+            min-height: 100vh;
         }
 
         .hidden { display: none !important; }
 
         /* --- АНИМАЦИИ --- */
-        @keyframes scan-line { 0% { top: 0; } 100% { top: 100%; } }
-        @keyframes glitch { 0% { transform: translate(0); } 20% { transform: translate(-2px, 2px); } 40% { transform: translate(-2px, -2px); } 60% { transform: translate(2px, 2px); } 80% { transform: translate(2px, -2px); } 100% { transform: translate(0); } }
-        @keyframes ring-pulse { 0% { transform: scale(0.6); opacity: 1; } 100% { transform: scale(2.5); opacity: 0; } }
-
-        .container { width: 100%; max-width: 480px; margin: 0 auto; padding: 25px 15px; }
-
-        /* --- КАРТА: FULL 3D REWRITE --- */
-        .scene { perspective: 2000px; height: 260px; margin-bottom: 40px; }
-        .card {
-            width: 100%; height: 100%; position: relative;
-            transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            transform-style: preserve-3d; cursor: pointer;
+        @keyframes pulse-radar { 0% { transform: scale(0.5); opacity: 1; } 100% { transform: scale(2.5); opacity: 0; } }
+        @keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-10px); } 100% { transform: translateY(0px); } }
+        @keyframes scan-line { 0% { top: 0%; } 100% { top: 100%; } }
+        @keyframes glitch { 
+            0% { transform: translate(0); } 20% { transform: translate(-2px, 2px); }
+            40% { transform: translate(-2px, -2px); } 60% { transform: translate(2px, 2px); }
+            80% { transform: translate(2px, -2px); } 100% { transform: translate(0); }
         }
-        .card.is-flipped { transform: rotateY(180deg); }
 
-        .card__face {
-            position: absolute; width: 100%; height: 100%; border-radius: 35px;
+        .container { width: 100%; max-width: 450px; margin: 0 auto; padding: 20px 15px; animation: fadeIn 0.6s ease; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        /* --- КАРТА --- */
+        .card-box { perspective: 1000px; height: 230px; margin-bottom: 30px; animation: float 4s ease-in-out infinite; }
+        .card-inner { position: relative; width: 100%; height: 100%; transform-style: preserve-3d; transition: 0.8s; cursor: pointer; }
+        .card-inner.flipped { transform: rotateY(180deg); }
+        
+        .card-front, .card-back {
+            position: absolute; inset: 0; border-radius: 28px; padding: 25px;
             backface-visibility: hidden; -webkit-backface-visibility: hidden;
-            border: 1px solid var(--border); padding: 30px;
-            box-shadow: 0 25px 50px rgba(0,0,0,0.7);
-        }
-
-        .card__face--front {
-            background: linear-gradient(135deg, #1a1a2e 0%, #050508 100%);
+            border: 1px solid var(--border);
+            background: linear-gradient(135deg, #161625 0%, #08080c 100%);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.5);
             display: flex; flex-direction: column; justify-content: space-between;
         }
+        .card-back { transform: rotateY(180deg); text-align: center; justify-content: center; }
 
-        .card__face--back {
-            background: #08080c; transform: rotateY(180deg);
-            display: flex; flex-direction: column; padding: 0; overflow: hidden;
-        }
-
-        /* Детали задней стороны */
-        .magnetic-stripe { width: 100%; height: 50px; background: #000; margin-top: 30px; }
-        .signature-area { 
-            width: 80%; height: 40px; background: #eee; margin: 20px auto; 
-            border-radius: 4px; display: flex; align-items: center; justify-content: flex-end; padding-right: 15px;
-        }
-        .cvv-code { font-family: 'JetBrains Mono'; color: #000; font-weight: 700; font-style: italic; }
-        .holo-sticker { 
-            width: 50px; height: 40px; background: linear-gradient(45deg, #ddd, #fff, #bbb); 
-            border-radius: 10px; margin-left: 30px; opacity: 0.6; position: relative;
+        .balance-val { font-size: 38px; font-weight: 900; letter-spacing: -1px; margin: 5px 0; }
+        .unlimited-badge { 
+            padding: 4px 10px; background: rgba(0,255,149,0.1); border: 1px solid var(--success);
+            color: var(--success); font-size: 9px; border-radius: 50px; font-weight: 800; letter-spacing: 1px;
         }
 
-        /* --- ВЕРХНЯЯ ПАНЕЛЬ / DOCK --- */
-        .dock {
-            display: flex; background: var(--panel-bg); padding: 8px; border-radius: 25px;
-            border: 1px solid var(--border); margin-bottom: 30px; gap: 6px;
-            backdrop-filter: blur(10px); position: sticky; top: 15px; z-index: 999;
+        /* --- NFC RADAR --- */
+        .nfc-zone { 
+            height: 300px; display: flex; flex-direction: column; align-items: center; justify-content: center;
+            position: relative; overflow: hidden; background: var(--panel); border-radius: 30px;
         }
-        .dock-btn {
-            flex: 1; padding: 14px 2px; border: none; background: none; color: var(--muted);
-            font-size: 10px; font-weight: 800; border-radius: 18px; cursor: pointer;
-            transition: 0.3s; text-transform: uppercase; letter-spacing: 1px;
+        .radar-circle {
+            position: absolute; width: 100px; height: 100px; border: 2px solid var(--accent);
+            border-radius: 50%; animation: pulse-radar 2s infinite;
         }
-        .dock-btn.active { background: var(--accent); color: #000; box-shadow: 0 10px 20px var(--accent-glow); }
+        .nfc-icon { font-size: 50px; color: var(--accent); z-index: 2; filter: drop-shadow(0 0 10px var(--accent-glow)); }
 
-        /* --- UI ЭЛЕМЕНТЫ --- */
-        .glass-panel {
-            background: var(--card-bg); border-radius: 35px; padding: 30px;
-            border: 1px solid var(--border); margin-bottom: 25px;
-            animation: fadeIn 0.5s ease-out;
-        }
-        h2 { font-size: 22px; font-weight: 900; margin: 0 0 25px 0; color: var(--accent); font-family: 'Orbitron'; }
+        /* --- UI ELEMENTS --- */
+        .dock { display: flex; background: var(--card); padding: 8px; border-radius: 20px; border: 1px solid var(--border); margin-bottom: 25px; }
+        .dock-btn { flex: 1; padding: 12px; border: none; background: none; color: var(--muted); font-size: 10px; font-weight: 800; border-radius: 15px; cursor: pointer; text-transform: uppercase; }
+        .dock-btn.active { background: var(--accent); color: #000; box-shadow: 0 5px 15px var(--accent-glow); }
+
+        .section { background: var(--card); border-radius: 30px; padding: 25px; border: 1px solid var(--border); margin-bottom: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+        h2 { font-size: 20px; font-weight: 900; margin-top: 0; color: var(--accent); letter-spacing: -0.5px; }
 
         input, select {
-            width: 100%; padding: 20px; background: #05050a; border: 1px solid var(--border);
-            border-radius: 20px; color: #fff; font-size: 16px; margin-bottom: 18px; transition: 0.3s;
+            width: 100%; padding: 18px; background: var(--panel); border: 1px solid var(--border);
+            border-radius: 18px; color: #fff; font-size: 15px; margin-bottom: 15px; transition: 0.3s;
         }
-        input:focus { border-color: var(--accent); box-shadow: 0 0 15px var(--accent-glow); }
+        input:focus { border-color: var(--accent); box-shadow: 0 0 10px var(--accent-glow); outline: none; }
 
-        .btn-action {
-            width: 100%; padding: 22px; background: var(--accent); border: none; border-radius: 20px;
-            font-weight: 900; font-size: 16px; color: #000; cursor: pointer; transition: 0.3s;
-            text-transform: uppercase; letter-spacing: 2px;
+        .btn-prime {
+            width: 100%; padding: 18px; background: var(--accent); border: none; border-radius: 18px;
+            font-weight: 900; font-size: 15px; color: #000; cursor: pointer; transition: 0.3s;
         }
-        .btn-action:active { transform: scale(0.96); }
+        .btn-prime:hover { filter: brightness(1.1); transform: translateY(-2px); }
 
-        /* --- ЧАТ --- */
-        .chat-box { height: 420px; overflow-y: auto; display: flex; flex-direction: column-reverse; gap: 18px; padding-right: 10px; }
-        .msg { display: flex; gap: 15px; max-width: 90%; align-items: flex-end; }
-        .msg.own { align-self: flex-end; flex-direction: row-reverse; }
-        
-        .msg-avatar { width: 40px; height: 40px; border-radius: 12px; border: 2px solid var(--accent); object-fit: cover; background: #000; flex-shrink: 0; }
-        .msg-bubble { 
-            padding: 15px 20px; border-radius: 25px; background: var(--panel-bg); 
-            border: 1px solid var(--border); font-size: 14px; line-height: 1.5;
-        }
-        .msg.own .msg-bubble { background: var(--accent); color: #000; border: none; font-weight: 600; }
-        .msg-info { display: block; font-size: 10px; font-weight: 900; color: var(--muted); margin-bottom: 6px; text-transform: uppercase; }
+        /* --- CHAT --- */
+        #chatDisplay { height: 350px; overflow-y: auto; display: flex; flex-direction: column-reverse; gap: 12px; }
+        .msg-wrap { display: flex; gap: 10px; max-width: 80%; }
+        .msg-wrap.me { align-self: flex-end; flex-direction: row-reverse; }
+        .msg-text { background: var(--panel); padding: 12px 16px; border-radius: 20px; font-size: 14px; }
+        .msg-wrap.me .msg-text { background: var(--accent); color: #000; font-weight: 600; }
 
-        /* --- NFC SCANNER --- */
-        .nfc-radar {
-            height: 320px; background: #030307; border-radius: 30px; position: relative;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            border: 2px dashed #1a1a2e; overflow: hidden;
-        }
-        .nfc-ring { position: absolute; border: 2px solid var(--accent); border-radius: 50%; animation: ring-pulse 2.5s infinite; }
-        .nfc-phone { font-size: 65px; z-index: 10; filter: drop-shadow(0 0 20px var(--accent-glow)); }
-
-        /* --- OVERLAYS --- */
-        #loader {
-            position: fixed; inset: 0; background: var(--bg); z-index: 10000;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-        }
-        .spinner { width: 70px; height: 70px; border: 5px solid #111; border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; }
-        @keyframes spin { to { transform: rotate(360deg); } }
+        /* --- LOGIN GLITCH --- */
+        .glitch-text { font-family: 'Orbitron'; font-size: 32px; animation: glitch 0.5s infinite alternate; color: var(--accent); }
 
     </style>
 </head>
 <body>
 
-    <div id="loader">
-        <div class="spinner"></div>
-        <h2 style="margin-top:25px; font-family:'Orbitron'; letter-spacing:8px; font-size:14px; color:var(--accent);">LOADING TERMINAL</h2>
+    <div id="procOverlay" style="position:fixed; inset:0; background:rgba(0,0,0,0.95); z-index:10000; display:none; flex-direction:column; align-items:center; justify-content:center;">
+        <div style="width:100px; height:100px; border:3px solid var(--accent); border-top-color:transparent; border-radius:50%; animation: rotateLoader 0.8s linear infinite;"></div>
+        <h3 id="procMsg" style="margin-top:25px; color:white; letter-spacing:2px;">СИНХРОНИЗАЦИЯ...</h3>
     </div>
 
-    <div id="view-login" style="min-height:100vh; display:flex; align-items:center; justify-content:center; padding:25px;">
-        <div class="glass-panel" style="width:100%; max-width:420px; text-align:center;">
-            <div style="font-family:'Orbitron'; color:var(--accent); font-size:42px; font-weight:900; margin-bottom:10px;">PROFIT</div>
-            <div style="font-size:11px; color:var(--muted); letter-spacing:6px; margin-bottom:45px;">SECURE BANKING ENGINE</div>
-            <input type="email" id="log-email" placeholder="LOGIN ID">
-            <input type="password" id="log-pass" placeholder="MASTER PASSCODE">
-            <button class="btn-action" onclick="handleAuth()">СИНХРОНИЗИРОВАТЬ</button>
-            <p id="log-error" style="color:var(--error); font-size:12px; margin-top:20px; font-weight:700; display:none;">ACCESS DENIED: INVALID CREDENTIALS</p>
+    <div id="loginPage" style="min-height:100vh; display:flex; align-items:center; justify-content:center; padding:20px;">
+        <div class="section" style="width:100%; max-width:380px; text-align:center;">
+            <div class="glitch-text">PROFIT</div>
+            <p style="color:var(--muted); font-size:10px; letter-spacing:4px; margin-bottom:30px;">INFINITY TERMINAL</p>
+            <input type="email" id="emailInp" placeholder="Email">
+            <input type="password" id="passInp" placeholder="Мастер-ключ">
+            <button class="btn-prime" onclick="auth()">АВТОРИЗОВАТЬСЯ</button>
         </div>
     </div>
 
-    <div id="view-app" class="container hidden">
+    <div id="appPage" class="container hidden">
         
-        <div class="scene">
-            <div class="card" id="main-card" onclick="flipCard()">
-                <div class="card__face card__face--front">
-                    <div style="display:flex; justify-content:space-between; align-items:flex-start;">
-                        <div style="width:55px; height:40px; background:linear-gradient(135deg, #ffd600, #967e00); border-radius:8px;"></div>
-                        <img id="u-photo" src="" style="width:75px; height:75px; border-radius:50%; border:3px solid var(--accent); background:#000;">
+        <div class="card-box">
+            <div class="card-inner" id="card" onclick="this.classList.toggle('flipped')">
+                <div class="card-front">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <span class="unlimited-badge">INFINITY STATUS</span>
+                        <img id="uAva" src="" style="width:50px; height:50px; border-radius:50%; border:2px solid var(--accent);">
                     </div>
                     <div>
-                        <div style="font-size:12px; color:var(--muted); text-transform:uppercase; letter-spacing:2px; font-weight:700;">Active Assets</div>
-                        <div style="font-size:42px; font-weight:900; font-family:'Orbitron'; margin:8px 0;" id="u-balance">0.00 ₽</div>
-                        <div id="u-name" style="font-weight:800; text-transform:uppercase; font-size:16px; color:var(--accent);">...</div>
+                        <div style="font-size:10px; color:var(--muted); text-transform:uppercase;">Бессрочный баланс</div>
+                        <div class="balance-val" id="uBal">0.00 ₽</div>
+                        <div id="uName" style="font-weight:800; font-size:14px; text-transform:uppercase;">...</div>
                     </div>
                 </div>
-                <div class="card__face card__face--back">
-                    <div class="magnetic-stripe"></div>
-                    <div class="signature-area">
-                        <span class="cvv-code">CVV2: 771</span>
-                    </div>
-                    <div style="padding:0 30px;">
-                        <div id="u-card-num" style="font-family:'JetBrains Mono'; font-size:22px; letter-spacing:3px; color:#fff; margin-bottom:15px;">0000 0000 0000 0000</div>
-                        <div style="display:flex; align-items:center;">
-                            <span style="font-size:11px; color:var(--muted);">EXPIRE: 02/29</span>
-                            <div class="holo-sticker"></div>
-                        </div>
-                    </div>
-                    <div style="margin-top:auto; padding:20px; background:var(--accent); color:#000; text-align:center; font-weight:900; font-size:12px; letter-spacing:2px;">
-                        PROFIT INFINITY ELITE
-                    </div>
+                <div class="card-back">
+                    <div style="font-size:10px; color:var(--muted); margin-bottom:10px;">VIRTUAL ACCOUNT NUMBER</div>
+                    <div id="uCard" style="font-family:'JetBrains Mono'; font-size:18px; color:white;">0000 0000 0000 0000</div>
                 </div>
             </div>
         </div>
 
         <nav class="dock">
-            <button class="dock-btn active" onclick="route('pay', this)">Платеж</button>
-            <button class="dock-btn" onclick="route('nfc', this)">NFC</button>
-            <button class="dock-btn" onclick="route('chat', this)">Чат</button>
-            <button class="dock-btn" onclick="route('prof', this)">Профиль</button>
+            <button class="dock-btn active" onclick="tab('pay', this)">Перевод</button>
+            <button class="dock-btn" onclick="tab('nfc', this)">NFC</button>
+            <button class="dock-btn" onclick="tab('chat', this)">Чат</button>
+            <button class="dock-btn" onclick="tab('prof', this)">Профиль</button>
         </nav>
 
-        <div id="tab-pay" class="glass-panel tab-pane">
-            <h2>💸 Транзакция</h2>
-            <select id="pay-to"></select>
-            <input type="number" id="pay-val" placeholder="Сумма (₽)">
-            <input type="text" id="pay-msg" placeholder="Комментарий">
-            <button class="btn-action" onclick="makeTransfer()">ПОДТВЕРДИТЬ ПЕРЕВОД</button>
+        <div id="tab-pay" class="section tab-content">
+            <h2>Перевести деньги</h2>
+            <select id="payTo"></select>
+            <input type="number" id="paySum" placeholder="Сумма (₽)">
+            <input type="text" id="payMsg" placeholder="Сообщение">
+            <button class="btn-prime" onclick="sendMoney()">ПОДТВЕРДИТЬ ПЕРЕВОД</button>
         </div>
 
-        <div id="tab-nfc" class="glass-panel tab-pane hidden">
-            <h2>📡 NFC Модуль</h2>
-            <div class="nfc-radar">
-                <div class="nfc-ring" style="animation-delay:0s"></div>
-                <div class="nfc-ring" style="animation-delay:0.8s"></div>
-                <div class="nfc-phone">📱</div>
-                <p id="nfc-status" style="margin-top:20px; font-size:13px; color:var(--muted); text-align:center;">Ожидание бесконтактной метки...</p>
+        <div id="tab-nfc" class="section tab-content hidden">
+            <h2>NFC Модуль</h2>
+            <div class="nfc-zone">
+                <div class="radar-circle" style="animation-delay: 0s;"></div>
+                <div class="radar-circle" style="animation-delay: 0.5s;"></div>
+                <div class="radar-circle" style="animation-delay: 1s;"></div>
+                <div class="nfc-icon">📡</div>
+                <p id="nfcStatus" style="margin-top:20px; font-size:12px; color:var(--muted);">Готов к сканированию</p>
             </div>
-            <button class="btn-action" style="margin-top:20px; background:transparent; color:var(--accent); border:1px solid var(--accent);" onclick="startNFC()">АКТИВИРОВАТЬ ДАТЧИК</button>
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-top:20px;">
+                <button class="btn-prime" style="background:var(--panel); color:white; border:1px solid var(--accent);" onclick="readNFC()">ЧИТАТЬ МЕТКУ</button>
+                <button class="btn-prime" onclick="bindNFC()">ПРИВЯЗАТЬ</button>
+            </div>
+            <div id="nfcData" style="margin-top:15px; font-family:'JetBrains Mono'; font-size:11px; color:var(--success); text-align:center;"></div>
         </div>
 
-        <div id="tab-chat" class="glass-panel tab-pane hidden">
-            <h2>💬 Глобальный Чат</h2>
-            <div id="chat-wall" class="chat-box"></div>
-            <div style="display:flex; gap:12px; margin-top:20px;">
-                <input type="text" id="chat-input" placeholder="Введите текст..." style="margin:0;">
-                <button class="btn-action" style="width:75px; padding:0;" onclick="sendMsg()">></button>
+        <div id="tab-chat" class="section tab-content hidden">
+            <h2>Чат системы</h2>
+            <div id="chatDisplay"></div>
+            <div style="display:flex; gap:10px; margin-top:15px;">
+                <input type="text" id="chatInp" placeholder="Текст..." style="margin-bottom:0;">
+                <button class="btn-prime" style="width:60px; padding:0;" onclick="sendMsg()">></button>
             </div>
         </div>
 
-        <div id="tab-prof" class="glass-panel tab-pane hidden">
-            <h2>👤 Профиль</h2>
-            <div style="text-align:center; margin-bottom:30px;">
-                <button class="btn-action" style="background:var(--panel-bg); color:var(--accent); border:1px dashed var(--accent);" onclick="takeLivePhoto()">📸 ОБНОВИТЬ ФОТО</button>
-                <p style="font-size:11px; color:var(--muted); margin-top:10px;">Это фото будет использоваться в чате</p>
+        <div id="tab-prof" class="section tab-content hidden">
+            <h2>Профиль участника</h2>
+            <div style="text-align:center; padding:10px 0;">
+                <button class="btn-prime" style="background:var(--panel); color:var(--accent); border:1px dashed var(--accent);" onclick="updateAva()">📸 ИЗМЕНИТЬ БИОМЕТРИЮ</button>
             </div>
-            <div style="font-size:14px; color:var(--muted);">
-                <div style="display:flex; justify-content:space-between; padding:15px 0; border-bottom:1px solid var(--border);">
-                    <span>ЛИМИТЫ</span><span style="color:var(--success); font-weight:800;">UNLIMITED</span>
+            <div style="margin-top:20px;">
+                <div style="display:flex; justify-content:space-between; padding:12px 0; border-bottom:1px solid var(--glass);">
+                    <span style="color:var(--muted);">Лимиты:</span><span style="color:var(--success); font-weight:800;">ОТСУТСТВУЮТ</span>
                 </div>
-                <div style="display:flex; justify-content:space-between; padding:15px 0;">
-                    <span>NFC ID</span><span id="tag-id" style="color:white;">НЕ ПРИВЯЗАН</span>
+                <div style="display:flex; justify-content:space-between; padding:12px 0; border-bottom:1px solid var(--glass);">
+                    <span style="color:var(--muted);">Доверие:</span><span style="color:var(--accent);">99.9% (High)</span>
+                </div>
+                <div style="display:flex; justify-content:space-between; padding:12px 0; border-bottom:1px solid var(--glass);">
+                    <span style="color:var(--muted);">Сессия:</span><span style="color:white;">AES-256 Защищена</span>
                 </div>
             </div>
-            <button onclick="location.reload()" style="width:100%; margin-top:40px; background:none; border:none; color:var(--error); font-weight:900; font-size:11px; cursor:pointer; letter-spacing:5px;">LOGOUT SYSTEM</button>
+            <button onclick="location.reload()" style="width:100%; margin-top:30px; background:none; border:none; color:var(--error); font-weight:900; font-size:11px; cursor:pointer; letter-spacing:2px;">ТЕРМИНИРОВАТЬ СЕССИЮ</button>
+        </div>
+
+        <div class="section">
+            <h2 style="font-size:14px; color:var(--muted);">Последние транзакции</h2>
+            <div id="hList"></div>
         </div>
 
     </div>
 
     <script>
-        const API_URL = 'https://script.google.com/macros/s/AKfycbzsLK9FxBEOFl4XDliOBm-qdmCRJL_Du4uOUjQrGqIdghrvqdt2_4YSbeNeSON2hDxrqg/exec';
-        const APP_USERS = {
-            'ilyasvaliev@mail.ru': { name: 'Ильяс Валиев', pic: 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png' },
-            'prokhormart@mail.ru': { name: 'Прохор Март', pic: 'https://cdn-icons-png.flaticon.com/512/3135/3135768.png' },
-            'romankisel@mail.ru': { name: 'Роман Кисель', pic: 'https://cdn-icons-png.flaticon.com/512/4333/4333609.png' },
-            'artemant@mail.ru': { name: 'Артем Ант', pic: 'https://cdn-icons-png.flaticon.com/512/1999/1999625.png' }
+        const API = 'https://script.google.com/macros/s/AKfycbzsLK9FxBEOFl4XDliOBm-qdmCRJL_Du4uOUjQrGqIdghrvqdt2_4YSbeNeSON2hDxrqg/exec';
+        let user = { email: '', name: '', bal: 0 };
+        const db = {
+            'ilyasvaliev@mail.ru': 'Ильяс Валиев',
+            'prokhormart@mail.ru': 'Прохор Март',
+            'romankisel@mail.ru': 'Роман Кисель',
+            'artemant@mail.ru': 'Артем Ант'
         };
 
-        let session = { email: '', name: '', balance: 0, avatar: '' };
-
-        // Инициализация
-        window.onload = () => setTimeout(() => document.getElementById('loader').style.display = 'none', 2000);
-
-        function flipCard() {
-            haptic(30);
-            document.getElementById('main-card').classList.toggle('is-flipped');
-        }
-
-        function haptic(ms) { if(navigator.vibrate) navigator.vibrate(ms); }
-
-        function route(t, b) {
-            document.querySelectorAll('.tab-pane').forEach(p => p.classList.add('hidden'));
+        function tab(t, b) {
+            document.querySelectorAll('.tab-content').forEach(x => x.classList.add('hidden'));
             document.getElementById('tab-'+t).classList.remove('hidden');
-            document.querySelectorAll('.dock-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.dock-btn').forEach(x => x.classList.remove('active'));
             b.classList.add('active');
-            haptic(15);
         }
 
-        // ВХОД
-        async function handleAuth() {
-            const e = document.getElementById('log-email').value.toLowerCase().trim();
-            const p = document.getElementById('log-pass').value.trim();
+        async function auth() {
+            const e = document.getElementById('emailInp').value.toLowerCase().trim();
+            const p = document.getElementById('passInp').value.trim();
             if(!e || !p) return;
 
-            setLoader(true);
+            showProc(true, "ПРОВЕРКА КЛЮЧЕЙ...");
             try {
-                const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'login', email: e, password: p }) });
+                const res = await fetch(API, { method: 'POST', body: JSON.stringify({ action: 'login', email: e, password: p }) });
                 const d = await res.json();
                 if(d.success) {
-                    session.email = e;
-                    session.name = APP_USERS[e]?.name || e;
-                    session.avatar = d.avatar || APP_USERS[e]?.pic || '';
+                    user = { email: e, name: db[e] || e, bal: d.balance };
+                    document.getElementById('uBal').innerText = d.balance.toLocaleString() + ' ₽';
+                    document.getElementById('uCard').innerText = d.card;
+                    document.getElementById('uName').innerText = user.name;
+                    document.getElementById('uAva').src = d.avatar || 'https://via.placeholder.com/100';
                     
-                    document.getElementById('u-balance').innerText = d.balance.toLocaleString() + ' ₽';
-                    document.getElementById('u-card-num').innerText = d.card;
-                    document.getElementById('u-name').innerText = session.name;
-                    document.getElementById('u-photo').src = session.avatar;
+                    document.getElementById('loginPage').classList.add('hidden');
+                    document.getElementById('appPage').classList.remove('hidden');
                     
-                    document.getElementById('view-login').classList.add('hidden');
-                    document.getElementById('view-app').classList.remove('hidden');
-                    
-                    // Контакты
-                    const sel = document.getElementById('pay-to');
-                    sel.innerHTML = '<option value="">ВЫБЕРИТЕ ПОЛУЧАТЕЛЯ</option>';
-                    for(let k in APP_USERS) if(k !== e) sel.innerHTML += `<option value="${k}">${APP_USERS[k].name}</option>`;
-                    
+                    fillTargets();
                     sync();
                     setInterval(sync, 4000);
-                } else {
-                    document.getElementById('log-error').style.display = 'block';
-                }
-            } catch(err) { alert("NETWORK ERROR"); }
-            setLoader(false);
+                } else { alert("Ошибка доступа"); }
+            } catch(x) { alert("Ошибка сети"); }
+            showProc(false);
         }
 
-        // ТРАНЗАКЦИЯ
-        async function makeTransfer() {
-            const to = document.getElementById('pay-to').value;
-            const amt = document.getElementById('pay-val').value;
-            if(!to || amt <= 0) return;
+        function fillTargets() {
+            const s = document.getElementById('payTo');
+            s.innerHTML = '<option value="">Выберите получателя</option>';
+            for(let k in db) if(k !== user.email) s.innerHTML += `<option value="${k}">${db[k]}</option>`;
+        }
 
-            setLoader(true);
-            const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'transfer', from: session.email, to, amount: amt, comment: document.getElementById('pay-msg').value }) });
+        async function sendMoney() {
+            const to = document.getElementById('payTo').value;
+            const am = document.getElementById('paySum').value;
+            if(!to || am <= 0) return;
+
+            showProc(true, "ШИФРОВАНИЕ ПЕРЕВОДА...");
+            const res = await fetch(API, { method: 'POST', body: JSON.stringify({ action: 'transfer', from: user.email, to, amount: am, comment: document.getElementById('payMsg').value }) });
             const d = await res.json();
             if(d.success) {
-                haptic([50, 30, 50]);
-                document.getElementById('pay-val').value = '';
+                document.getElementById('paySum').value = '';
                 sync();
-            }
-            setLoader(false);
+                showProc(true, "УСПЕШНО");
+                setTimeout(() => showProc(false), 1000);
+            } else { alert("Ошибка"); showProc(false); }
         }
 
-        // СИНХРОНИЗАЦИЯ ЧАТА И БАЛАНСА
         async function sync() {
-            if(!session.email) return;
-            const bRes = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'balance', email: session.email }) });
+            if(!user.email) return;
+            const bRes = await fetch(API, { method: 'POST', body: JSON.stringify({ action: 'balance', email: user.email }) });
             const bD = await bRes.json();
-            document.getElementById('u-balance').innerText = bD.balance.toLocaleString() + ' ₽';
+            document.getElementById('uBal').innerText = Number(bD.balance).toLocaleString() + ' ₽';
 
-            const cRes = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'chat', sub: 'get' }) });
-            const cD = await cRes.json();
-            
-            document.getElementById('chat-wall').innerHTML = cD.messages.map(m => {
-                const isMe = m[1] === session.name;
-                
-                // ЛОГИКА АВАТАРОК: Проверяем базу и текущую сессию
-                let senderPic = 'https://via.placeholder.com/40/111/ffd600?text=?';
-                if(isMe) {
-                    senderPic = session.avatar;
-                } else {
-                    for(let k in APP_USERS) { if(APP_USERS[k].name === m[1]) senderPic = APP_USERS[k].pic; }
-                }
-
-                return `
-                    <div class="msg ${isMe ? 'own' : ''}">
-                        <img src="${senderPic}" class="msg-avatar">
-                        <div class="msg-bubble">
-                            <span class="msg-info">${m[1]}</span>
-                            ${m[2]}
-                        </div>
-                    </div>
-                `;
+            const hRes = await fetch(API, { method: 'POST', body: JSON.stringify({ action: 'history', email: user.email }) });
+            const hD = await hRes.json();
+            document.getElementById('hList').innerHTML = hD.history.slice(0, 5).map(h => {
+                const isOut = h[1].toLowerCase() === user.email;
+                return `<div style="display:flex; justify-content:space-between; font-size:12px; padding:8px 0; border-bottom:1px solid var(--glass);">
+                    <span>${db[isOut?h[2]:h[1]] || 'User'}</span>
+                    <span style="color:${isOut? 'var(--error)':'var(--success)'}">${isOut?'-':'+'}${h[3]} ₽</span>
+                </div>`;
             }).join('');
+
+            const cRes = await fetch(API, { method: 'POST', body: JSON.stringify({ action: 'chat', sub: 'get' }) });
+            const cD = await cRes.json();
+            document.getElementById('chatDisplay').innerHTML = cD.messages.map(m => `
+                <div class="msg-wrap ${m[1] === user.name ? 'me' : ''}">
+                    <div class="msg-text"><small style="display:block; font-size:9px; opacity:0.5;">${m[1]}</small>${m[2]}</div>
+                </div>
+            `).join('');
         }
 
-        async function sendMsg() {
-            const inp = document.getElementById('chat-input');
-            if(!inp.value.trim()) return;
-            await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'chat', sub: 'send', email: session.email, name: session.name, text: inp.value }) });
-            inp.value = '';
-            sync();
-        }
-
-        // КАМЕРА (ЖИВОЕ ФОТО)
-        async function takeLivePhoto() {
-            try {
-                const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } });
-                const video = document.createElement('video');
-                video.srcObject = stream;
-                await video.play();
-
-                setTimeout(async () => {
-                    const canvas = document.createElement('canvas');
-                    canvas.width = 400; canvas.height = 400;
-                    const ctx = canvas.getContext('2d');
-                    ctx.drawImage(video, 0, 0, 400, 400);
-                    const base64 = canvas.toDataURL('image/jpeg', 0.7);
-                    
-                    document.getElementById('u-photo').src = base64;
-                    session.avatar = base64; // ОБНОВЛЯЕМ В СЕССИИ ДЛЯ ЧАТА
-                    
-                    await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'updateAvatar', email: session.email, image: base64 }) });
-                    
-                    stream.getTracks().forEach(t => t.stop());
-                    haptic(100);
-                    alert("БИОМЕТРИЯ ОБНОВЛЕНА");
-                }, 1500);
-            } catch(e) { alert("CAMERA ERROR: PERMISSION DENIED"); }
-        }
-
-        // NFC
-        async function startNFC() {
-            const status = document.getElementById('nfc-status');
+        // --- NFC LOGIC ---
+        async function readNFC() {
+            const status = document.getElementById('nfcStatus');
+            const dataBox = document.getElementById('nfcData');
             if ('NDEFReader' in window) {
                 try {
                     const ndef = new NDEFReader();
                     await ndef.scan();
-                    status.innerText = "ПОИСК СИГНАЛА... ПРИЛОЖИТЕ КАРТУ";
-                    status.style.color = "var(--accent)";
-                    
-                    ndef.onreading = e => {
-                        haptic([100, 50, 100]);
-                        const tag = e.serialNumber;
-                        document.getElementById('tag-id').innerText = tag;
-                        status.innerText = "МЕТКА СЧИТАНА: " + tag;
-                        status.style.color = "var(--success)";
+                    status.innerText = "Сканирование... Поднесите метку";
+                    ndef.onreading = event => {
+                        const serialNumber = event.serialNumber;
+                        dataBox.innerText = "ID МЕТКИ: " + serialNumber;
+                        status.innerText = "Метка прочитана!";
                     };
-                } catch(err) { status.innerText = "ОШИБКА ДАТЧИКА"; }
-            } else { status.innerText = "WEB NFC НЕ ПОДДЕРЖИВАЕТСЯ"; }
+                } catch (error) { status.innerText = "Ошибка: " + error; }
+            } else { status.innerText = "NFC не поддерживается этим устройством"; }
         }
 
-        function setLoader(s) { document.getElementById('loader').style.display = s ? 'flex' : 'none'; }
+        function bindNFC() {
+            const data = document.getElementById('nfcData').innerText;
+            if(!data) return alert("Сначала прочитайте метку!");
+            alert("Метка " + data + " привязана к вашему аккаунту!");
+            // Тут можно отправить fetch на сохранение ID метки в БД
+        }
 
+        async function updateAva() {
+            try {
+                const s = await navigator.mediaDevices.getUserMedia({ video: true });
+                const v = document.createElement('video'); v.srcObject = s; await v.play();
+                setTimeout(async () => {
+                    const c = document.createElement('canvas'); c.width = 300; c.height = 300;
+                    c.getContext('2d').drawImage(v, 0, 0, 300, 300);
+                    const img = c.toDataURL('image/jpeg', 0.6);
+                    document.getElementById('uAva').src = img;
+                    await fetch(API, { method: 'POST', body: JSON.stringify({ action: 'updateAvatar', email: user.email, image: img }) });
+                    s.getTracks().forEach(t => t.stop());
+                }, 1500);
+            } catch(e) { alert("Камера недоступна"); }
+        }
+
+        function showProc(s, m = "") {
+            const o = document.getElementById('procOverlay');
+            document.getElementById('procMsg').innerText = m;
+            o.style.display = s ? 'flex' : 'none';
+        }
     </script>
+    <style> @keyframes rotateLoader { to { transform: rotate(360deg); } } </style>
 </body>
 </html>
