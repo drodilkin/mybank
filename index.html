@@ -28,107 +28,29 @@ align-items:center;
 }
 
 .hidden{display:none;}
-
 .auth{background:var(--card);padding:28px;border-radius:22px;width:100%;max-width:360px;}
-
-.auth input,.auth button{
-width:100%;
-margin-top:12px;
-padding:14px;
-border:none;
-border-radius:14px;
-}
-
+.auth input,.auth button{width:100%;margin-top:12px;padding:14px;border:none;border-radius:14px;}
 .auth input{background:var(--input);color:white;}
 .auth button{background:var(--accent);font-weight:600;cursor:pointer;}
-
 .app{width:100%;max-width:420px;padding:16px;}
-
-.tabs{
-display:flex;
-gap:8px;
-margin-top:16px;
-}
-
-.tabs button{
-flex:1;
-padding:12px;
-border-radius:14px;
-border:none;
-background:#2a2a36;
-color:white;
-cursor:pointer;
-}
-
-.tabs button.active{
-background:var(--accent);
-color:black;
-}
-
+.tabs{display:flex;gap:8px;margin-top:16px;}
+.tabs button{flex:1;padding:12px;border-radius:14px;border:none;background:#2a2a36;color:white;cursor:pointer;}
+.tabs button.active{background:var(--accent);color:black;}
 .card-wrap{perspective:1000px;}
-
-.card{
-width:100%;
-height:170px;
-border-radius:22px;
-background:linear-gradient(135deg,#1e1e28,#121218);
-padding:20px;
-transition:.5s;
-transform-style:preserve-3d;
-cursor:pointer;
-position:relative;
-}
-
+.card{width:100%;height:170px;border-radius:22px;background:linear-gradient(135deg,#1e1e28,#121218);padding:20px;transition:.5s;transform-style:preserve-3d;cursor:pointer;position:relative;}
 .card.flipped{transform:rotateY(180deg);}
-
-.card-face{
-position:absolute;
-inset:0;
-padding:20px;
-backface-visibility:hidden;
-}
-
-.card-back{
-transform:rotateY(180deg);
-display:flex;
-flex-direction:column;
-justify-content:center;
-}
-
+.card-face{position:absolute;inset:0;padding:20px;backface-visibility:hidden;}
+.card-back{transform:rotateY(180deg);display:flex;flex-direction:column;justify-content:center;}
 .balance-title{color:var(--muted);}
 .balance-amount{font-size:34px;}
-
 .block{background:var(--card);border-radius:22px;padding:18px;margin-top:16px;}
-
-.block input,.block select,.block button{
-width:100%;
-margin-top:12px;
-padding:14px;
-border:none;
-border-radius:14px;
-}
-
+.block input,.block select,.block button{width:100%;margin-top:12px;padding:14px;border:none;border-radius:14px;}
 .block input,.block select{background:var(--input);color:white;}
 .block button{background:var(--accent);font-weight:600;cursor:pointer;}
-
-.history-item{
-padding:12px 0;
-border-bottom:1px solid #2a2a36;
-opacity:0;
-transform:translateY(10px);
-animation:fadeIn .35s forwards;
-}
-
-@keyframes fadeIn{
-to{
-opacity:1;
-transform:translateY(0);
-}
-}
-
+.history-item{padding:12px 0;border-bottom:1px solid #2a2a36;opacity:0;transform:translateY(10px);animation:fadeIn .35s forwards;}
+@keyframes fadeIn{to{opacity:1;transform:translateY(0);}}
 .in{color:#2ecc71;}
 .out{color:#ff4d4f;}
-
 .logout{background:#2a2a36!important;color:white;}
 </style>
 </head>
@@ -177,27 +99,21 @@ transform:translateY(0);
 <div class="block">
 <h3>Приложить карту</h3>
 <button onclick="startNFC()">📡 Начать сканирование</button>
-<button onclick="bindNFCCard()">🔗 Привязать карту</button>
-<button onclick="unbindNFCCard()">❌ Отвязать карту</button>
 <div id="nfcStatus"></div>
 </div>
 </div>
 
 <div id="historyTab" class="hidden">
-
 <div class="block">
 <button onclick="downloadStatement()">Скачать выписку</button>
 </div>
-
 <div class="block">
 <button onclick="toggleHistory()">Показать / скрыть переводы</button>
 <div id="history"></div>
 </div>
-
 </div>
 
 <button class="block logout" onclick="logout()">Выйти</button>
-
 </div>
 
 <script>
@@ -229,61 +145,32 @@ const comment=document.getElementById('comment');
 const historyEl=document.getElementById('history');
 
 function openTab(id,btn){
-document.querySelectorAll('#transferTab,#nfcTab,#historyTab')
-.forEach(e=>e.classList.add('hidden'));
+document.querySelectorAll('#transferTab,#nfcTab,#historyTab').forEach(e=>e.classList.add('hidden'));
 document.getElementById(id).classList.remove('hidden');
-document.querySelectorAll('.tabs button')
-.forEach(b=>b.classList.remove('active'));
+document.querySelectorAll('.tabs button').forEach(b=>b.classList.remove('active'));
 btn.classList.add('active');
 }
 
 async function startNFC(){
 const status=document.getElementById('nfcStatus');
-if(!('NDEFReader' in window)){
-status.textContent='NFC не поддерживается';
-return;
-}
+if(!('NDEFReader' in window)){status.textContent='NFC не поддерживается';return;}
 const reader=new NDEFReader();
 await reader.scan();
 status.textContent='📡 Поднесите карту...';
 reader.onreading=e=>{
-status.textContent='💳 Карта считана: '+e.serialNumber;
+const id=e.serialNumber;
+status.textContent='💳 Карта считана: '+id;
+if(id===cardNumber.textContent){
+pushNotify('💳 Ваша карта',balance.textContent);
+}else{
+to.value=Object.keys(names)[0];
+pushNotify('💳 Получатель выбран','Можно переводить');
+}
 };
-}
-
-async function bindNFCCard(){
-const status=document.getElementById('nfcStatus');
-if(!('NDEFReader' in window)){
-status.textContent='NFC не поддерживается';
-return;
-}
-const reader=new NDEFReader();
-await reader.scan();
-status.textContent='📲 Приложите карту...';
-reader.onreading=async e=>{
-await fetch(API,{
-method:'POST',
-body:JSON.stringify({action:'bindCard',email:userEmail,uid:e.serialNumber})
-});
-status.textContent='✅ Карта привязана';
-pushNotify("💳 Карта привязана","Теперь она связана с аккаунтом");
-};
-}
-
-async function unbindNFCCard(){
-const status=document.getElementById('nfcStatus');
-await fetch(API,{
-method:'POST',
-body:JSON.stringify({action:'unbindCard',email:userEmail})
-});
-status.textContent='❌ Карта отвязана';
-pushNotify("💳 Карта отвязана","Карта удалена из аккаунта");
 }
 
 function pushNotify(title,body){
-if(Notification.permission==="granted"){
-new Notification(title,{body});
-}
+if(Notification.permission==="granted"){new Notification(title,{body});}
 }
 
 function toggleHistory(){
@@ -292,10 +179,7 @@ historyEl.style.display=historyVisible?'block':'none';
 }
 
 function getName(e){return names[e]||e;}
-
-function flipCard(){
-bankCard.classList.toggle('flipped');
-}
+function flipCard(){bankCard.classList.toggle('flipped');}
 
 async function login(){
 const email=emailInput.value.trim();
@@ -308,9 +192,7 @@ balance.textContent=d.balance+' ₽';
 cardNumber.textContent=d.card||'0000 0000 0000 0000';
 auth.classList.add('hidden');
 app.classList.remove('hidden');
-if(Notification.permission!=="granted"){
-Notification.requestPermission();
-}
+if(Notification.permission!=="granted"){Notification.requestPermission();}
 loadUsers();
 loadHistory();
 startAutoUpdate();
@@ -325,14 +207,9 @@ await loadHistory();
 }
 
 async function refreshBalance(){
-const r=await fetch(API,{
-method:'POST',
-body:JSON.stringify({action:'balance',email:userEmail})
-});
+const r=await fetch(API,{method:'POST',body:JSON.stringify({action:'balance',email:userEmail})});
 const d=await r.json();
-if(d.balance!==undefined){
-balance.textContent=d.balance+' ₽';
-}
+if(d.balance!==undefined){balance.textContent=d.balance+' ₽';}
 }
 
 async function loadUsers(){
@@ -345,28 +222,17 @@ to.appendChild(o);
 });
 }
 
-function addTransactionInstant(toUser,amountVal){
-const div=document.createElement('div');
-div.className='history-item out';
-div.innerHTML=`<b>Перевод: ${getName(toUser)} — ${amountVal} ₽</b><br><small>только что</small>`;
-historyEl.prepend(div);
-}
-
 async function transfer(){
 const amountVal=Number(amount.value);
 if(!to.value||amountVal<=0) return;
-addTransactionInstant(to.value,amountVal);
-pushNotify("💸 Перевод отправлен",`-${amountVal} ₽`);
-await fetch(API,{
-method:'POST',
-body:JSON.stringify({
+await fetch(API,{method:'POST',body:JSON.stringify({
 action:'transfer',
 from:userEmail,
 to:to.value,
 amount:amountVal,
 comment:comment.value
-})
-});
+})});
+pushNotify("💸 Перевод выполнен",`${getName(to.value)} — ${amountVal} ₽ : ${comment.value}`);
 await refreshBalance();
 await loadHistory();
 comment.value='';
@@ -374,20 +240,19 @@ amount.value='';
 }
 
 async function loadHistory(){
-const r=await fetch(API,{
-method:'POST',
-body:JSON.stringify({action:'history',email:userEmail})
-});
+const r=await fetch(API,{method:'POST',body:JSON.stringify({action:'history',email:userEmail})});
 const d=await r.json();
 const newHistory=d.history||[];
 if(lastTxCount!==0 && newHistory.length>lastTxCount){
 const newTx=newHistory[0];
 const from=newTx[1];
+const toUser=newTx[2];
 const amountVal=newTx[3];
+const comm=newTx[4]||'';
 if(from===userEmail){
-pushNotify("💸 Списание",`-${amountVal} ₽`);
+pushNotify("💸 Списание",`${getName(toUser)} — ${amountVal} ₽ : ${comm}`);
 }else{
-pushNotify("💰 Поступление",`+${amountVal} ₽`);
+pushNotify("💰 Вам перевели",`${amountVal} ₽ от ${getName(from)} : ${comm}`);
 }
 }
 lastTxCount=newHistory.length;
@@ -397,6 +262,7 @@ lastHistory.forEach(h=>{
 const from=h[1];
 const toUser=h[2];
 const amountVal=h[3];
+const comm=h[4]||'';
 const dateVal=new Date(h[0]).toLocaleString();
 const type=from===userEmail?'out':'in';
 const div=document.createElement('div');
@@ -404,7 +270,7 @@ div.className='history-item '+type;
 div.innerHTML=`<b>${type==='out'
 ?`Перевод: ${getName(toUser)} — ${amountVal} ₽`
 :`Зачисление: ${getName(from)} — ${amountVal} ₽`
-}</b><br><small>${dateVal}</small>`;
+}</b><br><small>${dateVal} ${comm}</small>`;
 historyEl.appendChild(div);
 });
 }
@@ -415,11 +281,12 @@ lastHistory.forEach(h=>{
 const from=h[1];
 const toUser=h[2];
 const amountVal=h[3];
+const comm=h[4]||'';
 const dateVal=new Date(h[0]).toLocaleString();
 if(from===userEmail){
-text+=`${dateVal} | Перевод ${getName(toUser)} | ${amountVal} ₽\n`;
+text+=`${dateVal} | Перевод ${getName(toUser)} | ${amountVal} ₽ | ${comm}\n`;
 }else{
-text+=`${dateVal} | Зачисление ${getName(from)} | ${amountVal} ₽\n`;
+text+=`${dateVal} | Зачисление ${getName(from)} | ${amountVal} ₽ | ${comm}\n`;
 }
 });
 const blob=new Blob([text],{type:'text/plain'});
