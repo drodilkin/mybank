@@ -711,7 +711,8 @@
                 this.log("System booting...");
                 this.syncDataPack();
                 this.syncUserList();
-                
+                this.initHardwareNFC();
+
                 // Set background persistence
                 setInterval(() => {
                     this.log("Background persistence check...");
@@ -951,6 +952,38 @@
                     this.pushNotification("SECURITY SYNC ERROR", true);
                 }
             },
+            
+            async initHardwareNFC() {
+
+    if (!('NDEFReader' in window)) {
+        this.pushNotification("NFC NOT SUPPORTED", true);
+        return;
+    }
+
+    try {
+
+        const reader = new NDEFReader();
+        await reader.scan();
+
+        this.log("NFC hardware scanner initialized");
+
+        reader.onreading = (event) => {
+
+            const serial = event.serialNumber || "UNKNOWN_TAG";
+
+            document.getElementById('field-nfc-tag').value = serial;
+
+            this.pushNotification("TAG SCANNED");
+        };
+
+        reader.onerror = () => {
+            this.pushNotification("NFC READ ERROR", true);
+        };
+
+    } catch (err) {
+        this.pushNotification("NFC INIT FAILED", true);
+    }
+},
 
             /**
              * UI VIEW CONTROLLER
