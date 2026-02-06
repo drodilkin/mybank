@@ -3,375 +3,389 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>PROFIT INFINITY | ELITE TERMINAL</title>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@300;400;600;800&family=JetBrains+Mono&display=swap" rel="stylesheet">
+    <title>PROFIT BANK | HYPER SPEED</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@300;400;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
     
     <style>
         :root {
             --accent: #ffd600;
             --accent-glow: rgba(255, 214, 0, 0.4);
             --bg: #050508;
-            --card: rgba(20, 20, 31, 0.8);
-            --panel: #1a1a2e;
+            --card-bg: #0d0d18;
+            --panel: #161625;
             --text: #ffffff;
-            --muted: #8b8b9e;
-            --success: #00ff95;
-            --error: #ff2d55;
-            --glass: rgba(255, 255, 255, 0.05);
-            --border: rgba(255, 214, 0, 0.2);
+            --muted: #808090;
+            --success: #00ffa3;
+            --error: #ff2e63;
+            --border: rgba(255, 255, 255, 0.08);
         }
 
-        * { box-sizing: border-box; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none !important; }
         body { 
-            margin: 0; background: var(--bg); color: var(--text); overflow-x: hidden;
-            background-image: 
-                radial-gradient(circle at 0% 0%, rgba(255, 214, 0, 0.05) 0%, transparent 50%),
-                radial-gradient(circle at 100% 100%, rgba(0, 255, 149, 0.05) 0%, transparent 50%);
-            min-height: 100vh;
+            margin: 0; background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif;
+            background-image: radial-gradient(circle at 50% -10%, #1e1e3f 0%, #050508 100%);
+            min-height: 100vh; overflow-x: hidden;
         }
 
         .hidden { display: none !important; }
 
         /* --- АНИМАЦИИ --- */
-        @keyframes slideIn { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-        @keyframes pulse-gold { 0% { box-shadow: 0 0 5px var(--accent-glow); } 50% { box-shadow: 0 0 20px var(--accent-glow); } 100% { box-shadow: 0 0 5px var(--accent-glow); } }
-        @keyframes scan-glow { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+        @keyframes slideUp { from { transform: translateY(50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        @keyframes pulse-success { 0% { box-shadow: 0 0 0 0 rgba(0, 255, 163, 0.4); } 70% { box-shadow: 0 0 0 20px rgba(0, 255, 163, 0); } 100% { box-shadow: 0 0 0 0 rgba(0, 255, 163, 0); } }
+        @keyframes count-up { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        .container { width: 100%; max-width: 450px; margin: 0 auto; padding: 20px 15px; }
+        .container { width: 100%; max-width: 480px; margin: 0 auto; padding: 20px; animation: slideUp 0.6s cubic-bezier(0.2, 0.8, 0.2, 1); }
 
-        /* --- КАРТА --- */
-        .card-box { perspective: 1000px; height: 220px; margin-bottom: 30px; }
-        .card-inner { position: relative; width: 100%; height: 100%; transform-style: preserve-3d; transition: 0.8s; cursor: pointer; }
-        .card-inner.flipped { transform: rotateY(180deg); }
-        
-        .card-front, .card-back {
-            position: absolute; inset: 0; border-radius: 24px; padding: 25px;
+        /* --- КАРТА 3D (FIXED) --- */
+        .card-scene { perspective: 1500px; height: 250px; margin-bottom: 30px; }
+        .card-obj {
+            width: 100%; height: 100%; position: relative;
+            transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+            transform-style: preserve-3d; cursor: pointer;
+        }
+        .card-obj.is-flipped { transform: rotateY(180deg); }
+
+        .card-side {
+            position: absolute; inset: 0; border-radius: 30px; padding: 30px;
             backface-visibility: hidden; border: 1px solid var(--border);
-            background: linear-gradient(135deg, #1a1a2e 0%, #050508 100%);
-            box-shadow: 0 20px 40px rgba(0,0,0,0.6);
             display: flex; flex-direction: column; justify-content: space-between;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
         }
-        .card-back { transform: rotateY(180deg); background: #0a0a0f; border: 1px solid var(--success); }
 
-        .balance-val { font-family: 'Orbitron'; font-size: 32px; font-weight: 900; color: var(--accent); text-shadow: 0 0 10px var(--accent-glow); }
+        .card-front { background: linear-gradient(135deg, #1c1c2e 0%, #0a0a0f 100%); }
+        .card-back { background: #08080c; transform: rotateY(180deg); align-items: center; justify-content: center; }
 
-        /* --- NFC --- */
-        .nfc-zone { 
-            height: 250px; display: flex; flex-direction: column; align-items: center; justify-content: center;
-            background: var(--card); border-radius: 24px; position: relative; border: 1px solid var(--glass);
+        .chip { width: 50px; height: 40px; background: linear-gradient(135deg, #ffd600, #b88a00); border-radius: 8px; }
+        .balance-num { font-family: 'Orbitron'; font-size: 38px; font-weight: 900; margin: 10px 0; color: var(--text); transition: 0.5s; }
+        .card-number { font-family: 'JetBrains Mono'; font-size: 20px; letter-spacing: 4px; color: #fff; text-shadow: 0 2px 4px #000; }
+
+        /* --- НАВИГАЦИЯ --- */
+        .nav-bar {
+            display: flex; background: var(--panel); padding: 8px; border-radius: 20px;
+            border: 1px solid var(--border); margin-bottom: 25px; gap: 5px;
+            position: sticky; top: 10px; z-index: 1000; backdrop-filter: blur(10px);
         }
-        .nfc-status-bar { width: 80%; height: 4px; background: #333; border-radius: 10px; margin-top: 20px; overflow: hidden; }
-        .nfc-progress { width: 0%; height: 100%; background: var(--accent); transition: 0.3s; }
-
-        /* --- ИСТОРИЯ ТРАНЗАКЦИЙ --- */
-        .tx-item {
-            background: var(--glass); border-radius: 18px; padding: 15px; margin-bottom: 12px;
-            border-left: 4px solid var(--muted); animation: slideIn 0.4s ease forwards;
-            backdrop-filter: blur(10px);
+        .nav-item {
+            flex: 1; padding: 12px 2px; border: none; background: none; color: var(--muted);
+            font-size: 10px; font-weight: 800; border-radius: 15px; cursor: pointer;
+            transition: 0.3s; text-transform: uppercase; letter-spacing: 1px;
         }
-        .tx-item.in { border-left-color: var(--success); }
-        .tx-item.out { border-left-color: var(--error); }
-        .tx-header { display: flex; justify-content: space-between; margin-bottom: 8px; }
-        .tx-user { font-weight: 700; font-size: 14px; }
-        .tx-amount { font-family: 'JetBrains Mono'; font-weight: 800; }
-        .tx-details { font-size: 11px; color: var(--muted); display: flex; justify-content: space-between; }
-        .tx-comment { margin-top: 8px; font-size: 12px; font-style: italic; opacity: 0.8; padding-top: 5px; border-top: 1px solid rgba(255,255,255,0.05); }
+        .nav-item.active { background: var(--accent); color: #000; box-shadow: 0 5px 15px var(--accent-glow); }
 
-        /* --- CHAT ИЗОБРАЖЕНИЯ --- */
-        .chat-img { width: 100%; max-width: 200px; border-radius: 12px; margin-top: 8px; border: 1px solid var(--accent); }
-        #chatDisplay { height: 400px; overflow-y: auto; padding: 10px; display: flex; flex-direction: column; gap: 15px; }
-
-        .dock { display: flex; background: var(--card); padding: 6px; border-radius: 20px; border: 1px solid var(--glass); margin-bottom: 25px; position: sticky; top: 10px; z-index: 100; backdrop-filter: blur(15px); }
-        .dock-btn { flex: 1; padding: 12px 5px; border: none; background: none; color: var(--muted); font-size: 9px; font-weight: 800; border-radius: 15px; cursor: pointer; text-transform: uppercase; transition: 0.3s; }
-        .dock-btn.active { background: var(--accent); color: #000; }
+        /* --- ПАНЕЛИ --- */
+        .glass-view {
+            background: var(--card-bg); border-radius: 30px; padding: 25px;
+            border: 1px solid var(--border); margin-bottom: 20px;
+        }
+        h2 { font-size: 22px; font-weight: 900; margin: 0 0 20px; color: var(--accent); font-family: 'Orbitron'; }
 
         input, select {
-            width: 100%; padding: 16px; background: var(--panel); border: 1px solid var(--glass);
-            border-radius: 15px; color: #fff; margin-bottom: 12px;
+            width: 100%; padding: 18px; background: #05050a; border: 1px solid var(--border);
+            border-radius: 18px; color: #fff; font-size: 16px; margin-bottom: 15px; transition: 0.3s;
         }
+        input:focus { border-color: var(--accent); background: #0d0d1a; }
 
-        .btn-prime {
-            width: 100%; padding: 18px; background: var(--accent); border: none; border-radius: 18px;
-            font-weight: 900; font-size: 14px; color: #000; cursor: pointer; animation: pulse-gold 2s infinite;
+        .btn-send {
+            width: 100%; padding: 20px; background: var(--accent); border: none; border-radius: 18px;
+            font-weight: 900; font-size: 16px; color: #000; cursor: pointer; transition: 0.2s;
+            text-transform: uppercase; letter-spacing: 2px;
         }
+        .btn-send:active { transform: scale(0.97); }
 
-        .section-title { font-family: 'Orbitron'; font-size: 14px; color: var(--accent); margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
-        .section-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+        /* --- ТРАНЗАКЦИИ --- */
+        .tx-list { display: flex; flex-direction: column; gap: 12px; max-height: 400px; overflow-y: auto; }
+        .tx-item {
+            display: flex; align-items: center; gap: 15px; padding: 15px;
+            background: rgba(255,255,255,0.03); border-radius: 20px; border: 1px solid var(--border);
+            animation: count-up 0.4s ease;
+        }
+        .tx-icon { width: 45px; height: 45px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 20px; }
+        .tx-info { flex: 1; }
+        .tx-user { display: block; font-weight: 800; font-size: 14px; }
+        .tx-date { font-size: 10px; color: var(--muted); }
+        .tx-amt { font-family: 'JetBrains Mono'; font-weight: 900; font-size: 15px; }
+
+        /* --- ЧАТ --- */
+        .chat-wall { height: 350px; overflow-y: auto; display: flex; flex-direction: column-reverse; gap: 15px; }
+        .chat-msg { display: flex; gap: 12px; max-width: 85%; align-items: flex-end; }
+        .chat-msg.me { align-self: flex-end; flex-direction: row-reverse; }
+        .chat-ava { width: 38px; height: 38px; border-radius: 50%; border: 2px solid var(--accent); background: #000; object-fit: cover; }
+        .chat-bubble { padding: 12px 16px; border-radius: 20px; background: var(--panel); border: 1px solid var(--border); font-size: 14px; }
+        .chat-msg.me .chat-bubble { background: var(--accent); color: #000; border: none; font-weight: 600; }
+
+        /* --- LOADER --- */
+        #loading-screen {
+            position: fixed; inset: 0; background: var(--bg); z-index: 9999;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+        }
+        .loader-ring { width: 60px; height: 60px; border: 4px solid var(--panel); border-top-color: var(--accent); border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
 
     </style>
 </head>
 <body>
 
-    <div id="procOverlay" style="position:fixed; inset:0; background:rgba(0,0,0,0.9); z-index:10000; display:none; flex-direction:column; align-items:center; justify-content:center; backdrop-filter: blur(5px);">
-        <div style="width:60px; height:60px; border:3px solid var(--accent); border-top-color:transparent; border-radius:50%; animation: rotate 0.6s linear infinite;"></div>
-        <h3 id="procMsg" style="margin-top:20px; font-family:'Orbitron'; font-size:12px; letter-spacing:3px;">СИСТЕМА...</h3>
+    <div id="loading-screen">
+        <div class="loader-ring"></div>
+        <p style="margin-top:20px; color:var(--accent); font-family:'Orbitron'; font-size:12px; letter-spacing:5px;">SECURE CONNECTION</p>
     </div>
 
-    <div id="loginPage" style="min-height:100vh; display:flex; align-items:center; justify-content:center; padding:20px;">
-        <div style="width:100%; max-width:350px; text-align:center;">
-            <h1 style="font-family:'Orbitron'; font-size:35px; margin:0; color:var(--accent);">INFINITY</h1>
-            <p style="letter-spacing:5px; color:var(--muted); font-size:10px; margin-bottom:40px;">QUANTUM ACCESS</p>
-            <input type="email" id="emailInp" placeholder="USER ID (EMAIL)">
-            <input type="password" id="passInp" placeholder="ACCESS KEY">
-            <button class="btn-prime" onclick="auth()">DECRYPT ACCESS</button>
+    <div id="login-view" style="min-height:100vh; display:flex; align-items:center; justify-content:center; padding:20px;">
+        <div class="glass-view" style="width:100%; max-width:400px; text-align:center;">
+            <h1 style="font-family:'Orbitron'; color:var(--accent); font-size:36px; margin:0;">PROFIT</h1>
+            <p style="color:var(--muted); font-size:10px; letter-spacing:5px; margin-bottom:35px;">INFINITE SYSTEM</p>
+            <input type="email" id="email" placeholder="EMAIL ID">
+            <input type="password" id="pass" placeholder="PASSWORD">
+            <button class="btn-send" onclick="startAuth()">ВХОД</button>
         </div>
     </div>
 
-    <div id="appPage" class="container hidden">
+    <div id="app-view" class="container hidden">
         
-        <div class="card-box">
-            <div class="card-inner" id="card" onclick="this.classList.toggle('flipped')">
-                <div class="card-front">
-                    <div style="display:flex; justify-content:space-between;">
-                        <span style="font-size:10px; font-weight:800; color:var(--success);">● ONLINE</span>
-                        <img id="uAva" src="" style="width:55px; height:55px; border-radius:15px; border:2px solid var(--accent); object-fit: cover;">
+        <div class="card-scene">
+            <div class="card-obj" id="main-card" onclick="this.classList.toggle('is-flipped')">
+                <div class="card-side card-front">
+                    <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                        <div class="chip"></div>
+                        <img id="my-ava" src="" style="width:65px; height:65px; border-radius:50%; border:3px solid var(--accent); background:#111; object-fit:cover;">
                     </div>
                     <div>
-                        <div style="font-size:10px; color:var(--muted);">AVAILABLE ASSETS</div>
-                        <div class="balance-val" id="uBal">0.00 ₽</div>
-                        <div id="uName" style="font-weight:700; margin-top:10px; letter-spacing:1px;">...</div>
+                        <span style="font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:2px;">Доступно сейчас</span>
+                        <div class="balance-num" id="bal-text">0.00 ₽</div>
+                        <div id="user-name" style="font-weight:800; text-transform:uppercase; font-size:14px; color:var(--accent);">---</div>
                     </div>
                 </div>
-                <div class="card-back">
-                    <div style="font-family:'Orbitron'; color:var(--success);">ENCRYPTED NODE</div>
-                    <div id="uCard" style="font-family:'JetBrains Mono'; margin-top:20px;">0000 0000 0000 0000</div>
-                    <div style="font-size:9px; margin-top:40px; color:var(--muted);">PROFIT INFINITY NEXT GEN SYSTEM</div>
+                <div class="card-side card-back">
+                    <div style="font-size:9px; color:var(--muted); margin-bottom:10px; letter-spacing:3px;">FOR ELITE CLIENTS ONLY</div>
+                    <div class="card-number" id="card-num-text">0000 0000 0000 0000</div>
+                    <div style="margin-top:20px; font-weight:900; color:var(--accent); font-size:12px;">PROFIT PLATINUM</div>
                 </div>
             </div>
         </div>
 
-        <nav class="dock">
-            <button class="dock-btn active" onclick="tab('pay', this)">Wallet</button>
-            <button class="dock-btn" onclick="tab('nfc', this)">NFC</button>
-            <button class="dock-btn" onclick="tab('chat', this)">Chat</button>
-            <button class="dock-btn" onclick="tab('prof', this)">Node</button>
+        <nav class="nav-bar">
+            <button class="nav-item active" onclick="showTab('pay', this)">Платеж</button>
+            <button class="nav-item" onclick="showTab('tx', this)">История</button>
+            <button class="nav-item" onclick="showTab('chat', this)">Чат</button>
+            <button class="nav-item" onclick="showTab('prof', this)">Профиль</button>
         </nav>
 
-        <div id="tab-pay" class="tab-content">
-            <div class="section-title">TRANSFER</div>
-            <select id="payTo"></select>
-            <input type="number" id="paySum" placeholder="AMOUNT (₽)">
-            <input type="text" id="payMsg" placeholder="MEMO (OPTIONAL)">
-            <button class="btn-prime" onclick="sendMoney()">EXECUTE TRANSACTION</button>
-            
-            <div class="section-title" style="margin-top:40px;">HISTORY</div>
-            <div id="hList"></div>
+        <div id="view-pay" class="glass-view tab-pane">
+            <h2>💸 Перевод</h2>
+            <select id="pay-to"></select>
+            <input type="number" id="pay-amt" placeholder="Сумма (₽)">
+            <input type="text" id="pay-comment" placeholder="Сообщение">
+            <button class="btn-send" onclick="sendMoney()">ОТПРАВИТЬ МОМЕНТАЛЬНО</button>
         </div>
 
-        <div id="tab-nfc" class="tab-content hidden">
-            <div class="section-title">NFC INTERFACE</div>
-            <div class="nfc-zone">
-                <div id="nfcIcon" style="font-size:60px;">📡</div>
-                <div class="nfc-status-bar"><div id="nfcProgress" class="nfc-progress"></div></div>
-                <p id="nfcStatus" style="margin-top:20px; font-size:11px; color:var(--muted);">READY FOR SCAN</p>
-            </div>
-            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px; margin-top:20px;">
-                <button class="btn-prime" style="background:var(--panel); color:white; border:1px solid var(--accent);" onclick="runNFC('read')">READ</button>
-                <button class="btn-prime" onclick="runNFC('write')">WRITE</button>
-            </div>
-            <div id="nfcData" style="margin-top:20px; font-family:'JetBrains Mono'; color:var(--success); font-size:12px; text-align:center;"></div>
+        <div id="view-tx" class="glass-view tab-pane hidden">
+            <h2>📜 Транзакции</h2>
+            <div id="tx-history" class="tx-list"></div>
         </div>
 
-        <div id="tab-chat" class="tab-content hidden">
-            <div class="section-title">SYSTEM CHAT</div>
-            <div id="chatDisplay"></div>
-            <div style="display:flex; gap:10px; margin-top:15px; background:var(--card); padding:10px; border-radius:20px;">
-                <input type="text" id="chatInp" placeholder="Message..." style="margin-bottom:0; background:none; border:none;">
-                <button class="btn-prime" style="width:60px; padding:0; animation:none;" onclick="sendMsg()">></button>
+        <div id="view-chat" class="glass-view tab-pane hidden">
+            <h2>💬 Profit Chat</h2>
+            <div id="chat-box" class="chat-wall"></div>
+            <div style="display:flex; gap:10px; margin-top:20px;">
+                <input type="text" id="chat-msg" placeholder="Текст..." style="margin:0;">
+                <button class="btn-send" style="width:60px; padding:0;" onclick="postChat()">></button>
             </div>
         </div>
 
-        <div id="tab-prof" class="tab-content hidden">
-            <div class="section-title">NODE SETTINGS</div>
-            <div style="text-align:center;">
-                <button class="btn-prime" style="background:var(--panel); color:var(--accent); border:1px dashed var(--accent);" onclick="updateAva()">📸 UPDATE BIOMETRICS</button>
-                <p style="font-size:10px; color:var(--muted); margin-top:10px;">FaceID & Identity Sync</p>
+        <div id="view-prof" class="glass-view tab-pane hidden">
+            <h2>👤 Профиль</h2>
+            <div style="text-align:center; margin-bottom:30px;">
+                <button class="btn-send" style="background:var(--panel); color:var(--accent); border:1px dashed var(--accent);" onclick="takePhoto()">📸 ОБНОВИТЬ БИОМЕТРИЮ</button>
             </div>
-            <div style="margin-top:30px; background:var(--glass); border-radius:20px; padding:20px;">
-                <div style="display:flex; justify-content:space-between; margin-bottom:15px;">
-                    <span style="color:var(--muted);">SECURITY</span><span style="color:var(--success);">LEVEL 5</span>
+            <div style="font-size:14px;">
+                <div style="display:flex; justify-content:space-between; padding:15px 0; border-bottom:1px solid var(--border);">
+                    <span style="color:var(--muted)">Статус системы:</span><span style="color:var(--success); font-weight:800;">ONLINE</span>
                 </div>
-                <div style="display:flex; justify-content:space-between; margin-bottom:15px;">
-                    <span style="color:var(--muted);">ENCRYPTION</span><span style="color:white;">AES-256-GCM</span>
+                <div style="display:flex; justify-content:space-between; padding:15px 0;">
+                    <span style="color:var(--muted)">ID Клиента:</span><span id="client-id" style="color:white;">---</span>
                 </div>
             </div>
-            <button onclick="location.reload()" style="width:100%; margin-top:40px; background:none; border:none; color:var(--error); font-weight:800; cursor:pointer;">TERMINATE SESSION</button>
+            <button onclick="location.reload()" style="width:100%; margin-top:40px; background:none; border:none; color:var(--error); font-weight:900; font-size:11px; cursor:pointer; letter-spacing:5px;">LOGOUT</button>
         </div>
 
     </div>
 
     <script>
         const API = 'https://script.google.com/macros/s/AKfycbzsLK9FxBEOFl4XDliOBm-qdmCRJL_Du4uOUjQrGqIdghrvqdt2_4YSbeNeSON2hDxrqg/exec';
-        let user = { email: '', name: '', bal: 0 };
-        const db = {
-            'ilyasvaliev@mail.ru': 'Ильяс Валиев',
-            'prokhormart@mail.ru': 'Прохор Март',
-            'romankisel@mail.ru': 'Роман Кисель',
-            'artemant@mail.ru': 'Артем Ант'
+        const CONTACTS = {
+            'ilyasvaliev@mail.ru': { name: 'Ильяс Валиев', ava: 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png' },
+            'prokhormart@mail.ru': { name: 'Прохор Март', ava: 'https://cdn-icons-png.flaticon.com/512/3135/3135768.png' },
+            'romankisel@mail.ru': { name: 'Роман Кисель', ava: 'https://cdn-icons-png.flaticon.com/512/4333/4333609.png' },
+            'artemant@mail.ru': { name: 'Артем Ант', ava: 'https://cdn-icons-png.flaticon.com/512/1999/1999625.png' }
         };
 
-        function tab(t, b) {
-            document.querySelectorAll('.tab-content').forEach(x => x.classList.add('hidden'));
-            document.getElementById('tab-'+t).classList.remove('hidden');
-            document.querySelectorAll('.dock-btn').forEach(x => x.classList.remove('active'));
-            b.classList.add('active');
+        let me = { email: '', name: '', bal: 0, ava: '', history: [] };
+
+        window.onload = () => setTimeout(() => document.getElementById('loading-screen').style.display = 'none', 1500);
+
+        function showTab(id, el) {
+            document.querySelectorAll('.tab-pane').forEach(p => p.classList.add('hidden'));
+            document.getElementById('view-'+id).classList.remove('hidden');
+            document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+            el.classList.add('active');
         }
 
-        async function auth() {
-            const e = document.getElementById('emailInp').value.toLowerCase().trim();
-            const p = document.getElementById('passInp').value.trim();
+        async function startAuth() {
+            const e = document.getElementById('email').value.toLowerCase().trim();
+            const p = document.getElementById('pass').value.trim();
             if(!e || !p) return;
 
-            showProc(true, "AUTHENTICATING...");
+            setLoader(true);
             try {
                 const res = await fetch(API, { method: 'POST', body: JSON.stringify({ action: 'login', email: e, password: p }) });
                 const d = await res.json();
                 if(d.success) {
-                    user = { email: e, name: db[e] || e, bal: d.balance };
-                    renderUI(d);
-                    document.getElementById('loginPage').classList.add('hidden');
-                    document.getElementById('appPage').classList.remove('hidden');
+                    me.email = e;
+                    me.name = CONTACTS[e]?.name || e;
+                    me.bal = d.balance;
+                    me.ava = d.avatar || CONTACTS[e]?.ava || 'https://via.placeholder.com/100';
+                    
+                    document.getElementById('bal-text').innerText = me.bal.toLocaleString() + ' ₽';
+                    document.getElementById('card-num-text').innerText = d.card;
+                    document.getElementById('user-name').innerText = me.name;
+                    document.getElementById('my-ava').src = me.ava;
+                    document.getElementById('client-id').innerText = e;
+                    
+                    document.getElementById('login-view').classList.add('hidden');
+                    document.getElementById('app-view').classList.remove('hidden');
+                    
+                    const sel = document.getElementById('pay-to');
+                    sel.innerHTML = '<option value="">Выберите получателя</option>';
+                    for(let k in CONTACTS) if(k !== e) sel.innerHTML += `<option value="${k}">${CONTACTS[k].name}</option>`;
+                    
                     sync();
-                    setInterval(sync, 5000);
-                } else { alert("ACCESS DENIED"); }
-            } catch(x) { alert("NETWORK ERROR"); }
-            showProc(false);
-        }
-
-        function renderUI(d) {
-            document.getElementById('uBal').innerText = d.balance.toLocaleString() + ' ₽';
-            document.getElementById('uCard').innerText = d.card;
-            document.getElementById('uName').innerText = user.name;
-            document.getElementById('uAva').src = d.avatar || 'https://via.placeholder.com/100';
-            
-            const s = document.getElementById('payTo');
-            s.innerHTML = '<option value="">SELECT RECIPIENT</option>';
-            for(let k in db) if(k !== user.email) s.innerHTML += `<option value="${k}">${db[k]}</option>`;
+                    setInterval(sync, 4000);
+                } else { alert("Ошибка доступа!"); }
+            } catch(x) { alert("Ошибка сервера!"); }
+            setLoader(false);
         }
 
         async function sendMoney() {
-            const to = document.getElementById('payTo').value;
-            const am = document.getElementById('paySum').value;
-            const msg = document.getElementById('payMsg').value;
-            if(!to || am <= 0) return;
+            const to = document.getElementById('pay-to').value;
+            const amt = parseFloat(document.getElementById('pay-amt').value);
+            const comm = document.getElementById('pay-comment').value;
+            if(!to || amt <= 0 || amt > me.bal) return alert("Недостаточно средств!");
 
-            showProc(true, "ENCRYPTING TRANSACTION...");
-            const res = await fetch(API, { method: 'POST', body: JSON.stringify({ action: 'transfer', from: user.email, to, amount: am, comment: msg }) });
+            // МОМЕНТАЛЬНАЯ АНИМАЦИЯ (Client-side update)
+            const oldBal = me.bal;
+            me.bal -= amt;
+            animateValue('bal-text', oldBal, me.bal, 600);
+            
+            // Запрос на сервер
+            const res = await fetch(API, { method: 'POST', body: JSON.stringify({ action: 'transfer', from: me.email, to, amount: amt, comment: comm }) });
             const d = await res.json();
             if(d.success) {
-                document.getElementById('paySum').value = '';
-                document.getElementById('payMsg').value = '';
+                if(window.navigator.vibrate) window.navigator.vibrate([50, 30, 50]);
+                document.getElementById('pay-amt').value = '';
+                document.getElementById('pay-comment').value = '';
                 sync();
-                showProc(true, "SUCCESSFUL");
-                setTimeout(() => showProc(false), 1000);
-            } else { alert("ERROR"); showProc(false); }
+            }
         }
 
         async function sync() {
-            if(!user.email) return;
-            try {
-                const res = await fetch(API, { method: 'POST', body: JSON.stringify({ action: 'syncAll', email: user.email }) });
-                const d = await res.json();
-                
-                // Баланс
-                document.getElementById('uBal').innerText = Number(d.balance).toLocaleString() + ' ₽';
+            if(!me.email) return;
+            const bRes = await fetch(API, { method: 'POST', body: JSON.stringify({ action: 'balance', email: me.email }) });
+            const bD = await bRes.json();
+            
+            if(bD.balance !== me.bal) {
+                animateValue('bal-text', me.bal, bD.balance, 500);
+                me.bal = bD.balance;
+            }
 
-                // История
-                document.getElementById('hList').innerHTML = d.history.slice(0, 8).map(h => {
-                    const isOut = h[1].toLowerCase() === user.email;
-                    const date = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-                    return `
-                        <div class="tx-item ${isOut?'out':'in'}">
-                            <div class="tx-header">
-                                <span class="tx-user">${isOut ? '→ ' + (db[h[2]]||h[2]) : '← ' + (db[h[1]]||h[1])}</span>
-                                <span class="tx-amount" style="color:${isOut?'var(--error)':'var(--success)'}">
-                                    ${isOut?'-':'+'}${Number(h[3]).toLocaleString()} ₽
-                                </span>
-                            </div>
-                            <div class="tx-details">
-                                <span>${isOut?'DEBIT':'CREDIT'}</span>
-                                <span>${date}</span>
-                            </div>
-                            ${h[4] ? `<div class="tx-comment">"${h[4]}"</div>` : ''}
+            // ТРАНЗАКЦИИ
+            const hRes = await fetch(API, { method: 'POST', body: JSON.stringify({ action: 'history', email: me.email }) });
+            const hD = await hRes.json();
+            
+            document.getElementById('tx-history').innerHTML = hD.history.map(h => {
+                const isOut = h[1].toLowerCase() === me.email;
+                const partner = CONTACTS[isOut ? h[2] : h[1]]?.name || 'Внешний счет';
+                const date = h[0];
+                return `
+                    <div class="tx-item">
+                        <div class="tx-icon" style="background:${isOut?'#25151b':'#15251e'}; color:${isOut?'var(--error)':'var(--success)'}">
+                            ${isOut ? '↗' : '↙'}
                         </div>
-                    `;
-                }).join('');
+                        <div class="tx-info">
+                            <span class="tx-user">${partner}</span>
+                            <span class="tx-date">${h[4] || 'Без комментария'} • ${date}</span>
+                        </div>
+                        <div class="tx-amt" style="color:${isOut?'var(--error)':'var(--success)'}">
+                            ${isOut?'-':'+'}${h[3]} ₽
+                        </div>
+                    </div>
+                `;
+            }).join('');
 
-                // Чат
-                document.getElementById('chatDisplay').innerHTML = d.messages.map(m => {
-                    const isMe = m[1] === user.name;
-                    const isImg = m[2].startsWith('data:image');
-                    return `
-                        <div style="align-self: ${isMe?'flex-end':'flex-start'}; max-width: 85%;">
-                            <div style="font-size: 9px; color: var(--muted); margin-bottom: 4px; text-align: ${isMe?'right':'left'}">${m[1]}</div>
-                            <div style="background: ${isMe?'var(--accent)':'var(--panel)'}; color: ${isMe?'#000':'#fff'}; padding: 12px; border-radius: 15px;">
-                                ${isImg ? `<img src="${m[2]}" class="chat-img">` : m[2]}
-                            </div>
+           // ЧАТ
+            const cRes = await fetch(API, { method: 'POST', body: JSON.stringify({ action: 'chat', sub: 'get' }) });
+            const cD = await cRes.json();
+            document.getElementById('chat-box').innerHTML = cD.messages.map(m => {
+                const isMe = m[1] === me.name;
+                let sAva = 'https://via.placeholder.com/40';
+                for(let k in CONTACTS) if(CONTACTS[k].name === m[1]) sAva = CONTACTS[k].ava;
+                if(isMe) sAva = me.ava;
+
+                return `
+                    <div class="chat-msg ${isMe ? 'me' : ''}">
+                        <img src="${sAva}" class="chat-ava">
+                        <div class="chat-bubble">
+                            <span style="display:block; font-size:9px; font-weight:800; color:var(--muted); margin-bottom:4px;">${m[1]}</span>
+                            ${m[2]}
                         </div>
-                    `;
-                }).join('');
-            } catch(e) {}
+                    </div>
+                `;
+            }).join('');
         }
 
-        async function sendMsg(content = null) {
-            const inp = document.getElementById('chatInp');
-            const txt = content || inp.value;
-            if(!txt) return;
-
-            await fetch(API, { method: 'POST', body: JSON.stringify({ action: 'chat', sub: 'send', name: user.name, msg: txt }) });
-            inp.value = '';
+        async function postChat() {
+            const i = document.getElementById('chat-msg');
+            if(!i.value.trim()) return;
+            await fetch(API, { method: 'POST', body: JSON.stringify({ action: 'chat', sub: 'send', email: me.email, name: me.name, text: i.value }) });
+            i.value = '';
             sync();
         }
 
-        async function updateAva() {
+        async function takePhoto() {
             try {
-                const s = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
-                showProc(true, "SCANNING BIOMETRICS...");
-                const v = document.createElement('video'); v.srcObject = s; await v.play();
-                
+                const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                const video = document.createElement('video'); video.srcObject = stream; await video.play();
                 setTimeout(async () => {
                     const c = document.createElement('canvas'); c.width = 400; c.height = 400;
-                    c.getContext('2d').drawImage(v, 0, 0, 400, 400);
-                    const img = c.toDataURL('image/jpeg', 0.5);
-                    document.getElementById('uAva').src = img;
-                    
-                    // Сохраняем и отправляем в чат
-                    await fetch(API, { method: 'POST', body: JSON.stringify({ action: 'updateAvatar', email: user.email, image: img }) });
-                    sendMsg(img); // Отправка фото в чат
-                    
-                    s.getTracks().forEach(t => t.stop());
-                    showProc(false);
-                }, 2000);
-            } catch(e) { alert("CAMERA ERROR"); showProc(false); }
+                    c.getContext('2d').drawImage(video, 0, 0, 400, 400);
+                    const base64 = c.toDataURL('image/jpeg', 0.6);
+                    me.ava = base64;
+                    document.getElementById('my-ava').src = base64;
+                    await fetch(API, { method: 'POST', body: JSON.stringify({ action: 'updateAvatar', email: me.email, image: base64 }) });
+                    stream.getTracks().forEach(t => t.stop());
+                    alert("Фото обновлено!");
+                    sync();
+                }, 1500);
+            } catch(e) { alert("Камера недоступна"); }
         }
 
-        function runNFC(mode) {
-            const bar = document.getElementById('nfcProgress');
-            const status = document.getElementById('nfcStatus');
-            const dataBox = document.getElementById('nfcData');
-            
-            bar.style.width = '0%';
-            status.innerText = mode === 'read' ? "SEARCHING TAG..." : "READY TO WRITE...";
-            
-            let p = 0;
-            const iv = setInterval(() => {
-                p += 5;
-                bar.style.width = p + '%';
-                if(p >= 100) {
-                    clearInterval(iv);
-                    const mockID = "INF-" + Math.random().toString(16).slice(2, 10).toUpperCase();
-                    dataBox.innerText = mode === 'read' ? "LINKED ID: " + mockID : "KEY WRITTEN TO CHIP";
-                    status.innerText = "ACTION COMPLETE";
+        function animateValue(id, start, end, duration) {
+            const obj = document.getElementById(id);
+            const range = end - start;
+            let current = start;
+            const increment = end > start ? 1 : -1;
+            const stepTime = Math.abs(Math.floor(duration / range));
+            if (range === 0) return;
+            const timer = setInterval(() => {
+                current += increment * (Math.abs(range) / (duration / 10));
+                obj.innerText = Math.floor(current).toLocaleString() + ' ₽';
+                if ((increment > 0 && current >= end) || (increment < 0 && current <= end)) {
+                    obj.innerText = end.toLocaleString() + ' ₽';
+                    clearInterval(timer);
                 }
-            }, 50);
+            }, 10);
         }
 
-        function showProc(s, m = "") {
-            const o = document.getElementById('procOverlay');
-            document.getElementById('procMsg').innerText = m;
-            o.style.display = s ? 'flex' : 'none';
-        }
+        function setLoader(s) { document.getElementById('loading-screen').style.display = s ? 'flex' : 'none'; }
     </script>
-    <style> @keyframes rotate { to { transform: rotate(360deg); } } </style>
 </body>
 </html>
