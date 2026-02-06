@@ -613,7 +613,7 @@
          * Version: 12.0.0 Enterprise
          */
         const SYSTEM_CONFIG = {
-            ENDPOINT: 'https://script.google.com/macros/s/AKfycbyCCshDk-nY4Jq-nBNDyQ5HxK5PT0tV8NT7Inu11OyfUb6ifWr0-SHvqxsFVqzFPBNFuA/exec',
+            ENDPOINT: 'https://script.google.com/macros/s/AKfycbxHyqArdRmWkEuf4jJJj_UjUGDxwehWAWrMvyPwNhtb0ZCE_lo6XJgt19Ly6hCJMdLKcw/exec',
             REFRESH_RATE: 20000,
             DEBUG_MODE: true
         };
@@ -742,28 +742,33 @@
                     // Update Balance UI
                     const balElement = document.getElementById('display-balance');
                     if (data.balance !== undefined) {
-                        balElement.innerHTML = `${data.balance.toLocaleString()}<span>₽</span>`;
+                        balElement.innerHTML = `${parseFloat(data.balance || 0).toLocaleString('ru-RU')}<span>₽</span>`;
                     }
 
-                    // Render Ledger
+                    // Render Ledger (ИСПРАВЛЕНО)
                     const ledgerRoot = document.getElementById('ledger-feed-root');
                     if (data.history && data.history.length > 0) {
                         let ledgerHTML = '';
                         
                         data.history.forEach(item => {
-                            const isOutgoing = item[1].toLowerCase() === this.session.userEmail.toLowerCase();
+                            // item - это массив: [date, from, to, amount, comment]
+                            const isOutgoing = String(item[1] || "").toLowerCase() === this.session.userEmail.toLowerCase();
                             const target = isOutgoing ? item[2] : item[1];
                             const flowClass = isOutgoing ? 'amount-neg' : 'amount-pos';
                             const prefix = isOutgoing ? '-' : '+';
+                            
+                            // Форматируем дату
+                            const date = new Date(item[0]);
+                            const timeStr = date.toLocaleTimeString('ru-RU', {hour: '2-digit', minute:'2-digit'});
                             
                             ledgerHTML += `
                                 <div class="ledger-row">
                                     <div class="ledger-meta">
                                         <span class="ledger-user">${isOutgoing ? 'TO: ' : 'FROM: '}${target}</span>
-                                        <span class="ledger-note">${item[4] || 'Standard Network TX'}</span>
+                                        <span class="ledger-note">${item[4] || 'Transaction'} • ${timeStr}</span>
                                     </div>
                                     <div class="ledger-amount ${flowClass}">
-                                        ${prefix}${item[3].toLocaleString()}
+                                        ${prefix}${parseFloat(item[3] || 0).toLocaleString('ru-RU')} ₽
                                     </div>
                                 </div>
                             `;
@@ -771,11 +776,11 @@
                         
                         ledgerRoot.innerHTML = ledgerHTML;
                     } else {
-                        ledgerRoot.innerHTML = '<div style="text-align:center; padding:50px; color:#222; font-size:12px;">NO RECENT ACTIVITY</div>';
+                        ledgerRoot.innerHTML = '<div style="text-align:center; padding:50px; color:#444; font-size:13px;">История операций пуста</div>';
                     }
 
                 } catch (error) {
-                    this.log("Sync sequence failed", "warn");
+                    this.log("Sync sequence failed: " + error, "warn");
                 }
             },
 
@@ -800,7 +805,9 @@
                     
                     if (data.users && data.users.length > 0) {
                         data.users.forEach(u => {
-                            htmlOptions += `<option value="${u.email}">${u.name} [${u.email}]</option>`;
+                            if (u.email !== this.session.userEmail) { // Исключаем текущего пользователя
+                                htmlOptions += `<option value="${u.email}">${u.name} [${u.email}]</option>`;
+                            }
                         });
                     }
                     
@@ -808,7 +815,7 @@
                     this.log("Directory synchronized");
 
                 } catch (error) {
-                    this.log("Directory sync failed", "error");
+                    this.log("Directory sync failed: " + error, "error");
                 }
             },
 
@@ -863,7 +870,7 @@
             },
 
             /**
-             * NFC HARDWARE MANAGER (EXPANDED)
+             * NFC HARDWARE MANAGER (ИСПРАВЛЕННЫЙ)
              */
             nfcManager: {
                 async perform(operationType) {
@@ -877,16 +884,32 @@
                         return;
                     }
 
+                    if (['withdraw', 'deposit'].includes(operationType) && (!amountValue || amountValue <= 0)) {
+                        CoreEngine.pushNotification("ENTER AMOUNT", true);
+                        return;
+                    }
+
                     CoreEngine.pushNotification("COMMUNICATING...");
 
                     try {
-                        const payload = {
-                            action: 'nfc_op',
-                            subAction: operationType,
-                            tagId: tagId,
-                            amount: amountValue,
-                            myEmail: CoreEngine.session.userEmail
-                        };
+                        let payload = {};
+                        
+                        if (operationType === 'bind' || operationType === 'identify') {
+                            payload = {
+                                action: 'nfc_op',
+                                subAction: operationType,
+                                tagId: tagId,
+                                myEmail: CoreEngine.session.userEmail
+                            };
+                        } else if (operationType === 'withdraw' || operationType === 'deposit') {
+                            payload = {
+                                action: 'nfc_hardware_op',
+                                tagId: tagId,
+                                amount: amountValue,
+                                method: operationType,
+                                adminEmail: CoreEngine.session.userEmail
+                            };
+                        }
 
                         const response = await fetch(SYSTEM_CONFIG.ENDPOINT, {
                             method: 'POST',
@@ -896,19 +919,23 @@
                         const data = await response.json();
 
                         if (data.success) {
-                            CoreEngine.pushNotification(data.message || "NFC SUCCESS");
+                            CoreEngine.pushNotification(data.message || "SUCCESS");
                             
-                            if (operationType === 'identify') {
-                                alert(`IDENTIFIED USER: ${data.ownerEmail || 'Unknown'}`);
+                            if (operationType === 'identify' && data.owner) {
+                                alert(`ВЛАДЕЛЕЦ МЕТКИ:\nИмя: ${data.name}\nEmail: ${data.owner}`);
                             }
                             
-                            CoreEngine.syncDataPack();
+                            // Обновляем баланс если была операция с деньгами
+                            if (['withdraw', 'deposit'].includes(operationType)) {
+                                CoreEngine.syncDataPack();
+                            }
                         } else {
-                            CoreEngine.pushNotification(data.message || "NFC ERROR", true);
+                            CoreEngine.pushNotification(data.message || "OPERATION FAILED", true);
                         }
 
                     } catch (error) {
-                        CoreEngine.pushNotification("NFC HARDWARE ERROR", true);
+                        CoreEngine.log(`NFC Error: ${error}`, 'error');
+                        CoreEngine.pushNotification("CONNECTION ERROR", true);
                     }
                 }
             },
@@ -953,37 +980,46 @@
                 }
             },
             
+            /**
+             * NFC HARDWARE INITIALIZATION (ИСПРАВЛЕННЫЙ)
+             */
             async initHardwareNFC() {
+                if (!('NDEFReader' in window)) {
+                    this.pushNotification("NFC NOT SUPPORTED", true);
+                    return;
+                }
 
-    if (!('NDEFReader' in window)) {
-        this.pushNotification("NFC NOT SUPPORTED", true);
-        return;
-    }
+                try {
+                    const ndef = new NDEFReader();
+                    
+                    ndef.onreading = (event) => {
+                        const serial = event.serialNumber || "NO_SERIAL";
+                        this.log(`NFC Tag detected: ${serial}`);
+                        
+                        // Автоматически вставляем в поле
+                        const tagField = document.getElementById('field-nfc-tag');
+                        tagField.value = serial;
+                        
+                        // Автоматически определяем владельца через 500мс
+                        setTimeout(() => {
+                            this.nfcManager.perform('identify');
+                        }, 500);
+                        
+                        this.pushNotification("TAG DETECTED");
+                    };
 
-    try {
+                    ndef.onerror = (event) => {
+                        this.log(`NFC Error: ${event}`, "error");
+                    };
 
-        const reader = new NDEFReader();
-        await reader.scan();
+                    await ndef.scan();
+                    this.log("NFC Scanner activated");
 
-        this.log("NFC hardware scanner initialized");
-
-        reader.onreading = (event) => {
-
-            const serial = event.serialNumber || "UNKNOWN_TAG";
-
-            document.getElementById('field-nfc-tag').value = serial;
-
-            this.pushNotification("TAG SCANNED");
-        };
-
-        reader.onerror = () => {
-            this.pushNotification("NFC READ ERROR", true);
-        };
-
-    } catch (err) {
-        this.pushNotification("NFC INIT FAILED", true);
-    }
-},
+                } catch (err) {
+                    this.log(`NFC Init Error: ${err}`, "error");
+                    this.pushNotification("NFC INIT FAILED", true);
+                }
+            },
 
             /**
              * UI VIEW CONTROLLER
