@@ -3,389 +3,364 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>PROFIT BANK | HYPER SPEED</title>
+    <title>PROFIT BANK | ULTRA DYNAMIC</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@300;400;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
     
     <style>
         :root {
             --accent: #ffd600;
             --accent-glow: rgba(255, 214, 0, 0.4);
-            --bg: #050508;
-            --card-bg: #0d0d18;
-            --panel: #161625;
+            --bg: #030305;
+            --card-bg: #0d0d14;
+            --panel: #14141f;
             --text: #ffffff;
-            --muted: #808090;
-            --success: #00ffa3;
-            --error: #ff2e63;
+            --muted: #71717e;
+            --success: #00ff95;
+            --error: #ff2d55;
             --border: rgba(255, 255, 255, 0.08);
         }
 
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none !important; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
         body { 
             margin: 0; background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif;
-            background-image: radial-gradient(circle at 50% -10%, #1e1e3f 0%, #050508 100%);
-            min-height: 100vh; overflow-x: hidden;
+            background-image: radial-gradient(circle at top right, #1a1a2e 0%, #030305 100%);
+            min-height: 100vh; overflow: hidden;
         }
 
         .hidden { display: none !important; }
 
         /* --- АНИМАЦИИ --- */
-        @keyframes slideUp { from { transform: translateY(50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-        @keyframes pulse-success { 0% { box-shadow: 0 0 0 0 rgba(0, 255, 163, 0.4); } 70% { box-shadow: 0 0 0 20px rgba(0, 255, 163, 0); } 100% { box-shadow: 0 0 0 0 rgba(0, 255, 163, 0); } }
-        @keyframes count-up { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes face-scan { 0% { top: 0; } 50% { top: 100%; } 100% { top: 0; } }
+        @keyframes pulse { 0% { transform: scale(1); opacity: 0.5; } 50% { transform: scale(1.2); opacity: 1; } 100% { transform: scale(1); opacity: 0.5; } }
+        @keyframes slide-in { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
-        .container { width: 100%; max-width: 480px; margin: 0 auto; padding: 20px; animation: slideUp 0.6s cubic-bezier(0.2, 0.8, 0.2, 1); }
+        .container { width: 100%; max-width: 460px; margin: 0 auto; padding: 20px; height: 100vh; display: flex; flex-direction: column; }
 
-        /* --- КАРТА 3D (FIXED) --- */
-        .card-scene { perspective: 1500px; height: 250px; margin-bottom: 30px; }
-        .card-obj {
-            width: 100%; height: 100%; position: relative;
-            transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        /* --- КАРТА 3D --- */
+        .card-scene { perspective: 1200px; height: 240px; margin-bottom: 25px; flex-shrink: 0; }
+        .card-inner { 
+            position: relative; width: 100%; height: 100%; 
+            transition: transform 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
             transform-style: preserve-3d; cursor: pointer;
         }
-        .card-obj.is-flipped { transform: rotateY(180deg); }
+        .card-inner.flipped { transform: rotateY(180deg); }
 
-        .card-side {
-            position: absolute; inset: 0; border-radius: 30px; padding: 30px;
+        .card-face {
+            position: absolute; inset: 0; border-radius: 30px; padding: 25px;
             backface-visibility: hidden; border: 1px solid var(--border);
+            background: linear-gradient(135deg, #161625 0%, #08080c 100%);
             display: flex; flex-direction: column; justify-content: space-between;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.5);
         }
+        .card-face.back { transform: rotateY(180deg); background: #050507; align-items: center; justify-content: center; }
 
-        .card-front { background: linear-gradient(135deg, #1c1c2e 0%, #0a0a0f 100%); }
-        .card-back { background: #08080c; transform: rotateY(180deg); align-items: center; justify-content: center; }
-
-        .chip { width: 50px; height: 40px; background: linear-gradient(135deg, #ffd600, #b88a00); border-radius: 8px; }
-        .balance-num { font-family: 'Orbitron'; font-size: 38px; font-weight: 900; margin: 10px 0; color: var(--text); transition: 0.5s; }
-        .card-number { font-family: 'JetBrains Mono'; font-size: 20px; letter-spacing: 4px; color: #fff; text-shadow: 0 2px 4px #000; }
+        .balance-val { font-size: 36px; font-weight: 900; font-family: 'Orbitron'; margin: 5px 0; letter-spacing: -1px; }
+        .card-no { font-family: 'JetBrains Mono'; font-size: 19px; letter-spacing: 3px; color: #fff; }
 
         /* --- НАВИГАЦИЯ --- */
-        .nav-bar {
-            display: flex; background: var(--panel); padding: 8px; border-radius: 20px;
-            border: 1px solid var(--border); margin-bottom: 25px; gap: 5px;
-            position: sticky; top: 10px; z-index: 1000; backdrop-filter: blur(10px);
+        .nav-dock { 
+            display: flex; background: var(--panel); padding: 6px; border-radius: 20px; 
+            border: 1px solid var(--border); margin-bottom: 20px; gap: 4px; flex-shrink: 0;
         }
-        .nav-item {
+        .nav-btn {
             flex: 1; padding: 12px 2px; border: none; background: none; color: var(--muted);
-            font-size: 10px; font-weight: 800; border-radius: 15px; cursor: pointer;
-            transition: 0.3s; text-transform: uppercase; letter-spacing: 1px;
+            font-size: 10px; font-weight: 800; border-radius: 15px; cursor: pointer; transition: 0.3s;
+            text-transform: uppercase;
         }
-        .nav-item.active { background: var(--accent); color: #000; box-shadow: 0 5px 15px var(--accent-glow); }
+        .nav-btn.active { background: var(--accent); color: #000; box-shadow: 0 5px 15px var(--accent-glow); }
 
-        /* --- ПАНЕЛИ --- */
-        .glass-view {
-            background: var(--card-bg); border-radius: 30px; padding: 25px;
-            border: 1px solid var(--border); margin-bottom: 20px;
-        }
-        h2 { font-size: 22px; font-weight: 900; margin: 0 0 20px; color: var(--accent); font-family: 'Orbitron'; }
+        /* --- КОНТЕНТ --- */
+        .scroll-area { flex-grow: 1; overflow-y: auto; padding-bottom: 20px; }
+        .glass-box { background: var(--card-bg); border-radius: 28px; padding: 22px; border: 1px solid var(--border); margin-bottom: 15px; animation: slide-in 0.4s ease-out; }
+        h2 { font-size: 18px; font-weight: 900; margin: 0 0 18px; color: var(--accent); font-family: 'Orbitron'; }
 
         input, select {
-            width: 100%; padding: 18px; background: #05050a; border: 1px solid var(--border);
-            border-radius: 18px; color: #fff; font-size: 16px; margin-bottom: 15px; transition: 0.3s;
+            width: 100%; padding: 16px; background: #05050a; border: 1px solid var(--border);
+            border-radius: 16px; color: #fff; font-size: 15px; margin-bottom: 12px; transition: 0.3s;
         }
-        input:focus { border-color: var(--accent); background: #0d0d1a; }
+        input:focus { border-color: var(--accent); }
 
-        .btn-send {
-            width: 100%; padding: 20px; background: var(--accent); border: none; border-radius: 18px;
-            font-weight: 900; font-size: 16px; color: #000; cursor: pointer; transition: 0.2s;
-            text-transform: uppercase; letter-spacing: 2px;
+        .prime-btn {
+            width: 100%; padding: 18px; background: var(--accent); border: none; border-radius: 16px;
+            font-weight: 900; font-size: 15px; color: #000; cursor: pointer; transition: 0.2s;
+            text-transform: uppercase; letter-spacing: 1px;
         }
-        .btn-send:active { transform: scale(0.97); }
 
-        /* --- ТРАНЗАКЦИИ --- */
-        .tx-list { display: flex; flex-direction: column; gap: 12px; max-height: 400px; overflow-y: auto; }
-        .tx-item {
-            display: flex; align-items: center; gap: 15px; padding: 15px;
-            background: rgba(255,255,255,0.03); border-radius: 20px; border: 1px solid var(--border);
-            animation: count-up 0.4s ease;
+        /* --- ЧАТ (FIXED AVATARS) --- */
+        .chat-list { display: flex; flex-direction: column-reverse; gap: 12px; }
+        .msg-row { display: flex; gap: 10px; max-width: 88%; align-items: flex-end; }
+        .msg-row.me { align-self: flex-end; flex-direction: row-reverse; }
+        .msg-ava { width: 36px; height: 36px; border-radius: 50%; border: 2px solid var(--accent); background: #000; object-fit: cover; flex-shrink: 0; }
+        .msg-bubble { padding: 12px 16px; border-radius: 18px; background: var(--panel); border: 1px solid var(--border); font-size: 13px; line-height: 1.4; }
+        .msg-row.me .msg-bubble { background: var(--accent); color: #000; border: none; font-weight: 600; }
+
+        /* --- АНИМАЦИЯ БИОМЕТРИИ --- */
+        #auth-overlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 10001;
+            display: none; flex-direction: column; align-items: center; justify-content: center; backdrop-filter: blur(10px);
         }
-        .tx-icon { width: 45px; height: 45px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 20px; }
-        .tx-info { flex: 1; }
-        .tx-user { display: block; font-weight: 800; font-size: 14px; }
-        .tx-date { font-size: 10px; color: var(--muted); }
-        .tx-amt { font-family: 'JetBrains Mono'; font-weight: 900; font-size: 15px; }
+        .scan-circle { width: 120px; height: 120px; border: 2px solid var(--accent); border-radius: 50%; position: relative; overflow: hidden; }
+        .scan-line { position: absolute; width: 100%; height: 2px; background: var(--accent); box-shadow: 0 0 15px var(--accent); animation: face-scan 2s infinite linear; }
+        .scan-icon { font-size: 50px; margin-top: 35px; opacity: 0.8; }
 
-        /* --- ЧАТ --- */
-        .chat-wall { height: 350px; overflow-y: auto; display: flex; flex-direction: column-reverse; gap: 15px; }
-        .chat-msg { display: flex; gap: 12px; max-width: 85%; align-items: flex-end; }
-        .chat-msg.me { align-self: flex-end; flex-direction: row-reverse; }
-        .chat-ava { width: 38px; height: 38px; border-radius: 50%; border: 2px solid var(--accent); background: #000; object-fit: cover; }
-        .chat-bubble { padding: 12px 16px; border-radius: 20px; background: var(--panel); border: 1px solid var(--border); font-size: 14px; }
-        .chat-msg.me .chat-bubble { background: var(--accent); color: #000; border: none; font-weight: 600; }
-
-        /* --- LOADER --- */
-        #loading-screen {
-            position: fixed; inset: 0; background: var(--bg); z-index: 9999;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-        }
-        .loader-ring { width: 60px; height: 60px; border: 4px solid var(--panel); border-top-color: var(--accent); border-radius: 50%; animation: spin 1s linear infinite; }
-        @keyframes spin { to { transform: rotate(360deg); } }
+        /* --- ЛОАДЕР --- */
+        #main-loader { position: fixed; inset: 0; background: var(--bg); z-index: 20000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .spin { width: 50px; height: 50px; border: 4px solid #111; border-top-color: var(--accent); border-radius: 50%; animation: rot 1s infinite linear; }
+        @keyframes rot { to { transform: rotate(360deg); } }
 
     </style>
 </head>
 <body>
 
-    <div id="loading-screen">
-        <div class="loader-ring"></div>
-        <p style="margin-top:20px; color:var(--accent); font-family:'Orbitron'; font-size:12px; letter-spacing:5px;">SECURE CONNECTION</p>
+    <div id="main-loader"><div class="spin"></div></div>
+
+    <div id="auth-overlay">
+        <div class="scan-circle"><div class="scan-line"></div></div>
+        <div class="scan-icon">👤</div>
+        <h3 style="color:var(--accent); font-family:'Orbitron'; margin-top:20px; letter-spacing:2px;">БИОМЕТРИЯ...</h3>
     </div>
 
-    <div id="login-view" style="min-height:100vh; display:flex; align-items:center; justify-content:center; padding:20px;">
-        <div class="glass-view" style="width:100%; max-width:400px; text-align:center;">
-            <h1 style="font-family:'Orbitron'; color:var(--accent); font-size:36px; margin:0;">PROFIT</h1>
-            <p style="color:var(--muted); font-size:10px; letter-spacing:5px; margin-bottom:35px;">INFINITE SYSTEM</p>
-            <input type="email" id="email" placeholder="EMAIL ID">
-            <input type="password" id="pass" placeholder="PASSWORD">
-            <button class="btn-send" onclick="startAuth()">ВХОД</button>
+    <div id="view-login" style="height:100vh; display:flex; align-items:center; justify-content:center; padding:20px;">
+        <div class="glass-box" style="width:100%; text-align:center;">
+            <h1 style="font-family:'Orbitron'; color:var(--accent); font-size:32px; margin:0;">PROFIT</h1>
+            <p style="color:var(--muted); font-size:10px; letter-spacing:4px; margin-bottom:30px;">SECURE ACCESS</p>
+            <input type="email" id="log-email" placeholder="LOGIN (EMAIL)">
+            <input type="password" id="log-pass" placeholder="PASSWORD">
+            <button class="prime-btn" onclick="performLogin()">ВОЙТИ В СИСТЕМУ</button>
         </div>
     </div>
 
-    <div id="app-view" class="container hidden">
+    <div id="view-app" class="container hidden">
         
         <div class="card-scene">
-            <div class="card-obj" id="main-card" onclick="this.classList.toggle('is-flipped')">
-                <div class="card-side card-front">
+            <div class="card-inner" id="card-obj" onclick="this.classList.toggle('flipped')">
+                <div class="card-face">
                     <div style="display:flex; justify-content:space-between; align-items:flex-start;">
-                        <div class="chip"></div>
-                        <img id="my-ava" src="" style="width:65px; height:65px; border-radius:50%; border:3px solid var(--accent); background:#111; object-fit:cover;">
+                        <div style="width:45px; height:35px; background:linear-gradient(135deg, #ffd600, #967e00); border-radius:6px;"></div>
+                        <img id="u-ava-card" src="" style="width:70px; height:70px; border-radius:50%; border:3px solid var(--accent); object-fit:cover;">
                     </div>
                     <div>
-                        <span style="font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:2px;">Доступно сейчас</span>
-                        <div class="balance-num" id="bal-text">0.00 ₽</div>
-                        <div id="user-name" style="font-weight:800; text-transform:uppercase; font-size:14px; color:var(--accent);">---</div>
+                        <div style="font-size:11px; color:var(--muted); text-transform:uppercase;">Доступный лимит</div>
+                        <div class="balance-val" id="u-bal">0.00 ₽</div>
+                        <div id="u-name" style="font-weight:800; font-size:14px; color:var(--accent);">---</div>
                     </div>
                 </div>
-                <div class="card-side card-back">
-                    <div style="font-size:9px; color:var(--muted); margin-bottom:10px; letter-spacing:3px;">FOR ELITE CLIENTS ONLY</div>
-                    <div class="card-number" id="card-num-text">0000 0000 0000 0000</div>
-                    <div style="margin-top:20px; font-weight:900; color:var(--accent); font-size:12px;">PROFIT PLATINUM</div>
+                <div class="card-face back">
+                    <div style="font-size:10px; color:var(--muted); margin-bottom:10px;">VIRTUAL CARD ID</div>
+                    <div class="card-no" id="u-card-no">0000 0000 0000 0000</div>
                 </div>
             </div>
         </div>
 
-        <nav class="nav-bar">
-            <button class="nav-item active" onclick="showTab('pay', this)">Платеж</button>
-            <button class="nav-item" onclick="showTab('tx', this)">История</button>
-            <button class="nav-item" onclick="showTab('chat', this)">Чат</button>
-            <button class="nav-item" onclick="showTab('prof', this)">Профиль</button>
+        <nav class="nav-dock">
+            <button class="nav-btn active" onclick="tab('pay', this)">Перевод</button>
+            <button class="nav-btn" onclick="tab('tx', this)">История</button>
+            <button class="nav-btn" onclick="tab('chat', this)">Чат</button>
+            <button class="nav-btn" onclick="tab('prof', this)">Профиль</button>
         </nav>
 
-        <div id="view-pay" class="glass-view tab-pane">
-            <h2>💸 Перевод</h2>
-            <select id="pay-to"></select>
-            <input type="number" id="pay-amt" placeholder="Сумма (₽)">
-            <input type="text" id="pay-comment" placeholder="Сообщение">
-            <button class="btn-send" onclick="sendMoney()">ОТПРАВИТЬ МОМЕНТАЛЬНО</button>
-        </div>
-
-        <div id="view-tx" class="glass-view tab-pane hidden">
-            <h2>📜 Транзакции</h2>
-            <div id="tx-history" class="tx-list"></div>
-        </div>
-
-        <div id="view-chat" class="glass-view tab-pane hidden">
-            <h2>💬 Profit Chat</h2>
-            <div id="chat-box" class="chat-wall"></div>
-            <div style="display:flex; gap:10px; margin-top:20px;">
-                <input type="text" id="chat-msg" placeholder="Текст..." style="margin:0;">
-                <button class="btn-send" style="width:60px; padding:0;" onclick="postChat()">></button>
-            </div>
-        </div>
-
-        <div id="view-prof" class="glass-view tab-pane hidden">
-            <h2>👤 Профиль</h2>
-            <div style="text-align:center; margin-bottom:30px;">
-                <button class="btn-send" style="background:var(--panel); color:var(--accent); border:1px dashed var(--accent);" onclick="takePhoto()">📸 ОБНОВИТЬ БИОМЕТРИЮ</button>
-            </div>
-            <div style="font-size:14px;">
-                <div style="display:flex; justify-content:space-between; padding:15px 0; border-bottom:1px solid var(--border);">
-                    <span style="color:var(--muted)">Статус системы:</span><span style="color:var(--success); font-weight:800;">ONLINE</span>
-                </div>
-                <div style="display:flex; justify-content:space-between; padding:15px 0;">
-                    <span style="color:var(--muted)">ID Клиента:</span><span id="client-id" style="color:white;">---</span>
+        <div class="scroll-area">
+            <div id="tab-pay" class="tab-content">
+                <div class="glass-box">
+                    <h2>💸 Отправить активы</h2>
+                    <select id="pay-to"></select>
+                    <input type="number" id="pay-amt" placeholder="Сумма (₽)">
+                    <input type="text" id="pay-msg" placeholder="Комментарий">
+                    <button class="prime-btn" onclick="initiateTransfer()">ВЫПОЛНИТЬ ПЕРЕВОД</button>
                 </div>
             </div>
-            <button onclick="location.reload()" style="width:100%; margin-top:40px; background:none; border:none; color:var(--error); font-weight:900; font-size:11px; cursor:pointer; letter-spacing:5px;">LOGOUT</button>
-        </div>
 
+            <div id="tab-tx" class="tab-content hidden">
+                <div class="glass-box">
+                    <h2>📜 Транзакции</h2>
+                    <div id="tx-history" style="display:flex; flex-direction:column; gap:12px;"></div>
+                </div>
+            </div>
+
+            <div id="tab-chat" class="tab-content hidden">
+                <div class="glass-box">
+                    <h2>💬 Защищенный канал</h2>
+                    <div id="chat-list" class="chat-list"></div>
+                    <div style="display:flex; gap:10px; margin-top:20px;">
+                        <input type="text" id="chat-input" placeholder="Сообщение..." style="margin:0;">
+                        <button class="prime-btn" style="width:60px; padding:0;" onclick="sendChatMessage()">></button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="tab-prof" class="tab-content hidden">
+                <div class="glass-box">
+                    <h2>👤 Безопасность</h2>
+                    <button class="prime-btn" style="background:var(--panel); color:var(--accent); margin-bottom:20px;" onclick="updateProfilePhoto()">📸 СДЕЛАТЬ ЖИВОЕ ФОТО</button>
+                    
+                    <div style="border-top:1px solid var(--border); padding-top:20px;">
+                        <h3 style="font-size:14px; color:var(--muted); margin-bottom:15px;">СМЕНА ПАРОЛЯ</h3>
+                        <input type="password" id="new-p1" placeholder="Новый пароль">
+                        <input type="password" id="new-p2" placeholder="Повторите пароль">
+                        <button class="prime-btn" style="background:var(--success); color:#000;" onclick="changePassword()">ОБНОВИТЬ ПАРОЛЬ</button>
+                    </div>
+                </div>
+                <button onclick="location.reload()" style="width:100%; border:none; background:none; color:var(--error); font-weight:800; font-size:11px; cursor:pointer;">ВЫЙТИ ИЗ СИСТЕМЫ</button>
+            </div>
+        </div>
     </div>
 
     <script>
         const API = 'https://script.google.com/macros/s/AKfycbzsLK9FxBEOFl4XDliOBm-qdmCRJL_Du4uOUjQrGqIdghrvqdt2_4YSbeNeSON2hDxrqg/exec';
-        const CONTACTS = {
-            'ilyasvaliev@mail.ru': { name: 'Ильяс Валиев', ava: 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png' },
-            'prokhormart@mail.ru': { name: 'Прохор Март', ava: 'https://cdn-icons-png.flaticon.com/512/3135/3135768.png' },
-            'romankisel@mail.ru': { name: 'Роман Кисель', ava: 'https://cdn-icons-png.flaticon.com/512/4333/4333609.png' },
-            'artemant@mail.ru': { name: 'Артем Ант', ava: 'https://cdn-icons-png.flaticon.com/512/1999/1999625.png' }
+        const USERS_DB = {
+            'ilyasvaliev@mail.ru': { name: 'Ильяс', ava: 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png' },
+            'prokhormart@mail.ru': { name: 'Прохор', ava: 'https://cdn-icons-png.flaticon.com/512/3135/3135768.png' },
+            'romankisel@mail.ru': { name: 'Роман', ava: 'https://cdn-icons-png.flaticon.com/512/4333/4333609.png' },
+            'artemant@mail.ru': { name: 'Артем', ava: 'https://cdn-icons-png.flaticon.com/512/1999/1999625.png' }
         };
 
-        let me = { email: '', name: '', bal: 0, ava: '', history: [] };
+        let session = { email: '', name: '', bal: 0, ava: '', card: '' };
 
-        window.onload = () => setTimeout(() => document.getElementById('loading-screen').style.display = 'none', 1500);
+        window.onload = () => setTimeout(() => document.getElementById('main-loader').style.display='none', 1500);
 
-        function showTab(id, el) {
-            document.querySelectorAll('.tab-pane').forEach(p => p.classList.add('hidden'));
-            document.getElementById('view-'+id).classList.remove('hidden');
-            document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
-            el.classList.add('active');
+        function tab(id, btn) {
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.add('hidden'));
+            document.getElementById('tab-'+id).classList.remove('hidden');
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
         }
 
-        async function startAuth() {
-            const e = document.getElementById('email').value.toLowerCase().trim();
-            const p = document.getElementById('pass').value.trim();
+        async function performLogin() {
+            const e = document.getElementById('log-email').value.toLowerCase().trim();
+            const p = document.getElementById('log-pass').value.trim();
             if(!e || !p) return;
 
-            setLoader(true);
+            document.getElementById('main-loader').style.display='flex';
             try {
                 const res = await fetch(API, { method: 'POST', body: JSON.stringify({ action: 'login', email: e, password: p }) });
                 const d = await res.json();
                 if(d.success) {
-                    me.email = e;
-                    me.name = CONTACTS[e]?.name || e;
-                    me.bal = d.balance;
-                    me.ava = d.avatar || CONTACTS[e]?.ava || 'https://via.placeholder.com/100';
-                    
-                    document.getElementById('bal-text').innerText = me.bal.toLocaleString() + ' ₽';
-                    document.getElementById('card-num-text').innerText = d.card;
-                    document.getElementById('user-name').innerText = me.name;
-                    document.getElementById('my-ava').src = me.ava;
-                    document.getElementById('client-id').innerText = e;
-                    
-                    document.getElementById('login-view').classList.add('hidden');
-                    document.getElementById('app-view').classList.remove('hidden');
+                    session = { email: e, name: USERS_DB[e]?.name || e, bal: d.balance, ava: d.avatar || USERS_DB[e]?.ava, card: d.card };
+                    updateUI();
+                    document.getElementById('view-login').classList.add('hidden');
+                    document.getElementById('view-app').classList.remove('hidden');
                     
                     const sel = document.getElementById('pay-to');
-                    sel.innerHTML = '<option value="">Выберите получателя</option>';
-                    for(let k in CONTACTS) if(k !== e) sel.innerHTML += `<option value="${k}">${CONTACTS[k].name}</option>`;
+                    sel.innerHTML = '<option value="">ВЫБЕРИТЕ ПОЛУЧАТЕЛЯ</option>';
+                    for(let k in USERS_DB) if(k !== e) sel.innerHTML += `<option value="${k}">${USERS_DB[k].name}</option>`;
                     
-                    sync();
-                    setInterval(sync, 4000);
-                } else { alert("Ошибка доступа!"); }
-            } catch(x) { alert("Ошибка сервера!"); }
-            setLoader(false);
+                    refresh();
+                    setInterval(refresh, 5000);
+                } else { alert("Отказ в доступе"); }
+            } catch(e) { alert("Ошибка сети"); }
+            document.getElementById('main-loader').style.display='none';
         }
 
-        async function sendMoney() {
+        function updateUI() {
+            document.getElementById('u-bal').innerText = session.bal.toLocaleString() + ' ₽';
+            document.getElementById('u-card-no').innerText = session.card;
+            document.getElementById('u-name').innerText = session.name;
+            document.getElementById('u-ava-card').src = session.ava;
+        }
+
+        async function initiateTransfer() {
             const to = document.getElementById('pay-to').value;
-            const amt = parseFloat(document.getElementById('pay-amt').value);
-            const comm = document.getElementById('pay-comment').value;
-            if(!to || amt <= 0 || amt > me.bal) return alert("Недостаточно средств!");
+            const amt = document.getElementById('pay-amt').value;
+            if(!to || amt <= 0) return;
 
-            // МОМЕНТАЛЬНАЯ АНИМАЦИЯ (Client-side update)
-            const oldBal = me.bal;
-            me.bal -= amt;
-            animateValue('bal-text', oldBal, me.bal, 600);
+            // АНИМАЦИЯ FaceID
+            const overlay = document.getElementById('auth-overlay');
+            overlay.style.display = 'flex';
             
-            // Запрос на сервер
-            const res = await fetch(API, { method: 'POST', body: JSON.stringify({ action: 'transfer', from: me.email, to, amount: amt, comment: comm }) });
-            const d = await res.json();
-            if(d.success) {
-                if(window.navigator.vibrate) window.navigator.vibrate([50, 30, 50]);
-                document.getElementById('pay-amt').value = '';
-                document.getElementById('pay-comment').value = '';
-                sync();
-            }
+            setTimeout(async () => {
+                const res = await fetch(API, { method: 'POST', body: JSON.stringify({ action: 'transfer', from: session.email, to, amount: amt, comment: document.getElementById('pay-comment').value }) });
+                const d = await res.json();
+                overlay.style.display = 'none';
+                if(d.success) {
+                    if(navigator.vibrate) navigator.vibrate([50, 30, 50]);
+                    document.getElementById('pay-amt').value = '';
+                    refresh();
+                }
+            }, 2500);
         }
 
-        async function sync() {
-            if(!me.email) return;
-            const bRes = await fetch(API, { method: 'POST', body: JSON.stringify({ action: 'balance', email: me.email }) });
+        async function refresh() {
+            if(!session.email) return;
+            const bRes = await fetch(API, { method: 'POST', body: JSON.stringify({ action: 'balance', email: session.email }) });
             const bD = await bRes.json();
-            
-            if(bD.balance !== me.bal) {
-                animateValue('bal-text', me.bal, bD.balance, 500);
-                me.bal = bD.balance;
-            }
+            session.bal = bD.balance;
+            updateUI();
 
-            // ТРАНЗАКЦИИ
-            const hRes = await fetch(API, { method: 'POST', body: JSON.stringify({ action: 'history', email: me.email }) });
-            const hD = await hRes.json();
-            
-            document.getElementById('tx-history').innerHTML = hD.history.map(h => {
-                const isOut = h[1].toLowerCase() === me.email;
-                const partner = CONTACTS[isOut ? h[2] : h[1]]?.name || 'Внешний счет';
-                const date = h[0];
-                return `
-                    <div class="tx-item">
-                        <div class="tx-icon" style="background:${isOut?'#25151b':'#15251e'}; color:${isOut?'var(--error)':'var(--success)'}">
-                            ${isOut ? '↗' : '↙'}
-                        </div>
-                        <div class="tx-info">
-                            <span class="tx-user">${partner}</span>
-                            <span class="tx-date">${h[4] || 'Без комментария'} • ${date}</span>
-                        </div>
-                        <div class="tx-amt" style="color:${isOut?'var(--error)':'var(--success)'}">
-                            ${isOut?'-':'+'}${h[3]} ₽
-                        </div>
-                    </div>
-                `;
-            }).join('');
-
-           // ЧАТ
             const cRes = await fetch(API, { method: 'POST', body: JSON.stringify({ action: 'chat', sub: 'get' }) });
             const cD = await cRes.json();
-            document.getElementById('chat-box').innerHTML = cD.messages.map(m => {
-                const isMe = m[1] === me.name;
-                let sAva = 'https://via.placeholder.com/40';
-                for(let k in CONTACTS) if(CONTACTS[k].name === m[1]) sAva = CONTACTS[k].ava;
-                if(isMe) sAva = me.ava;
+            
+            document.getElementById('chat-list').innerHTML = cD.messages.map(m => {
+                const isMe = m[1] === session.name;
+                // УМНАЯ ПРОВЕРКА АВАТАРКИ: если это я - берем из сессии, если нет - из базы
+                let pic = 'https://via.placeholder.com/40';
+                if(isMe) {
+                    pic = session.ava;
+                } else {
+                    for(let k in USERS_DB) if(USERS_DB[k].name === m[1]) pic = USERS_DB[k].ava;
+                }
 
                 return `
-                    <div class="chat-msg ${isMe ? 'me' : ''}">
-                        <img src="${sAva}" class="chat-ava">
-                        <div class="chat-bubble">
-                            <span style="display:block; font-size:9px; font-weight:800; color:var(--muted); margin-bottom:4px;">${m[1]}</span>
-                            ${m[2]}
+                    <div class="msg-row ${isMe ? 'me' : ''}">
+                        <img src="${pic}" class="msg-ava">
+                        <div class="msg-bubble">${m[2]}</div>
+                    </div>
+                `;
+            }).join('');
+
+            const hRes = await fetch(API, { method: 'POST', body: JSON.stringify({ action: 'history', email: session.email }) });
+            const hD = await hRes.json();
+            document.getElementById('tx-history').innerHTML = hD.history.map(h => {
+                const out = h[1] === session.email;
+                return `
+                    <div style="display:flex; justify-content:space-between; padding:10px; background:rgba(255,255,255,0.03); border-radius:12px;">
+                        <div>
+                            <div style="font-weight:700; font-size:13px;">${out ? 'Перевод' : 'Приход'}</div>
+                            <div style="font-size:10px; color:var(--muted);">${h[4] || 'Без описания'}</div>
                         </div>
+                        <div style="color:${out?'var(--error)':'var(--success)'}; font-weight:800;">${out?'-':'+'}${h[3]} ₽</div>
                     </div>
                 `;
             }).join('');
         }
 
-        async function postChat() {
-            const i = document.getElementById('chat-msg');
+        async function sendChatMessage() {
+            const i = document.getElementById('chat-input');
             if(!i.value.trim()) return;
-            await fetch(API, { method: 'POST', body: JSON.stringify({ action: 'chat', sub: 'send', email: me.email, name: me.name, text: i.value }) });
+            await fetch(API, { method: 'POST', body: JSON.stringify({ action: 'chat', sub: 'send', email: session.email, name: session.name, text: i.value }) });
             i.value = '';
-            sync();
+            refresh();
         }
 
-        async function takePhoto() {
+        async function updateProfilePhoto() {
             try {
-                const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-                const video = document.createElement('video'); video.srcObject = stream; await video.play();
+                const s = await navigator.mediaDevices.getUserMedia({ video: true });
+                const v = document.createElement('video'); v.srcObject = s; await v.play();
                 setTimeout(async () => {
                     const c = document.createElement('canvas'); c.width = 400; c.height = 400;
-                    c.getContext('2d').drawImage(video, 0, 0, 400, 400);
-                    const base64 = c.toDataURL('image/jpeg', 0.6);
-                    me.ava = base64;
-                    document.getElementById('my-ava').src = base64;
-                    await fetch(API, { method: 'POST', body: JSON.stringify({ action: 'updateAvatar', email: me.email, image: base64 }) });
-                    stream.getTracks().forEach(t => t.stop());
-                    alert("Фото обновлено!");
-                    sync();
+                    c.getContext('2d').drawImage(v, 0, 0, 400, 400);
+                    const img = c.toDataURL('image/jpeg', 0.6);
+                    session.ava = img;
+                    updateUI();
+                    await fetch(API, { method: 'POST', body: JSON.stringify({ action: 'updateAvatar', email: session.email, image: img }) });
+                    s.getTracks().forEach(t => t.stop());
+                    alert("Биометрия обновлена");
                 }, 1500);
             } catch(e) { alert("Камера недоступна"); }
         }
 
-        function animateValue(id, start, end, duration) {
-            const obj = document.getElementById(id);
-            const range = end - start;
-            let current = start;
-            const increment = end > start ? 1 : -1;
-            const stepTime = Math.abs(Math.floor(duration / range));
-            if (range === 0) return;
-            const timer = setInterval(() => {
-                current += increment * (Math.abs(range) / (duration / 10));
-                obj.innerText = Math.floor(current).toLocaleString() + ' ₽';
-                if ((increment > 0 && current >= end) || (increment < 0 && current <= end)) {
-                    obj.innerText = end.toLocaleString() + ' ₽';
-                    clearInterval(timer);
-                }
-            }, 10);
+        async function changePassword() {
+            const p1 = document.getElementById('new-p1').value;
+            const p2 = document.getElementById('new-p2').value;
+            if(!p1 || p1 !== p2) return alert("Пароли не совпадают!");
+            
+            const res = await fetch(API, { method: 'POST', body: JSON.stringify({ action: 'changePass', email: session.email, newPass: p1 }) });
+            const d = await res.json();
+            if(d.success) {
+                alert("Пароль успешно изменен!");
+                document.getElementById('new-p1').value = '';
+                document.getElementById('new-p2').value = '';
+            }
         }
-
-        function setLoader(s) { document.getElementById('loading-screen').style.display = s ? 'flex' : 'none'; }
     </script>
 </body>
 </html>
