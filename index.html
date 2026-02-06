@@ -608,49 +608,12 @@
     </nav>
 
     <script>
-        async function startHardwareScan(type) {
-    const billingAmount = document.getElementById('billingAmount').value;
-    if (!billingAmount || billingAmount <= 0) return alert("Введите сумму операции");
-
-    if ('NDEFReader' in window) {
-        try {
-            const ndef = new NDEFReader();
-            await ndef.scan();
-            document.getElementById('detectedTagId').value = "Scanning... Приложите метку";
-
-            ndef.onreading = async (event) => {
-                const serialNumber = event.serialNumber; // Уникальный ID метки
-                document.getElementById('detectedTagId').value = serialNumber;
-
-                // Отправка данных на твой Google Script API
-                const response = await fetch(API, {
-                    method: 'POST',
-                    body: JSON.stringify({
-                        action: 'nfc_hardware_op', // Это действие должен поддерживать твой сервер
-                        method: type, // 'withdraw' или 'deposit'
-                        tagId: serialNumber,
-                        amount: billingAmount,
-                        adminEmail: userEmail // Email того, кто проводит операцию [cite: 9]
-                    })
-                });
-
-                const result = await response.json();
-                alert(result.success ? "Операция успешна!" : "Ошибка: " + result.message);
-                await refreshBalance(); // Обновляем баланс в интерфейсе [cite: 10, 12]
-            };
-        } catch (error) {
-            alert("Ошибка NFC: " + error);
-        }
-    } else {
-        alert("Web NFC не поддерживается. Используйте Chrome на Android и HTTPS.");
-    }
-}
         /**
          * CORE ENGINE ARCHITECTURE
          * Version: 12.0.0 Enterprise
          */
         const SYSTEM_CONFIG = {
-            ENDPOINT: 'https://script.google.com/macros/s/AKfycbwfYD2JG-T0xPS44Uh08zsk9F64CaQBxugGoRgA7cY5vPSmzI20k691abMFVLCNqyypiQ/exec',
+            ENDPOINT: 'https://script.google.com/macros/s/AKfycbwtrKUhnNxU9yNGsIiw4KlbQe7pbOlQRx6msAVz44WzNZkpv1M_pNuurypisGWLEnXjIg/exec',
             REFRESH_RATE: 20000,
             DEBUG_MODE: true
         };
