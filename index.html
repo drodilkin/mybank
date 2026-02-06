@@ -3,454 +3,345 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>PROFIT BANK | PREMIUM EDITION</title>
+    <title>PROFIT BANK | NFC PAY</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@300;400;600;800&family=JetBrains+Mono&display=swap" rel="stylesheet">
     
     <style>
         :root {
             --accent: #ffd600;
-            --accent-dim: #bfa100;
-            --bg: #050508;
-            --card: #11111a;
-            --panel: #181824;
+            --accent-glow: rgba(255, 214, 0, 0.5);
+            --bg: #050507;
+            --card: #0f0f18;
+            --panel: #161622;
             --text: #ffffff;
-            --muted: #8e8e9d;
-            --success: #00ffa3;
-            --error: #ff2d60;
-            --glass: rgba(255, 255, 255, 0.03);
+            --muted: #787885;
+            --success: #00ff9d;
+            --error: #ff3366;
             --border: rgba(255, 255, 255, 0.08);
-            --shadow: 0 20px 50px rgba(0,0,0,0.8);
         }
 
-        /* Глобальные стили */
         * { box-sizing: border-box; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
         body { 
-            margin: 0; background: var(--bg); color: var(--text); overflow-x: hidden; 
-            background-image: radial-gradient(circle at 50% -20%, #1e1e2e 0%, #050508 100%);
+            margin: 0; background: var(--bg); color: var(--text); overflow-x: hidden;
+            background-image: radial-gradient(circle at 50% 0%, #1a1a2e 0%, #050507 100%);
             min-height: 100vh;
         }
 
         .hidden { display: none !important; }
 
-        /* --- АНИМАЦИИ --- */
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes rotateLoader { to { transform: rotate(360deg); } }
-        @keyframes pulse { 0% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.05); opacity: 0.7; } 100% { transform: scale(1); opacity: 1; } }
-        @keyframes slideRight { from { transform: translateX(-20px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
-        @keyframes gradientFlow { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+        /* --- ЭФФЕКТЫ --- */
+        @keyframes radar-pulse { 0% { transform: scale(0.8); opacity: 1; } 100% { transform: scale(2.5); opacity: 0; } }
+        @keyframes card-float { 0%, 100% { transform: translateY(0) rotateX(5deg); } 50% { transform: translateY(-15px) rotateX(0deg); } }
+        @keyframes scan-glow { 0% { box-shadow: 0 0 5px var(--accent); } 50% { box-shadow: 0 0 30px var(--accent); } 100% { box-shadow: 0 0 5px var(--accent); } }
 
-        /* --- СКАНЕР ПРИ ПЕРЕВОДЕ --- */
-        #procOverlay {
-            position: fixed; inset: 0; background: rgba(0,0,0,0.98); z-index: 10000;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            opacity: 0; pointer-events: none; transition: 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        .container { width: 100%; max-width: 450px; margin: 0 auto; padding: 20px 15px; }
+
+        /* --- КАРТА --- */
+        .card-scene { perspective: 1200px; height: 230px; margin-bottom: 35px; }
+        .card-body { 
+            position: relative; width: 100%; height: 100%; transform-style: preserve-3d; 
+            transition: 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275); cursor: pointer;
+            animation: card-float 5s ease-in-out infinite;
         }
-        #procOverlay.active { opacity: 1; pointer-events: auto; }
+        .card-body.flipped { transform: rotateY(180deg); }
         
-        .loader-ring {
-            width: 150px; height: 150px; border-radius: 50%;
-            border: 2px solid var(--glass); border-top: 2px solid var(--accent);
-            animation: rotateLoader 1s linear infinite; position: relative;
-        }
-        .loader-ring::before {
-            content: "PROFIT"; position: absolute; top: 50%; left: 50%;
-            transform: translate(-50%, -50%); font-family: 'Orbitron'; font-weight: 900; color: var(--accent);
-        }
-
-        /* --- ИНТЕРФЕЙС --- */
-        .container { width: 100%; max-width: 450px; margin: 0 auto; padding: 25px 15px; animation: fadeIn 0.8s ease; }
-
-        /* КАРТА */
-        .card-container { perspective: 1200px; height: 240px; margin-bottom: 35px; }
-        .card-main {
-            width: 100%; height: 100%; position: relative;
-            transform-style: preserve-3d; transition: transform 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
-        }
-        .card-main.is-flipped { transform: rotateY(180deg); }
-
-        .card-front, .card-back {
-            position: absolute; inset: 0; border-radius: 32px; padding: 30px;
+        .card-side {
+            position: absolute; inset: 0; border-radius: 30px; padding: 25px;
             backface-visibility: hidden; -webkit-backface-visibility: hidden;
-            border: 1px solid var(--border); box-shadow: var(--shadow);
-            background: linear-gradient(135deg, #1c1c2b 0%, #0a0a0f 100%);
+            border: 1px solid var(--border);
+            background: linear-gradient(135deg, #1c1c2e 0%, #050507 100%);
             display: flex; flex-direction: column; justify-content: space-between;
         }
+        .card-side.back { transform: rotateY(180deg); text-align: center; justify-content: center; }
 
-        .card-back { transform: rotateY(180deg); background: #0c0c12; align-items: center; justify-content: center; }
+        .balance-label { font-size: 10px; text-transform: uppercase; letter-spacing: 2px; color: var(--muted); }
+        .balance-amount { font-size: 38px; font-weight: 900; margin: 5px 0; font-family: 'Orbitron'; }
 
-        .chip { width: 45px; height: 35px; background: linear-gradient(135deg, #ffd600 0%, #9c8400 100%); border-radius: 8px; margin-bottom: 10px; opacity: 0.8; }
-        .balance-box { cursor: pointer; }
-        .balance-title { font-size: 10px; text-transform: uppercase; letter-spacing: 2px; color: var(--muted); margin-bottom: 5px; }
-        .balance-num { font-size: 40px; font-weight: 900; letter-spacing: -1px; }
+        /* --- ТАБЫ --- */
+        .nav-bar { display: flex; background: var(--card); padding: 8px; border-radius: 22px; border: 1px solid var(--border); margin-bottom: 25px; }
+        .nav-item { flex: 1; padding: 14px; border: none; background: none; color: var(--muted); font-size: 11px; font-weight: 800; border-radius: 16px; cursor: pointer; transition: 0.3s; }
+        .nav-item.active { background: var(--accent); color: #000; box-shadow: 0 8px 20px var(--accent-glow); }
 
-        .ava-frame {
-            width: 75px; height: 75px; border-radius: 50%; border: 3px solid var(--accent);
-            padding: 3px; background: var(--bg); box-shadow: 0 0 20px var(--accent-glow);
-        }
-        .ava-frame img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
+        /* --- СЕКЦИИ --- */
+        .glass-panel { background: var(--card); border-radius: 32px; padding: 25px; border: 1px solid var(--border); margin-bottom: 20px; }
+        h2 { font-size: 20px; font-weight: 900; margin: 0 0 20px; color: var(--accent); }
 
-        /* НАВИГАЦИЯ */
-        .dock {
-            display: flex; gap: 8px; background: var(--card); padding: 8px;
-            border-radius: 24px; border: 1px solid var(--border); margin-bottom: 30px;
-        }
-        .dock-item {
-            flex: 1; padding: 14px 5px; border: none; background: none;
-            color: var(--muted); font-size: 10px; font-weight: 800;
-            cursor: pointer; border-radius: 18px; transition: 0.3s;
-            text-transform: uppercase; letter-spacing: 1px;
-        }
-        .dock-item.active { background: var(--accent); color: #000; box-shadow: 0 10px 20px rgba(255,214,0,0.2); }
-
-        /* СЕКЦИИ */
-        .content-section {
-            background: var(--card); border-radius: 35px; padding: 30px;
-            border: 1px solid var(--border); margin-bottom: 25px;
-            animation: fadeIn 0.5s ease-out; box-shadow: var(--shadow);
-        }
-        h2 { font-size: 22px; font-weight: 900; margin: 0 0 25px; color: var(--accent); display: flex; align-items: center; gap: 10px; }
-
-        /* ПОЛЯ ВВОДА */
-        .input-group { margin-bottom: 20px; }
-        .input-group label { display: block; font-size: 10px; font-weight: 800; color: var(--muted); margin: 0 0 8px 15px; text-transform: uppercase; }
-        
         input, select {
-            width: 100%; padding: 20px 25px; background: var(--panel);
-            border: 1px solid var(--border); border-radius: 22px;
-            color: #fff; font-size: 16px; font-weight: 600; transition: 0.3s;
+            width: 100%; padding: 18px; background: var(--panel); border: 1px solid var(--border);
+            border-radius: 18px; color: #fff; font-size: 15px; margin-bottom: 15px;
         }
-        input:focus { border-color: var(--accent); background: #20202e; outline: none; box-shadow: 0 0 15px var(--accent-glow); }
 
         .btn-action {
-            width: 100%; padding: 22px; background: var(--accent);
-            border: none; border-radius: 22px; font-weight: 900;
-            font-size: 16px; color: #000; cursor: pointer;
-            transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            text-transform: uppercase; letter-spacing: 1px;
+            width: 100%; padding: 18px; background: var(--accent); border: none; border-radius: 18px;
+            font-weight: 900; font-size: 16px; color: #000; cursor: pointer; transition: 0.2s;
+            text-transform: uppercase;
         }
-        .btn-action:active { transform: scale(0.95); }
+        .btn-action:active { transform: scale(0.96); }
 
-        /* ЧАТ */
-        #chatView { height: 400px; overflow-y: auto; display: flex; flex-direction: column-reverse; gap: 15px; padding-right: 10px; }
-        .bubble { display: flex; gap: 12px; max-width: 85%; align-items: flex-end; animation: slideRight 0.3s ease; }
-        .bubble.me { align-self: flex-end; flex-direction: row-reverse; text-align: right; }
-        .bubble-msg { background: var(--panel); padding: 14px 18px; border-radius: 22px 22px 22px 5px; }
-        .bubble.me .bubble-msg { background: var(--accent); color: #000; border-radius: 22px 22px 5px 22px; font-weight: 500; }
-        .bubble-info { font-size: 10px; font-weight: 800; opacity: 0.5; margin-bottom: 4px; display: block; text-transform: uppercase; }
-
-        /* ИСТОРИЯ */
-        .hist-card {
-            display: flex; align-items: center; gap: 15px; padding: 20px;
-            background: rgba(255,255,255,0.02); border-radius: 25px; margin-bottom: 12px;
-            border-left: 4px solid transparent; transition: 0.3s;
+        /* --- NFC ИНТЕРФЕЙС --- */
+        .nfc-scanner {
+            height: 280px; background: #0a0a0f; border-radius: 25px; 
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            position: relative; overflow: hidden; border: 1px dashed var(--accent);
         }
-        .hist-card:hover { background: rgba(255,255,255,0.05); transform: translateX(5px); }
-        .icon-box { width: 45px; height: 45px; border-radius: 15px; display: flex; align-items: center; justify-content: center; font-size: 20px; }
+        .radar-wave {
+            position: absolute; width: 80px; height: 80px; border: 2px solid var(--accent);
+            border-radius: 50%; animation: radar-pulse 2s infinite; opacity: 0;
+        }
+        .nfc-ready .radar-wave { opacity: 1; }
 
-        /* ПРОФИЛЬ И АНАЛИТИКА */
-        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px; }
-        .stat-item { background: var(--panel); padding: 20px; border-radius: 25px; text-align: center; border: 1px solid var(--border); }
-        .stat-val { display: block; font-size: 20px; font-weight: 900; color: var(--accent); }
-        .stat-label { font-size: 10px; color: var(--muted); text-transform: uppercase; margin-top: 5px; }
-
-        .progress-container { margin: 25px 0; }
-        .progress-bar { height: 10px; background: #222; border-radius: 5px; overflow: hidden; margin-top: 10px; }
-        .progress-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--success)); width: 75%; box-shadow: 0 0 15px var(--accent-glow); }
-
-        /* ЭКРАН ВХОДА */
-        #loginScreen { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 25px; }
-        .login-box { 
-            background: var(--card); padding: 45px 35px; border-radius: 40px; 
-            width: 100%; max-width: 400px; text-align: center; border: 1px solid var(--border);
-            box-shadow: 0 40px 100px rgba(0,0,0,0.6);
+        /* --- СПИСОК ИСТОРИИ --- */
+        .hist-row {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 15px; background: rgba(255,255,255,0.03); border-radius: 20px; margin-bottom: 10px;
         }
 
+        /* --- OVERLAY --- */
+        #loader {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 10000;
+            display: none; flex-direction: column; align-items: center; justify-content: center;
+        }
     </style>
 </head>
 <body>
 
-    <div id="procOverlay">
-        <div class="loader-ring"></div>
-        <h2 id="procTitle" style="margin-top: 30px; letter-spacing: 3px;">АВТОРИЗАЦИЯ...</h2>
-        <p style="color: var(--muted); font-size: 12px; font-family: 'JetBrains Mono';">Блокчейн-верификация транзакции</p>
+    <div id="loader">
+        <div style="width:70px; height:70px; border:4px solid var(--accent); border-top-color:transparent; border-radius:50%; animation: spin 0.8s linear infinite;"></div>
+        <h3 id="loaderMsg" style="margin-top:20px; letter-spacing:3px;">ОБРАБОТКА...</h3>
     </div>
 
-    <div id="loginScreen">
-        <div class="login-box">
-            <div style="font-family:'Orbitron'; font-size:35px; font-weight:900; color:var(--accent); margin-bottom:10px;">PROFIT</div>
-            <p style="color:var(--muted); font-size:12px; letter-spacing:3px; margin-bottom:40px;">PRIVATE BANKING SYSTEM</p>
-            
-            <div class="input-group">
-                <input type="email" id="logEmail" placeholder="ID Пользователя (Email)">
-            </div>
-            <div class="input-group">
-                <input type="password" id="logPass" placeholder="Мастер-ключ">
-            </div>
-            <button class="btn-action" onclick="handleLogin()">ВОЙТИ В СИСТЕМУ</button>
-            <div id="loginError" style="color:var(--error); font-size:12px; margin-top:20px; font-weight:700; display:none;">ОШИБКА ДОСТУПА: ПРОВЕРЬТЕ ДАННЫЕ</div>
+    <div id="loginView" style="min-height:100vh; display:flex; align-items:center; justify-content:center; padding:20px;">
+        <div class="glass-panel" style="width:100%; max-width:380px; text-align:center;">
+            <h1 style="font-family:'Orbitron'; color:var(--accent); font-size:32px; margin-bottom:5px;">PROFIT</h1>
+            <p style="color:var(--muted); font-size:10px; letter-spacing:5px; margin-bottom:35px;">NFC PAY TERMINAL</p>
+            <input type="email" id="email" placeholder="Email">
+            <input type="password" id="pass" placeholder="Пароль">
+            <button class="btn-action" onclick="login()">АВТОРИЗАЦИЯ</button>
         </div>
     </div>
 
-    <div id="mainApp" class="container hidden">
+    <div id="appView" class="container hidden">
         
-        <div class="card-container">
-            <div class="card-main" id="cardElement" onclick="this.classList.toggle('is-flipped')">
-                <div class="card-front">
-                    <div style="display:flex; justify-content:space-between; align-items:flex-start;">
-                        <div class="chip"></div>
-                        <div class="ava-frame"><img id="userAva" src=""></div>
+        <div class="card-scene">
+            <div class="card-body" id="mainCard" onclick="this.classList.toggle('flipped')">
+                <div class="card-side">
+                    <div style="display:flex; justify-content:space-between;">
+                        <span style="color:var(--accent); font-weight:900; font-size:12px;">INFINITY</span>
+                        <img id="uAva" src="" style="width:55px; height:55px; border-radius:50%; border:2px solid var(--accent); background:#000;">
                     </div>
-                    <div class="balance-box" onclick="toggleBalance(event)">
-                        <div class="balance-title">Текущий баланс</div>
-                        <div class="balance-num" id="userBalDisplay">0.00 ₽</div>
-                        <div id="userNameDisplay" style="margin-top:15px; font-weight:800; font-size:15px; text-transform:uppercase; letter-spacing:1px;">...</div>
+                    <div>
+                        <div class="balance-label">Доступно сейчас</div>
+                        <div class="balance-amount" id="uBal">0.00 ₽</div>
+                        <div id="uName" style="font-weight:700; text-transform:uppercase; font-size:14px;">...</div>
                     </div>
                 </div>
-                <div class="card-back">
-                    <div class="balance-title">Виртуальные реквизиты</div>
-                    <div id="userCardDisplay" style="font-family:'JetBrains Mono'; font-size:20px; letter-spacing:3px; color:#fff; margin:20px 0;">0000 0000 0000 0000</div>
-                    <div style="font-size:10px; color:var(--accent); font-weight:800; letter-spacing:4px;">PROFIT PLATINUM</div>
+                <div class="card-side back">
+                    <div class="balance-label">СЧЕТ ДЛЯ ПЕРЕВОДОВ</div>
+                    <div id="uCard" style="font-family:'JetBrains Mono'; font-size:18px; margin:15px 0;">0000 0000 0000 0000</div>
+                    <div style="color:var(--accent); font-size:10px; letter-spacing:4px;">NFC ACTIVE</div>
                 </div>
             </div>
         </div>
 
-        <nav class="dock">
-            <button class="dock-item active" onclick="switchTab('pay', this)">Перевод</button>
-            <button class="dock-item" onclick="switchTab('chat', this)">Чат</button>
-            <button class="dock-item" onclick="switchTab('hist', this)">История</button>
-            <button class="dock-item" onclick="switchTab('prof', this)">Профиль</button>
+        <nav class="nav-bar">
+            <button class="nav-item active" onclick="tab('pay', this)">ПЛАТЕЖ</button>
+            <button class="nav-item" onclick="tab('nfc', this)">NFC PAY</button>
+            <button class="nav-item" onclick="tab('chat', this)">ЧАТ</button>
+            <button class="nav-item" onclick="tab('prof', this)">ПРОФИЛЬ</button>
         </nav>
 
-        <div id="tab-pay" class="content-section tab-pane">
-            <h2>💸 Перевести деньги</h2>
-            <div class="input-group">
-                <label>Получатель из базы</label>
-                <select id="payTarget"></select>
-            </div>
-            <div class="input-group">
-                <label>Сумма отправления</label>
-                <input type="number" id="payAmount" placeholder="0.00 ₽">
-            </div>
-            <div class="input-group">
-                <label>Назначение (необязательно)</label>
-                <input type="text" id="payNote" placeholder="Напр: За кофе">
-            </div>
-            <button class="btn-action" onclick="executePayment()">ПОДПИСАТЬ ТРАНЗАКЦИЮ</button>
+        <div id="tab-pay" class="glass-panel tab-content">
+            <h2>Обычный перевод</h2>
+            <select id="toWho"></select>
+            <input type="number" id="sum" placeholder="Сумма (₽)">
+            <input type="text" id="msg" placeholder="Комментарий">
+            <button class="btn-action" onclick="transfer()">ОТПРАВИТЬ</button>
         </div>
 
-        <div id="tab-chat" class="content-section tab-pane hidden">
-            <h2>💬 Чат</h2>
-            <div id="chatView"></div>
-            <div style="display:flex; gap:12px; margin-top:20px;">
-                <input type="text" id="chatInput" placeholder="Ваше сообщение..." style="margin-bottom:0;">
-                <button class="btn-action" style="width:70px; padding:0;" onclick="sendChatMessage()">></button>
+        <div id="tab-nfc" class="glass-panel tab-content hidden">
+            <h2>NFC Транзакция</h2>
+            <div class="nfc-scanner nfc-ready">
+                <div class="radar-wave" style="animation-delay:0s"></div>
+                <div class="radar-wave" style="animation-delay:0.6s"></div>
+                <div class="radar-wave" style="animation-delay:1.2s"></div>
+                <div style="font-size:50px; z-index:5;">📱</div>
+                <p id="nfcInfo" style="margin-top:20px; font-size:13px; color:var(--muted); text-align:center; padding:0 20px;">Приложите привязанную метку для оплаты</p>
             </div>
-        </div>
-
-        <div id="tab-hist" class="content-section tab-pane hidden">
-            <h2>📜 История операций</h2>
-            <div id="histContainer"></div>
-        </div>
-
-        <div id="tab-prof" class="content-section tab-pane hidden">
-            <h2>👤 Профиль</h2>
             
-            <button class="btn-action" style="background:var(--panel); color:var(--accent); border:1px solid var(--accent); margin-bottom:25px;" onclick="updatePhoto()">ОБНОВИТЬ БИОМЕТРИЮ (ФОТО)</button>
-
-            <div class="progress-container">
-                <div style="display:flex; justify-content:space-between; font-size:11px;">
-                    <span style="color:var(--muted)">Дневной лимит</span>
-                    <span style="color:var(--accent)">75% израсходовано</span>
+            <div style="margin-top:20px;">
+                <p style="font-size:11px; color:var(--muted); margin-bottom:10px;">БЫСТРЫЙ ПЛАТЕЖ ПРИ КАСАНИИ:</p>
+                <div style="display:flex; gap:10px;">
+                    <select id="nfcTarget" style="margin:0; flex:1;"></select>
+                    <input type="number" id="nfcSum" placeholder="Сумма" style="margin:0; width:100px;">
                 </div>
-                <div class="progress-bar"><div class="progress-fill"></div></div>
+                <button class="btn-action" style="margin-top:15px; background:var(--panel); color:var(--accent); border:1px solid var(--accent);" onclick="startNfcLogic()">АКТИВИРОВАТЬ ДАТЧИК</button>
             </div>
+        </div>
 
-            <div class="stats-grid">
-                <div class="stat-item">
-                    <span class="stat-val">VIP</span>
-                    <span class="stat-label">Статус</span>
+        <div id="tab-chat" class="glass-panel tab-content hidden">
+            <h2>Чат</h2>
+            <div id="chatBox" style="height:300px; overflow-y:auto; display:flex; flex-direction:column-reverse; gap:10px;"></div>
+            <div style="display:flex; gap:10px; margin-top:15px;">
+                <input type="text" id="cInp" placeholder="Сообщение..." style="margin:0;">
+                <button class="btn-action" style="width:60px;" onclick="send()">></button>
+            </div>
+        </div>
+
+        <div id="tab-prof" class="glass-panel tab-content hidden">
+            <h2>Профиль</h2>
+            <button class="btn-action" style="background:var(--panel); color:var(--accent); margin-bottom:20px;" onclick="takePhoto()">📸 ОБНОВИТЬ ФОТО</button>
+            <div style="font-size:13px;">
+                <div style="display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px solid var(--border);">
+                    <span style="color:var(--muted);">ID Метки:</span><span id="nfcTagId" style="color:var(--success);">НЕ ПРИВЯЗАНА</span>
                 </div>
-                <div class="stat-item">
-                    <span class="stat-val" id="totalTrans">0</span>
-                    <span class="stat-label">Операций</span>
+                <div style="display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px solid var(--border);">
+                    <span style="color:var(--muted);">Лимиты:</span><span style="color:var(--success);">UNLIMITED</span>
                 </div>
             </div>
+            <button onclick="location.reload()" style="width:100%; margin-top:30px; background:none; border:none; color:var(--error); font-weight:800; cursor:pointer;">ВЫХОД</button>
+        </div>
 
-            <div style="margin-top:30px;">
-                <div class="input-group">
-                    <label>Безопасность</label>
-                    <input type="password" id="newPassKey" placeholder="Сменить мастер-ключ">
-                </div>
-                <button class="btn-action" style="background:var(--panel); font-size:12px; height:50px; padding:0;" onclick="changeKey()">СОХРАНИТЬ КЛЮЧ</button>
-            </div>
-
-            <button onclick="location.reload()" style="width:100%; margin-top:40px; background:none; border:none; color:var(--error); font-weight:900; cursor:pointer; font-size:12px; letter-spacing:2px;">ВЫЙТИ ИЗ СИСТЕМЫ</button>
+        <div class="glass-panel">
+            <h2 style="font-size:15px; color:var(--muted);">Последние действия</h2>
+            <div id="hList"></div>
         </div>
 
     </div>
 
     <script>
-        // --- КОНФИГУРАЦИЯ ---
-        const API_URL = 'https://script.google.com/macros/s/AKfycbzsLK9FxBEOFl4XDliOBm-qdmCRJL_Du4uOUjQrGqIdghrvqdt2_4YSbeNeSON2hDxrqg/exec';
-        
-        let userData = { email: '', name: '', balance: 0, isPrivate: false };
-        const userDb = {
+        const API = 'https://script.google.com/macros/s/AKfycbzsLK9FxBEOFl4XDliOBm-qdmCRJL_Du4uOUjQrGqIdghrvqdt2_4YSbeNeSON2hDxrqg/exec';
+        let user = { email: '', name: '', tag: null };
+        const contacts = {
             'ilyasvaliev@mail.ru': 'Ильяс Валиев',
             'prokhormart@mail.ru': 'Прохор Март',
             'romankisel@mail.ru': 'Роман Кисель',
             'artemant@mail.ru': 'Артем Ант'
         };
 
-        // --- ЛОГИКА ПЕРЕКЛЮЧЕНИЯ ---
-        function switchTab(id, btn) {
-            document.querySelectorAll('.tab-pane').forEach(p => p.classList.add('hidden'));
-            document.getElementById('tab-' + id).classList.remove('hidden');
-            document.querySelectorAll('.dock-item').forEach(d => d.classList.remove('active'));
-            btn.classList.add('active');
+        function tab(id, el) {
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
+            document.getElementById('tab-'+id).classList.remove('hidden');
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            el.classList.add('active');
         }
 
-        function toggleBalance(e) {
-            e.stopPropagation();
-            userData.isPrivate = !userData.isPrivate;
-            updateBalanceDisplay();
+        async function login() {
+            const e = document.getElementById('email').value.toLowerCase().trim();
+            const p = document.getElementById('pass').value.trim();
+            if(!e || !p) return;
+
+            toggleLoad(true, "СИНХРОНИЗАЦИЯ...");
+            try {
+                const res = await fetch(API, { method: 'POST', body: JSON.stringify({ action: 'login', email: e, password: p }) });
+                const d = await res.json();
+                if(d.success) {
+                    user = { email: e, name: contacts[e] || e };
+                    document.getElementById('uBal').innerText = d.balance.toLocaleString() + ' ₽';
+                    document.getElementById('uCard').innerText = d.card;
+                    document.getElementById('uName').innerText = user.name;
+                    document.getElementById('uAva').src = d.avatar || 'https://via.placeholder.com/100';
+                    
+                    document.getElementById('loginView').classList.add('hidden');
+                    document.getElementById('appView').classList.remove('hidden');
+                    
+                    initLists();
+                    sync();
+                    setInterval(sync, 4000);
+                } else { alert("Ошибка входа"); }
+            } catch(e) { alert("Сервер недоступен"); }
+            toggleLoad(false);
         }
 
-        function updateBalanceDisplay() {
-            const el = document.getElementById('userBalDisplay');
-            el.innerText = userData.isPrivate ? '•••• ₽' : (userData.balance).toLocaleString() + ' ₽';
+        function initLists() {
+            const sels = [document.getElementById('toWho'), document.getElementById('nfcTarget')];
+            sels.forEach(s => {
+                s.innerHTML = '<option value="">Выберите контакт</option>';
+                for(let k in contacts) if(k !== user.email) s.innerHTML += `<option value="${k}">${contacts[k]}</option>`;
+            });
         }
 
-        // --- СИСТЕМА ВХОДА ---
-        async function handleLogin() {
-            const email = document.getElementById('logEmail').value.trim().toLowerCase();
-            const pass = document.getElementById('logPass').value.trim();
-            if(!email || !pass) return;
+        async function transfer() {
+            const to = document.getElementById('toWho').value;
+            const am = document.getElementById('sum').value;
+            if(!to || am <= 0) return alert("Заполните данные");
+
+            toggleLoad(true, "ВЫПОЛНЕНИЕ...");
+            const res = await fetch(API, { method: 'POST', body: JSON.stringify({ action: 'transfer', from: user.email, to, amount: am, comment: document.getElementById('msg').value }) });
+            const d = await res.json();
+            if(d.success) {
+                document.getElementById('sum').value = '';
+                sync();
+                toggleLoad(true, "УСПЕШНО ✅");
+                setTimeout(() => toggleLoad(false), 1000);
+            } else { alert("Ошибка"); toggleLoad(false); }
+        }
+
+        async function sync() {
+            if(!user.email) return;
+            const bRes = await fetch(API, { method: 'POST', body: JSON.stringify({ action: 'balance', email: user.email }) });
+            const bD = await bRes.json();
+            document.getElementById('uBal').innerText = Number(bD.balance).toLocaleString() + ' ₽';
+
+            const hRes = await fetch(API, { method: 'POST', body: JSON.stringify({ action: 'history', email: user.email }) });
+            const hD = await hRes.json();
+            document.getElementById('hList').innerHTML = hD.history.slice(0, 3).map(h => {
+                const isOut = h[1].toLowerCase() === user.email;
+                return `<div class="hist-row">
+                    <span style="font-size:12px;">${contacts[isOut?h[2]:h[1]] || 'User'}</span>
+                    <span style="color:${isOut? 'var(--error)':'var(--success)'}; font-weight:800;">${isOut?'-':'+'}${h[3]} ₽</span>
+                </div>`;
+            }).join('');
+
+            const cRes = await fetch(API, { method: 'POST', body: JSON.stringify({ action: 'chat', sub: 'get' }) });
+            const cD = await cRes.json();
+            document.getElementById('chatBox').innerHTML = cD.messages.map(m => `
+                <div style="align-self:${m[1]===user.name?'flex-end':'flex-start'}; background:${m[1]===user.name? 'var(--accent)':'var(--panel)'}; color:${m[1]===user.name?'#000':'#fff'}; padding:10px; border-radius:15px; max-width:80%; font-size:14px;">
+                    <small style="display:block; font-size:9px; opacity:0.6;">${m[1]}</small>${m[2]}
+                </div>
+            `).join('');
+        }
+
+        // --- NFC PAY LOGIC ---
+        async function startNfcLogic() {
+            const info = document.getElementById('nfcInfo');
+            const target = document.getElementById('nfcTarget').value;
+            const sum = document.getElementById('nfcSum').value;
+
+            if (!('NDEFReader' in window)) {
+                info.innerText = "NFC не поддерживается вашим браузером/устройством";
+                return;
+            }
 
             try {
-                const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'login', email, password: pass }) });
-                const d = await res.json();
+                const ndef = new NDEFReader();
+                await ndef.scan();
+                info.innerText = "📡 Датчик активен. Приложите метку...";
+                info.style.color = "var(--accent)";
 
-                if(d.success) {
-                    userData = { email, name: userDb[email] || email, balance: d.balance };
+                ndef.onreading = async (event) => {
+                    const tagId = event.serialNumber;
+                    document.getElementById('nfcTagId').innerText = tagId;
                     
-                    document.getElementById('userBalDisplay').innerText = d.balance.toLocaleString() + ' ₽';
-                    document.getElementById('userCardDisplay').innerText = d.card;
-                    document.getElementById('userNameDisplay').innerText = userData.name;
-                    document.getElementById('userAva').src = d.avatar || 'https://via.placeholder.com/150/111/ffd600?text=USER';
-                    
-                    document.getElementById('loginScreen').classList.add('hidden');
-                    document.getElementById('mainApp').classList.remove('hidden');
-
-                    setupReceivers();
-                    syncData();
-                    setInterval(syncData, 5000);
-                } else {
-                    document.getElementById('loginError').style.display = 'block';
-                }
-            } catch(e) { alert("ОШИБКА ПОДКЛЮЧЕНИЯ К СЕРВЕРУ"); }
-        }
-
-        function setupReceivers() {
-            const sel = document.getElementById('payTarget');
-            sel.innerHTML = '<option value="">ВЫБЕРИТЕ ПОЛУЧАТЕЛЯ</option>';
-            for(let key in userDb) {
-                if(key !== userData.email) sel.innerHTML += `<option value="${key}">${userDb[key]}</option>`;
+                    if (target && sum > 0) {
+                        info.innerText = "Метка считана! Выполняю NFC-платеж...";
+                        // Логика перевода по NFC
+                        const res = await fetch(API, { method: 'POST', body: JSON.stringify({ action: 'transfer', from: user.email, to: target, amount: sum, comment: "NFC Pay: " + tagId }) });
+                        const d = await res.json();
+                        if(d.success) {
+                            info.innerText = "✅ ПЛАТЕЖ ВЫПОЛНЕН!";
+                            info.style.color = "var(--success)";
+                            sync();
+                        }
+                    } else {
+                        info.innerText = "Метка привязана: " + tagId + ". Выберите получателя для оплаты.";
+                    }
+                };
+            } catch (error) {
+                info.innerText = "Ошибка: " + error;
             }
         }
 
-        // --- ПЕРЕВОД ---
-        // --- ПЕРЕВОД ---
-        async function executePayment() {
-            const to = document.getElementById('payTarget').value;
-            const amt = document.getElementById('payAmount').value;
-            const note = document.getElementById('payNote').value;
-            if(!to || amt <= 0) return alert("ОШИБКА: ЗАПОЛНИТЕ ВСЕ ПОЛЯ");
-
-            const ov = document.getElementById('procOverlay');
-            ov.classList.add('active');
-            document.getElementById('procTitle').innerText = "АВТОРИЗАЦИЯ...";
-
-            try {
-                const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'transfer', from: userData.email, to, amount: amt, comment: note }) });
-                const d = await res.json();
-
-                if(d.success) {
-                    document.getElementById('procTitle').innerText = "УСПЕШНО";
-                    document.getElementById('procTitle').style.color = "var(--success)";
-                    setTimeout(() => {
-                        ov.classList.remove('active');
-                        document.getElementById('payAmount').value = '';
-                        document.getElementById('payNote').value = '';
-                        syncData();
-                    }, 1500);
-                } else {
-                    document.getElementById('procTitle').innerText = "ОТКЛОНЕНО";
-                    document.getElementById('procTitle').style.color = "var(--error)";
-                    setTimeout(() => ov.classList.remove('active'), 1500);
-                }
-            } catch(e) { ov.classList.remove('active'); }
-        }
-
-        // --- СИНХРОНИЗАЦИЯ ---
-        async function syncData() {
-            if(!userData.email) return;
-            try {
-                // Баланс
-                const bRes = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'balance', email: userData.email }) });
-                const bD = await bRes.json();
-                userData.balance = bD.balance;
-                if(!userData.isPrivate) updateBalanceDisplay();
-
-                // История
-                const hRes = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'history', email: userData.email }) });
-                const hD = await hRes.json();
-                document.getElementById('totalTrans').innerText = hD.history.length;
-                
-                document.getElementById('histContainer').innerHTML = hD.history.map(h => {
-                    const isDebit = h[1].toLowerCase() === userData.email;
-                    const partner = isDebit ? h[2] : h[1];
-                    return `
-                        <div class="hist-card" style="border-left-color: ${isDebit ? 'var(--error)' : 'var(--success)'}">
-                            <div class="icon-box" style="background:${isDebit?'#2a151b':'#152a1e'}; color:${isDebit?'var(--error)':'var(--success)'}">
-                                ${isDebit ? '↗' : '↙'}
-                            </div>
-                            <div style="flex:1">
-                                <span style="display:block; font-weight:800; font-size:14px;">${userDb[partner] || partner}</span>
-                                <span style="font-size:10px; color:var(--muted);">${h[4] || 'Транзакция Profit'}</span>
-                            </div>
-                            <div style="font-weight:900; color:${isDebit?'var(--error)':'var(--success)'}">
-                                ${isDebit ? '-' : '+'}${h[3]} ₽
-                            </div>
-                        </div>
-                    `;
-                }).join('');
-
-                // Чат
-                const cRes = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'chat', sub: 'get' }) });
-                const cD = await cRes.json();
-                document.getElementById('chatView').innerHTML = cD.messages.map(m => `
-                    <div class="bubble ${m[1] === userData.name ? 'me' : ''}">
-                        <img src="${m[3] || 'https://via.placeholder.com/40'}" style="width:35px; height:35px; border-radius:50%; border:1px solid var(--accent)">
-                        <div class="bubble-msg">
-                            <span class="bubble-info">${m[1]}</span>
-                            <div style="font-size:14px;">${m[2]}</div>
-                        </div>
-                    </div>
-                `).join('');
-
-            } catch(e) { console.warn("Sync error"); }
-        }
-
-        // --- ДОП ФУНКЦИИ ---
-        async function sendChatMessage() {
-            const inp = document.getElementById('chatInput');
-            if(!inp.value.trim()) return;
-            await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'chat', sub: 'send', email: userData.email, name: userData.name, text: inp.value }) });
-            inp.value = '';
-            syncData();
-        }
-
-        async function updatePhoto() {
+        async function takePhoto() {
             try {
                 const s = await navigator.mediaDevices.getUserMedia({ video: true });
                 const v = document.createElement('video'); v.srcObject = s; await v.play();
@@ -458,21 +349,19 @@
                     const c = document.createElement('canvas'); c.width = 300; c.height = 300;
                     c.getContext('2d').drawImage(v, 0, 0, 300, 300);
                     const img = c.toDataURL('image/jpeg', 0.6);
-                    document.getElementById('userAva').src = img;
-                    await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'updateAvatar', email: userData.email, image: img }) });
+                    document.getElementById('uAva').src = img;
+                    await fetch(API, { method: 'POST', body: JSON.stringify({ action: 'updateAvatar', email: user.email, image: img }) });
                     s.getTracks().forEach(t => t.stop());
                 }, 1500);
-            } catch(e) { alert("КАМЕРА НЕДОСТУПНА"); }
+            } catch(e) { alert("Камера недоступна"); }
         }
 
-        async function changeKey() {
-            const p = document.getElementById('newPassKey').value;
-            if(p.length < 4) return alert("МИНИМУМ 4 СИМВОЛА");
-            await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'changePassword', email: userData.email, newPassword: p }) });
-            document.getElementById('newPassKey').value = '';
-            alert("КЛЮЧ ИЗМЕНЕН");
+        function toggleLoad(s, m = "") {
+            const l = document.getElementById('loader');
+            document.getElementById('loaderMsg').innerText = m;
+            l.style.display = s ? 'flex' : 'none';
         }
-
     </script>
+    <style> @keyframes spin { to { transform: rotate(360deg); } } </style>
 </body>
 </html>
