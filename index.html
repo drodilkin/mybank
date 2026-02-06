@@ -3,124 +3,117 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>PROFIT INFINITY | NEXT GEN</title>
+    <title>PROFIT INFINITY | ELITE TERMINAL</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@300;400;600;800&family=JetBrains+Mono&display=swap" rel="stylesheet">
     
     <style>
         :root {
             --accent: #ffd600;
             --accent-glow: rgba(255, 214, 0, 0.4);
-            --bg: #030305;
-            --card: #0d0d14;
-            --panel: #14141f;
+            --bg: #050508;
+            --card: rgba(20, 20, 31, 0.8);
+            --panel: #1a1a2e;
             --text: #ffffff;
-            --muted: #71717e;
+            --muted: #8b8b9e;
             --success: #00ff95;
             --error: #ff2d55;
-            --glass: rgba(255, 255, 255, 0.04);
-            --border: rgba(255, 255, 255, 0.1);
+            --glass: rgba(255, 255, 255, 0.05);
+            --border: rgba(255, 214, 0, 0.2);
         }
 
         * { box-sizing: border-box; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
         body { 
             margin: 0; background: var(--bg); color: var(--text); overflow-x: hidden;
-            background-image: radial-gradient(circle at top right, #1a1a2e 0%, #030305 100%);
+            background-image: 
+                radial-gradient(circle at 0% 0%, rgba(255, 214, 0, 0.05) 0%, transparent 50%),
+                radial-gradient(circle at 100% 100%, rgba(0, 255, 149, 0.05) 0%, transparent 50%);
             min-height: 100vh;
         }
 
         .hidden { display: none !important; }
 
         /* --- АНИМАЦИИ --- */
-        @keyframes pulse-radar { 0% { transform: scale(0.5); opacity: 1; } 100% { transform: scale(2.5); opacity: 0; } }
-        @keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-10px); } 100% { transform: translateY(0px); } }
-        @keyframes scan-line { 0% { top: 0%; } 100% { top: 100%; } }
-        @keyframes glitch { 
-            0% { transform: translate(0); } 20% { transform: translate(-2px, 2px); }
-            40% { transform: translate(-2px, -2px); } 60% { transform: translate(2px, 2px); }
-            80% { transform: translate(2px, -2px); } 100% { transform: translate(0); }
-        }
+        @keyframes slideIn { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        @keyframes pulse-gold { 0% { box-shadow: 0 0 5px var(--accent-glow); } 50% { box-shadow: 0 0 20px var(--accent-glow); } 100% { box-shadow: 0 0 5px var(--accent-glow); } }
+        @keyframes scan-glow { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
 
-        .container { width: 100%; max-width: 450px; margin: 0 auto; padding: 20px 15px; animation: fadeIn 0.6s ease; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .container { width: 100%; max-width: 450px; margin: 0 auto; padding: 20px 15px; }
 
         /* --- КАРТА --- */
-        .card-box { perspective: 1000px; height: 230px; margin-bottom: 30px; animation: float 4s ease-in-out infinite; }
+        .card-box { perspective: 1000px; height: 220px; margin-bottom: 30px; }
         .card-inner { position: relative; width: 100%; height: 100%; transform-style: preserve-3d; transition: 0.8s; cursor: pointer; }
         .card-inner.flipped { transform: rotateY(180deg); }
         
         .card-front, .card-back {
-            position: absolute; inset: 0; border-radius: 28px; padding: 25px;
-            backface-visibility: hidden; -webkit-backface-visibility: hidden;
-            border: 1px solid var(--border);
-            background: linear-gradient(135deg, #161625 0%, #08080c 100%);
-            box-shadow: 0 15px 35px rgba(0,0,0,0.5);
+            position: absolute; inset: 0; border-radius: 24px; padding: 25px;
+            backface-visibility: hidden; border: 1px solid var(--border);
+            background: linear-gradient(135deg, #1a1a2e 0%, #050508 100%);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.6);
             display: flex; flex-direction: column; justify-content: space-between;
         }
-        .card-back { transform: rotateY(180deg); text-align: center; justify-content: center; }
+        .card-back { transform: rotateY(180deg); background: #0a0a0f; border: 1px solid var(--success); }
 
-        .balance-val { font-size: 38px; font-weight: 900; letter-spacing: -1px; margin: 5px 0; }
-        .unlimited-badge { 
-            padding: 4px 10px; background: rgba(0,255,149,0.1); border: 1px solid var(--success);
-            color: var(--success); font-size: 9px; border-radius: 50px; font-weight: 800; letter-spacing: 1px;
-        }
+        .balance-val { font-family: 'Orbitron'; font-size: 32px; font-weight: 900; color: var(--accent); text-shadow: 0 0 10px var(--accent-glow); }
 
-        /* --- NFC RADAR --- */
+        /* --- NFC --- */
         .nfc-zone { 
-            height: 300px; display: flex; flex-direction: column; align-items: center; justify-content: center;
-            position: relative; overflow: hidden; background: var(--panel); border-radius: 30px;
+            height: 250px; display: flex; flex-direction: column; align-items: center; justify-content: center;
+            background: var(--card); border-radius: 24px; position: relative; border: 1px solid var(--glass);
         }
-        .radar-circle {
-            position: absolute; width: 100px; height: 100px; border: 2px solid var(--accent);
-            border-radius: 50%; animation: pulse-radar 2s infinite;
+        .nfc-status-bar { width: 80%; height: 4px; background: #333; border-radius: 10px; margin-top: 20px; overflow: hidden; }
+        .nfc-progress { width: 0%; height: 100%; background: var(--accent); transition: 0.3s; }
+
+        /* --- ИСТОРИЯ ТРАНЗАКЦИЙ --- */
+        .tx-item {
+            background: var(--glass); border-radius: 18px; padding: 15px; margin-bottom: 12px;
+            border-left: 4px solid var(--muted); animation: slideIn 0.4s ease forwards;
+            backdrop-filter: blur(10px);
         }
-        .nfc-icon { font-size: 50px; color: var(--accent); z-index: 2; filter: drop-shadow(0 0 10px var(--accent-glow)); }
+        .tx-item.in { border-left-color: var(--success); }
+        .tx-item.out { border-left-color: var(--error); }
+        .tx-header { display: flex; justify-content: space-between; margin-bottom: 8px; }
+        .tx-user { font-weight: 700; font-size: 14px; }
+        .tx-amount { font-family: 'JetBrains Mono'; font-weight: 800; }
+        .tx-details { font-size: 11px; color: var(--muted); display: flex; justify-content: space-between; }
+        .tx-comment { margin-top: 8px; font-size: 12px; font-style: italic; opacity: 0.8; padding-top: 5px; border-top: 1px solid rgba(255,255,255,0.05); }
 
-        /* --- UI ELEMENTS --- */
-        .dock { display: flex; background: var(--card); padding: 8px; border-radius: 20px; border: 1px solid var(--border); margin-bottom: 25px; }
-        .dock-btn { flex: 1; padding: 12px; border: none; background: none; color: var(--muted); font-size: 10px; font-weight: 800; border-radius: 15px; cursor: pointer; text-transform: uppercase; }
-        .dock-btn.active { background: var(--accent); color: #000; box-shadow: 0 5px 15px var(--accent-glow); }
+        /* --- CHAT ИЗОБРАЖЕНИЯ --- */
+        .chat-img { width: 100%; max-width: 200px; border-radius: 12px; margin-top: 8px; border: 1px solid var(--accent); }
+        #chatDisplay { height: 400px; overflow-y: auto; padding: 10px; display: flex; flex-direction: column; gap: 15px; }
 
-        .section { background: var(--card); border-radius: 30px; padding: 25px; border: 1px solid var(--border); margin-bottom: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
-        h2 { font-size: 20px; font-weight: 900; margin-top: 0; color: var(--accent); letter-spacing: -0.5px; }
+        .dock { display: flex; background: var(--card); padding: 6px; border-radius: 20px; border: 1px solid var(--glass); margin-bottom: 25px; position: sticky; top: 10px; z-index: 100; backdrop-filter: blur(15px); }
+        .dock-btn { flex: 1; padding: 12px 5px; border: none; background: none; color: var(--muted); font-size: 9px; font-weight: 800; border-radius: 15px; cursor: pointer; text-transform: uppercase; transition: 0.3s; }
+        .dock-btn.active { background: var(--accent); color: #000; }
 
         input, select {
-            width: 100%; padding: 18px; background: var(--panel); border: 1px solid var(--border);
-            border-radius: 18px; color: #fff; font-size: 15px; margin-bottom: 15px; transition: 0.3s;
+            width: 100%; padding: 16px; background: var(--panel); border: 1px solid var(--glass);
+            border-radius: 15px; color: #fff; margin-bottom: 12px;
         }
-        input:focus { border-color: var(--accent); box-shadow: 0 0 10px var(--accent-glow); outline: none; }
 
         .btn-prime {
             width: 100%; padding: 18px; background: var(--accent); border: none; border-radius: 18px;
-            font-weight: 900; font-size: 15px; color: #000; cursor: pointer; transition: 0.3s;
+            font-weight: 900; font-size: 14px; color: #000; cursor: pointer; animation: pulse-gold 2s infinite;
         }
-        .btn-prime:hover { filter: brightness(1.1); transform: translateY(-2px); }
 
-        /* --- CHAT --- */
-        #chatDisplay { height: 350px; overflow-y: auto; display: flex; flex-direction: column-reverse; gap: 12px; }
-        .msg-wrap { display: flex; gap: 10px; max-width: 80%; }
-        .msg-wrap.me { align-self: flex-end; flex-direction: row-reverse; }
-        .msg-text { background: var(--panel); padding: 12px 16px; border-radius: 20px; font-size: 14px; }
-        .msg-wrap.me .msg-text { background: var(--accent); color: #000; font-weight: 600; }
-
-        /* --- LOGIN GLITCH --- */
-        .glitch-text { font-family: 'Orbitron'; font-size: 32px; animation: glitch 0.5s infinite alternate; color: var(--accent); }
+        .section-title { font-family: 'Orbitron'; font-size: 14px; color: var(--accent); margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
+        .section-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
 
     </style>
 </head>
 <body>
 
-    <div id="procOverlay" style="position:fixed; inset:0; background:rgba(0,0,0,0.95); z-index:10000; display:none; flex-direction:column; align-items:center; justify-content:center;">
-        <div style="width:100px; height:100px; border:3px solid var(--accent); border-top-color:transparent; border-radius:50%; animation: rotateLoader 0.8s linear infinite;"></div>
-        <h3 id="procMsg" style="margin-top:25px; color:white; letter-spacing:2px;">СИНХРОНИЗАЦИЯ...</h3>
+    <div id="procOverlay" style="position:fixed; inset:0; background:rgba(0,0,0,0.9); z-index:10000; display:none; flex-direction:column; align-items:center; justify-content:center; backdrop-filter: blur(5px);">
+        <div style="width:60px; height:60px; border:3px solid var(--accent); border-top-color:transparent; border-radius:50%; animation: rotate 0.6s linear infinite;"></div>
+        <h3 id="procMsg" style="margin-top:20px; font-family:'Orbitron'; font-size:12px; letter-spacing:3px;">СИСТЕМА...</h3>
     </div>
 
     <div id="loginPage" style="min-height:100vh; display:flex; align-items:center; justify-content:center; padding:20px;">
-        <div class="section" style="width:100%; max-width:380px; text-align:center;">
-            <div class="glitch-text">PROFIT</div>
-            <p style="color:var(--muted); font-size:10px; letter-spacing:4px; margin-bottom:30px;">INFINITY TERMINAL</p>
-            <input type="email" id="emailInp" placeholder="Email">
-            <input type="password" id="passInp" placeholder="Мастер-ключ">
-            <button class="btn-prime" onclick="auth()">АВТОРИЗОВАТЬСЯ</button>
+        <div style="width:100%; max-width:350px; text-align:center;">
+            <h1 style="font-family:'Orbitron'; font-size:35px; margin:0; color:var(--accent);">INFINITY</h1>
+            <p style="letter-spacing:5px; color:var(--muted); font-size:10px; margin-bottom:40px;">QUANTUM ACCESS</p>
+            <input type="email" id="emailInp" placeholder="USER ID (EMAIL)">
+            <input type="password" id="passInp" placeholder="ACCESS KEY">
+            <button class="btn-prime" onclick="auth()">DECRYPT ACCESS</button>
         </div>
     </div>
 
@@ -129,85 +122,80 @@
         <div class="card-box">
             <div class="card-inner" id="card" onclick="this.classList.toggle('flipped')">
                 <div class="card-front">
-                    <div style="display:flex; justify-content:space-between; align-items:center;">
-                        <span class="unlimited-badge">INFINITY STATUS</span>
-                        <img id="uAva" src="" style="width:50px; height:50px; border-radius:50%; border:2px solid var(--accent);">
+                    <div style="display:flex; justify-content:space-between;">
+                        <span style="font-size:10px; font-weight:800; color:var(--success);">● ONLINE</span>
+                        <img id="uAva" src="" style="width:55px; height:55px; border-radius:15px; border:2px solid var(--accent); object-fit: cover;">
                     </div>
                     <div>
-                        <div style="font-size:10px; color:var(--muted); text-transform:uppercase;">Бессрочный баланс</div>
+                        <div style="font-size:10px; color:var(--muted);">AVAILABLE ASSETS</div>
                         <div class="balance-val" id="uBal">0.00 ₽</div>
-                        <div id="uName" style="font-weight:800; font-size:14px; text-transform:uppercase;">...</div>
+                        <div id="uName" style="font-weight:700; margin-top:10px; letter-spacing:1px;">...</div>
                     </div>
                 </div>
                 <div class="card-back">
-                    <div style="font-size:10px; color:var(--muted); margin-bottom:10px;">VIRTUAL ACCOUNT NUMBER</div>
-                    <div id="uCard" style="font-family:'JetBrains Mono'; font-size:18px; color:white;">0000 0000 0000 0000</div>
+                    <div style="font-family:'Orbitron'; color:var(--success);">ENCRYPTED NODE</div>
+                    <div id="uCard" style="font-family:'JetBrains Mono'; margin-top:20px;">0000 0000 0000 0000</div>
+                    <div style="font-size:9px; margin-top:40px; color:var(--muted);">PROFIT INFINITY NEXT GEN SYSTEM</div>
                 </div>
             </div>
         </div>
 
         <nav class="dock">
-            <button class="dock-btn active" onclick="tab('pay', this)">Перевод</button>
+            <button class="dock-btn active" onclick="tab('pay', this)">Wallet</button>
             <button class="dock-btn" onclick="tab('nfc', this)">NFC</button>
-            <button class="dock-btn" onclick="tab('chat', this)">Чат</button>
-            <button class="dock-btn" onclick="tab('prof', this)">Профиль</button>
+            <button class="dock-btn" onclick="tab('chat', this)">Chat</button>
+            <button class="dock-btn" onclick="tab('prof', this)">Node</button>
         </nav>
 
-        <div id="tab-pay" class="section tab-content">
-            <h2>Перевести деньги</h2>
+        <div id="tab-pay" class="tab-content">
+            <div class="section-title">TRANSFER</div>
             <select id="payTo"></select>
-            <input type="number" id="paySum" placeholder="Сумма (₽)">
-            <input type="text" id="payMsg" placeholder="Сообщение">
-            <button class="btn-prime" onclick="sendMoney()">ПОДТВЕРДИТЬ ПЕРЕВОД</button>
-        </div>
-
-        <div id="tab-nfc" class="section tab-content hidden">
-            <h2>NFC Модуль</h2>
-            <div class="nfc-zone">
-                <div class="radar-circle" style="animation-delay: 0s;"></div>
-                <div class="radar-circle" style="animation-delay: 0.5s;"></div>
-                <div class="radar-circle" style="animation-delay: 1s;"></div>
-                <div class="nfc-icon">📡</div>
-                <p id="nfcStatus" style="margin-top:20px; font-size:12px; color:var(--muted);">Готов к сканированию</p>
-            </div>
-            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-top:20px;">
-                <button class="btn-prime" style="background:var(--panel); color:white; border:1px solid var(--accent);" onclick="readNFC()">ЧИТАТЬ МЕТКУ</button>
-                <button class="btn-prime" onclick="bindNFC()">ПРИВЯЗАТЬ</button>
-            </div>
-            <div id="nfcData" style="margin-top:15px; font-family:'JetBrains Mono'; font-size:11px; color:var(--success); text-align:center;"></div>
-        </div>
-
-        <div id="tab-chat" class="section tab-content hidden">
-            <h2>Чат системы</h2>
-            <div id="chatDisplay"></div>
-            <div style="display:flex; gap:10px; margin-top:15px;">
-                <input type="text" id="chatInp" placeholder="Текст..." style="margin-bottom:0;">
-                <button class="btn-prime" style="width:60px; padding:0;" onclick="sendMsg()">></button>
-            </div>
-        </div>
-
-        <div id="tab-prof" class="section tab-content hidden">
-            <h2>Профиль участника</h2>
-            <div style="text-align:center; padding:10px 0;">
-                <button class="btn-prime" style="background:var(--panel); color:var(--accent); border:1px dashed var(--accent);" onclick="updateAva()">📸 ИЗМЕНИТЬ БИОМЕТРИЮ</button>
-            </div>
-            <div style="margin-top:20px;">
-                <div style="display:flex; justify-content:space-between; padding:12px 0; border-bottom:1px solid var(--glass);">
-                    <span style="color:var(--muted);">Лимиты:</span><span style="color:var(--success); font-weight:800;">ОТСУТСТВУЮТ</span>
-                </div>
-                <div style="display:flex; justify-content:space-between; padding:12px 0; border-bottom:1px solid var(--glass);">
-                    <span style="color:var(--muted);">Доверие:</span><span style="color:var(--accent);">99.9% (High)</span>
-                </div>
-                <div style="display:flex; justify-content:space-between; padding:12px 0; border-bottom:1px solid var(--glass);">
-                    <span style="color:var(--muted);">Сессия:</span><span style="color:white;">AES-256 Защищена</span>
-                </div>
-            </div>
-            <button onclick="location.reload()" style="width:100%; margin-top:30px; background:none; border:none; color:var(--error); font-weight:900; font-size:11px; cursor:pointer; letter-spacing:2px;">ТЕРМИНИРОВАТЬ СЕССИЮ</button>
-        </div>
-
-        <div class="section">
-            <h2 style="font-size:14px; color:var(--muted);">Последние транзакции</h2>
+            <input type="number" id="paySum" placeholder="AMOUNT (₽)">
+            <input type="text" id="payMsg" placeholder="MEMO (OPTIONAL)">
+            <button class="btn-prime" onclick="sendMoney()">EXECUTE TRANSACTION</button>
+            
+            <div class="section-title" style="margin-top:40px;">HISTORY</div>
             <div id="hList"></div>
+        </div>
+
+        <div id="tab-nfc" class="tab-content hidden">
+            <div class="section-title">NFC INTERFACE</div>
+            <div class="nfc-zone">
+                <div id="nfcIcon" style="font-size:60px;">📡</div>
+                <div class="nfc-status-bar"><div id="nfcProgress" class="nfc-progress"></div></div>
+                <p id="nfcStatus" style="margin-top:20px; font-size:11px; color:var(--muted);">READY FOR SCAN</p>
+            </div>
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px; margin-top:20px;">
+                <button class="btn-prime" style="background:var(--panel); color:white; border:1px solid var(--accent);" onclick="runNFC('read')">READ</button>
+                <button class="btn-prime" onclick="runNFC('write')">WRITE</button>
+            </div>
+            <div id="nfcData" style="margin-top:20px; font-family:'JetBrains Mono'; color:var(--success); font-size:12px; text-align:center;"></div>
+        </div>
+
+        <div id="tab-chat" class="tab-content hidden">
+            <div class="section-title">SYSTEM CHAT</div>
+            <div id="chatDisplay"></div>
+            <div style="display:flex; gap:10px; margin-top:15px; background:var(--card); padding:10px; border-radius:20px;">
+                <input type="text" id="chatInp" placeholder="Message..." style="margin-bottom:0; background:none; border:none;">
+                <button class="btn-prime" style="width:60px; padding:0; animation:none;" onclick="sendMsg()">></button>
+            </div>
+        </div>
+
+        <div id="tab-prof" class="tab-content hidden">
+            <div class="section-title">NODE SETTINGS</div>
+            <div style="text-align:center;">
+                <button class="btn-prime" style="background:var(--panel); color:var(--accent); border:1px dashed var(--accent);" onclick="updateAva()">📸 UPDATE BIOMETRICS</button>
+                <p style="font-size:10px; color:var(--muted); margin-top:10px;">FaceID & Identity Sync</p>
+            </div>
+            <div style="margin-top:30px; background:var(--glass); border-radius:20px; padding:20px;">
+                <div style="display:flex; justify-content:space-between; margin-bottom:15px;">
+                    <span style="color:var(--muted);">SECURITY</span><span style="color:var(--success);">LEVEL 5</span>
+                </div>
+                <div style="display:flex; justify-content:space-between; margin-bottom:15px;">
+                    <span style="color:var(--muted);">ENCRYPTION</span><span style="color:white;">AES-256-GCM</span>
+                </div>
+            </div>
+            <button onclick="location.reload()" style="width:100%; margin-top:40px; background:none; border:none; color:var(--error); font-weight:800; cursor:pointer;">TERMINATE SESSION</button>
         </div>
 
     </div>
@@ -234,113 +222,148 @@
             const p = document.getElementById('passInp').value.trim();
             if(!e || !p) return;
 
-            showProc(true, "ПРОВЕРКА КЛЮЧЕЙ...");
+            showProc(true, "AUTHENTICATING...");
             try {
                 const res = await fetch(API, { method: 'POST', body: JSON.stringify({ action: 'login', email: e, password: p }) });
                 const d = await res.json();
                 if(d.success) {
                     user = { email: e, name: db[e] || e, bal: d.balance };
-                    document.getElementById('uBal').innerText = d.balance.toLocaleString() + ' ₽';
-                    document.getElementById('uCard').innerText = d.card;
-                    document.getElementById('uName').innerText = user.name;
-                    document.getElementById('uAva').src = d.avatar || 'https://via.placeholder.com/100';
-                    
+                    renderUI(d);
                     document.getElementById('loginPage').classList.add('hidden');
                     document.getElementById('appPage').classList.remove('hidden');
-                    
-                    fillTargets();
                     sync();
-                    setInterval(sync, 4000);
-                } else { alert("Ошибка доступа"); }
-            } catch(x) { alert("Ошибка сети"); }
+                    setInterval(sync, 5000);
+                } else { alert("ACCESS DENIED"); }
+            } catch(x) { alert("NETWORK ERROR"); }
             showProc(false);
         }
 
-        function fillTargets() {
+        function renderUI(d) {
+            document.getElementById('uBal').innerText = d.balance.toLocaleString() + ' ₽';
+            document.getElementById('uCard').innerText = d.card;
+            document.getElementById('uName').innerText = user.name;
+            document.getElementById('uAva').src = d.avatar || 'https://via.placeholder.com/100';
+            
             const s = document.getElementById('payTo');
-            s.innerHTML = '<option value="">Выберите получателя</option>';
+            s.innerHTML = '<option value="">SELECT RECIPIENT</option>';
             for(let k in db) if(k !== user.email) s.innerHTML += `<option value="${k}">${db[k]}</option>`;
         }
 
         async function sendMoney() {
             const to = document.getElementById('payTo').value;
             const am = document.getElementById('paySum').value;
+            const msg = document.getElementById('payMsg').value;
             if(!to || am <= 0) return;
 
-            showProc(true, "ШИФРОВАНИЕ ПЕРЕВОДА...");
-            const res = await fetch(API, { method: 'POST', body: JSON.stringify({ action: 'transfer', from: user.email, to, amount: am, comment: document.getElementById('payMsg').value }) });
+            showProc(true, "ENCRYPTING TRANSACTION...");
+            const res = await fetch(API, { method: 'POST', body: JSON.stringify({ action: 'transfer', from: user.email, to, amount: am, comment: msg }) });
             const d = await res.json();
             if(d.success) {
                 document.getElementById('paySum').value = '';
+                document.getElementById('payMsg').value = '';
                 sync();
-                showProc(true, "УСПЕШНО");
+                showProc(true, "SUCCESSFUL");
                 setTimeout(() => showProc(false), 1000);
-            } else { alert("Ошибка"); showProc(false); }
+            } else { alert("ERROR"); showProc(false); }
         }
 
         async function sync() {
             if(!user.email) return;
-            const bRes = await fetch(API, { method: 'POST', body: JSON.stringify({ action: 'balance', email: user.email }) });
-            const bD = await bRes.json();
-            document.getElementById('uBal').innerText = Number(bD.balance).toLocaleString() + ' ₽';
+            try {
+                const res = await fetch(API, { method: 'POST', body: JSON.stringify({ action: 'syncAll', email: user.email }) });
+                const d = await res.json();
+                
+                // Баланс
+                document.getElementById('uBal').innerText = Number(d.balance).toLocaleString() + ' ₽';
 
-            const hRes = await fetch(API, { method: 'POST', body: JSON.stringify({ action: 'history', email: user.email }) });
-            const hD = await hRes.json();
-            document.getElementById('hList').innerHTML = hD.history.slice(0, 5).map(h => {
-                const isOut = h[1].toLowerCase() === user.email;
-                return `<div style="display:flex; justify-content:space-between; font-size:12px; padding:8px 0; border-bottom:1px solid var(--glass);">
-                    <span>${db[isOut?h[2]:h[1]] || 'User'}</span>
-                    <span style="color:${isOut? 'var(--error)':'var(--success)'}">${isOut?'-':'+'}${h[3]} ₽</span>
-                </div>`;
-            }).join('');
+                // История
+                document.getElementById('hList').innerHTML = d.history.slice(0, 8).map(h => {
+                    const isOut = h[1].toLowerCase() === user.email;
+                    const date = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                    return `
+                        <div class="tx-item ${isOut?'out':'in'}">
+                            <div class="tx-header">
+                                <span class="tx-user">${isOut ? '→ ' + (db[h[2]]||h[2]) : '← ' + (db[h[1]]||h[1])}</span>
+                                <span class="tx-amount" style="color:${isOut?'var(--error)':'var(--success)'}">
+                                    ${isOut?'-':'+'}${Number(h[3]).toLocaleString()} ₽
+                                </span>
+                            </div>
+                            <div class="tx-details">
+                                <span>${isOut?'DEBIT':'CREDIT'}</span>
+                                <span>${date}</span>
+                            </div>
+                            ${h[4] ? `<div class="tx-comment">"${h[4]}"</div>` : ''}
+                        </div>
+                    `;
+                }).join('');
 
-            const cRes = await fetch(API, { method: 'POST', body: JSON.stringify({ action: 'chat', sub: 'get' }) });
-            const cD = await cRes.json();
-            document.getElementById('chatDisplay').innerHTML = cD.messages.map(m => `
-                <div class="msg-wrap ${m[1] === user.name ? 'me' : ''}">
-                    <div class="msg-text"><small style="display:block; font-size:9px; opacity:0.5;">${m[1]}</small>${m[2]}</div>
-                </div>
-            `).join('');
+                // Чат
+                document.getElementById('chatDisplay').innerHTML = d.messages.map(m => {
+                    const isMe = m[1] === user.name;
+                    const isImg = m[2].startsWith('data:image');
+                    return `
+                        <div style="align-self: ${isMe?'flex-end':'flex-start'}; max-width: 85%;">
+                            <div style="font-size: 9px; color: var(--muted); margin-bottom: 4px; text-align: ${isMe?'right':'left'}">${m[1]}</div>
+                            <div style="background: ${isMe?'var(--accent)':'var(--panel)'}; color: ${isMe?'#000':'#fff'}; padding: 12px; border-radius: 15px;">
+                                ${isImg ? `<img src="${m[2]}" class="chat-img">` : m[2]}
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            } catch(e) {}
         }
 
-        // --- NFC LOGIC ---
-        async function readNFC() {
-            const status = document.getElementById('nfcStatus');
-            const dataBox = document.getElementById('nfcData');
-            if ('NDEFReader' in window) {
-                try {
-                    const ndef = new NDEFReader();
-                    await ndef.scan();
-                    status.innerText = "Сканирование... Поднесите метку";
-                    ndef.onreading = event => {
-                        const serialNumber = event.serialNumber;
-                        dataBox.innerText = "ID МЕТКИ: " + serialNumber;
-                        status.innerText = "Метка прочитана!";
-                    };
-                } catch (error) { status.innerText = "Ошибка: " + error; }
-            } else { status.innerText = "NFC не поддерживается этим устройством"; }
-        }
+        async function sendMsg(content = null) {
+            const inp = document.getElementById('chatInp');
+            const txt = content || inp.value;
+            if(!txt) return;
 
-        function bindNFC() {
-            const data = document.getElementById('nfcData').innerText;
-            if(!data) return alert("Сначала прочитайте метку!");
-            alert("Метка " + data + " привязана к вашему аккаунту!");
-            // Тут можно отправить fetch на сохранение ID метки в БД
+            await fetch(API, { method: 'POST', body: JSON.stringify({ action: 'chat', sub: 'send', name: user.name, msg: txt }) });
+            inp.value = '';
+            sync();
         }
 
         async function updateAva() {
             try {
-                const s = await navigator.mediaDevices.getUserMedia({ video: true });
+                const s = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
+                showProc(true, "SCANNING BIOMETRICS...");
                 const v = document.createElement('video'); v.srcObject = s; await v.play();
+                
                 setTimeout(async () => {
-                    const c = document.createElement('canvas'); c.width = 300; c.height = 300;
-                    c.getContext('2d').drawImage(v, 0, 0, 300, 300);
-                    const img = c.toDataURL('image/jpeg', 0.6);
+                    const c = document.createElement('canvas'); c.width = 400; c.height = 400;
+                    c.getContext('2d').drawImage(v, 0, 0, 400, 400);
+                    const img = c.toDataURL('image/jpeg', 0.5);
                     document.getElementById('uAva').src = img;
+                    
+                    // Сохраняем и отправляем в чат
                     await fetch(API, { method: 'POST', body: JSON.stringify({ action: 'updateAvatar', email: user.email, image: img }) });
+                    sendMsg(img); // Отправка фото в чат
+                    
                     s.getTracks().forEach(t => t.stop());
-                }, 1500);
-            } catch(e) { alert("Камера недоступна"); }
+                    showProc(false);
+                }, 2000);
+            } catch(e) { alert("CAMERA ERROR"); showProc(false); }
+        }
+
+        function runNFC(mode) {
+            const bar = document.getElementById('nfcProgress');
+            const status = document.getElementById('nfcStatus');
+            const dataBox = document.getElementById('nfcData');
+            
+            bar.style.width = '0%';
+            status.innerText = mode === 'read' ? "SEARCHING TAG..." : "READY TO WRITE...";
+            
+            let p = 0;
+            const iv = setInterval(() => {
+                p += 5;
+                bar.style.width = p + '%';
+                if(p >= 100) {
+                    clearInterval(iv);
+                    const mockID = "INF-" + Math.random().toString(16).slice(2, 10).toUpperCase();
+                    dataBox.innerText = mode === 'read' ? "LINKED ID: " + mockID : "KEY WRITTEN TO CHIP";
+                    status.innerText = "ACTION COMPLETE";
+                }
+            }, 50);
         }
 
         function showProc(s, m = "") {
@@ -349,6 +372,6 @@
             o.style.display = s ? 'flex' : 'none';
         }
     </script>
-    <style> @keyframes rotateLoader { to { transform: rotate(360deg); } } </style>
+    <style> @keyframes rotate { to { transform: rotate(360deg); } } </style>
 </body>
 </html>
