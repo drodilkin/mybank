@@ -2,7 +2,7 @@
 <html lang="ru">  
 <head>  
 <meta charset="UTF-8">  
-<title>PayBank Premium</title>  
+<title>Profit Bank Premium</title>  
 <meta name="viewport" content="width=device-width, initial-scale=1.0">  
 <style>  
 :root{  
@@ -115,17 +115,8 @@ body{
     border: 1px solid rgba(255,255,255,0.1);
 }
 
-/* Лицевая сторона */
 .card-front {
     background: linear-gradient(135deg, #1e1e2e 0%, #111118 100%);
-}
-
-.card-front::after {
-    content: '';
-    position: absolute;
-    top: -50%; right: -50%;
-    width: 100%; height: 100%;
-    background: radial-gradient(circle, rgba(255,214,0,0.05) 0%, transparent 70%);
 }
 
 .chip {
@@ -139,7 +130,6 @@ body{
 .balance-title { color: var(--muted); font-size: 14px; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 1px;}
 .balance-amount { font-size: 38px; font-weight: 800; letter-spacing: -1px; text-shadow: 0 0 15px rgba(255,255,255,0.1); }
 
-/* Задняя сторона */
 .card-back {
     background: linear-gradient(135deg, #111118 0%, #1e1e2e 100%);
     transform: rotateY(180deg);
@@ -161,13 +151,15 @@ body{
     background: rgba(255,255,255,0.05);
     padding: 10px;
     border-radius: 8px;
+    text-align: center;
 }
 
 /* --- ТАБЫ --- */
-.tabs { display: flex; gap: 10px; margin-bottom: 20px; }
+.tabs { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
 .tabs button {
-    flex: 1; padding: 12px; border-radius: 14px; border: none;
+    flex: 1 1 45%; padding: 10px; border-radius: 12px; border: none;
     background: var(--glass); color: var(--muted); cursor: pointer; transition: 0.3s;
+    font-size: 13px;
 }
 .tabs button.active { background: var(--accent); color: #000; font-weight: 600; }
 
@@ -181,18 +173,16 @@ body{
 .block input, .block select { background: var(--input); color: white; border: 1px solid transparent; }
 .block input:focus { border-color: var(--accent); }
 .block button { background: var(--accent); font-weight: 700; cursor: pointer; transition: 0.3s; }
-.block button:hover { opacity: 0.9; transform: scale(0.98); }
 
 /* --- ИСТОРИЯ --- */
 .history-item {
     background: var(--glass); padding: 16px; border-radius: 18px; margin-bottom: 12px;
-    border-left: 4px solid transparent; transition: 0.3s;
+    border-left: 4px solid transparent;
 }
 .history-item.in { border-left-color: var(--success); }
 .history-item.out { border-left-color: var(--error); }
 
 .hist-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
-.hist-name { font-weight: 600; }
 .hist-sum { font-weight: 700; }
 .hist-comm { 
     background: rgba(255,255,255,0.05); padding: 6px 12px; border-radius: 10px; 
@@ -206,8 +196,8 @@ body{
 <body>
 
 <div class="auth" id="auth">
-    <h1>PayBank</h1>
-    <p>Войдите в свой аккаунт</p>
+    <h1>Profit Bank</h1>
+    <p>Доступ к вашим активам</p>
     <input id="email" placeholder="Email">
     <input id="password" type="password" placeholder="Пароль">
     <button onclick="login()">Войти в систему</button>
@@ -220,15 +210,13 @@ body{
                 <div class="chip"></div>
                 <div class="balance-title">Ваш баланс</div>
                 <div class="balance-amount" id="balance">0 ₽</div>
-                <div style="position:absolute; bottom:25px; right:25px; opacity:0.3">
-                    <svg width="40" height="40" viewBox="0 0 24 24" fill="white"><path d="M20 4H4c-1.11 0-1.99.89-1.99 2L2 18c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v8z"/></svg>
-                </div>
+                <div style="position:absolute; bottom:25px; right:25px; opacity:0.3; font-weight:bold; font-style:italic">PROFIT</div>
             </div>
             <div class="card-face card-back">
                 <div class="mag-stripe"></div>
                 <div class="card-number-label">НОМЕР КАРТЫ</div>
                 <div class="card-number-val" id="cardNumber">0000 0000 0000 0000</div>
-                <div style="margin-top:20px; font-size:10px; color:var(--muted)">PAYBANK PREMIUM MEMBER</div>
+                <div style="margin-top:20px; font-size:10px; color:var(--muted)">PROFIT BANK PLATINUM</div>
             </div>
         </div>
     </div>
@@ -237,6 +225,7 @@ body{
         <button onclick="openTab('transferTab',this)" class="active">Переводы</button>
         <button onclick="openTab('nfcTab',this)">NFC</button>
         <button onclick="openTab('historyTab',this)">История</button>
+        <button onclick="openTab('profileTab',this)">Профиль</button>
     </div>
 
     <div id="transferTab">
@@ -265,7 +254,18 @@ body{
         <div id="history"></div>
     </div>
 
-    <button class="block logout" onclick="logout()">Завершить сессию</button>
+    <div id="profileTab" class="hidden">
+        <div class="block">
+            <h3>Безопасность</h3>
+            <p style="font-size:12px; color:var(--muted)">Здесь вы можете обновить пароль от аккаунта Profit Bank.</p>
+            <input id="newPassword" type="password" placeholder="Новый пароль">
+            <input id="confirmPassword" type="password" placeholder="Подтвердите пароль">
+            <button onclick="changePassword()" style="background:#fff; color:#000">Обновить пароль</button>
+            <div id="passwordStatus" style="margin-top:10px; font-size:13px; text-align:center"></div>
+        </div>
+    </div>
+
+    <button class="block logout" onclick="logout()">Выйти из Profit Bank</button>
 </div>
 
 <script>
@@ -287,7 +287,7 @@ function getName(e){return names[e]||e;}
 function flipCard(){ document.getElementById('bankCard').classList.toggle('flipped'); }
 
 function openTab(id,btn){
-    document.querySelectorAll('#transferTab,#nfcTab,#historyTab').forEach(e=>e.classList.add('hidden'));
+    document.querySelectorAll('#transferTab,#nfcTab,#historyTab,#profileTab').forEach(e=>e.classList.add('hidden'));
     document.getElementById(id).classList.remove('hidden');
     document.querySelectorAll('.tabs button').forEach(b=>b.classList.remove('active'));
     btn.classList.add('active');
@@ -296,13 +296,12 @@ function openTab(id,btn){
 async function login(){
     const email=document.getElementById('email').value.trim();
     const password=document.getElementById('password').value.trim();
-    
-    if(!email || !password) return alert('Заполните все поля');
+    if(!email || !password) return alert('Введите данные');
 
     const r=await fetch(API,{method:'POST',body:JSON.stringify({action:'login',email,password})});
     const d=await r.json();
 
-    if(!d.success) return alert('Неверные данные для входа');
+    if(!d.success) return alert('Ошибка авторизации');
 
     userEmail=email;
     document.getElementById('balance').textContent=d.balance+' ₽';
@@ -311,11 +310,53 @@ async function login(){
     document.getElementById('auth').classList.add('hidden');
     document.getElementById('app').classList.remove('hidden');
 
-    if(Notification.permission!=="granted") Notification.requestPermission();
-    
     loadUsers();
     loadHistory();
     startAutoUpdate();
+}
+
+async function changePassword(){
+    const newPass = document.getElementById('newPassword').value;
+    const confirmPass = document.getElementById('confirmPassword').value;
+    const status = document.getElementById('passwordStatus');
+
+    if(newPass.length < 4) {
+        status.textContent = "Пароль слишком короткий";
+        status.style.color = "var(--error)";
+        return;
+    }
+    if(newPass !== confirmPass) {
+        status.textContent = "Пароль не совпадает";
+        status.style.color = "var(--error)";
+        return;
+    }
+
+    status.textContent = "Обновление...";
+    status.style.color = "var(--accent)";
+
+    try {
+        const r = await fetch(API, {
+            method: 'POST',
+            body: JSON.stringify({
+                action: 'changePassword',
+                email: userEmail,
+                newPassword: newPass
+            })
+        });
+        const d = await r.json();
+        if(d.success) {
+            status.textContent = "Пароль успешно изменен!";
+            status.style.color = "var(--success)";
+            document.getElementById('newPassword').value = '';
+            document.getElementById('confirmPassword').value = '';
+        } else {
+            status.textContent = "Ошибка сервера";
+            status.style.color = "var(--error)";
+        }
+    } catch(e) {
+        status.textContent = "Нет связи с банком";
+        status.style.color = "var(--error)";
+    }
 }
 
 async function transfer(){
@@ -323,9 +364,8 @@ async function transfer(){
     const amountVal=Number(document.getElementById('amount').value);
     const commentVal=document.getElementById('comment').value;
 
-    if(!toUser || amountVal<=0) return alert('Укажите получателя и сумму');
+    if(!toUser || amountVal<=0) return alert('Проверьте сумму');
 
-    // Очистка полей
     document.getElementById('amount').value='';
     document.getElementById('comment').value='';
 
@@ -351,8 +391,8 @@ async function loadHistory(){
 
     if(lastTxCount!==0 && newHistory.length > lastTxCount){
         const last = newHistory[0];
-        const pushTitle = last[1] === userEmail ? "💸 Списание" : "💰 Пополнение";
-        pushNotify(pushTitle, `${last[3]} ₽`);
+        const pushTitle = last[1] === userEmail ? "💸 Profit Bank: Списание" : "💰 Profit Bank: Пополнение";
+        if(Notification.permission==="granted") new Notification(pushTitle, {body: `${last[3]} ₽`});
     }
     
     lastTxCount = newHistory.length;
@@ -397,7 +437,7 @@ function startAutoUpdate(){
 
 async function loadUsers(){
     const select = document.getElementById('to');
-    select.innerHTML = '<option value="">Выберите получателя</option>';
+    select.innerHTML = '<option value="">Получатель</option>';
     Object.keys(names).filter(e => e !== userEmail).forEach(e => {
         const opt = document.createElement('option');
         opt.value = e;
@@ -407,33 +447,26 @@ async function loadUsers(){
 }
 
 function downloadStatement(){
-    let txt = "PAYBANK STATEMENT\n================\n";
+    let txt = "PROFIT BANK STATEMENT\n================\n";
     lastHistory.forEach(h => {
         txt += `${new Date(h[0]).toLocaleString()} | ${h[1]===userEmail?'-':'+'}${h[3]} ₽ | ${h[4]||''}\n`;
     });
     const blob = new Blob([txt], {type:'text/plain'});
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
-    a.download = 'statement.txt';
+    a.download = 'profit_bank_statement.txt';
     a.click();
-}
-
-function pushNotify(title,body){
-    if(Notification.permission==="granted") new Notification(title,{body});
 }
 
 async function startNFC(){
     const status=document.getElementById('nfcStatus');
-    if(!('NDEFReader' in window)) return status.textContent='NFC не поддерживается вашим устройством';
+    if(!('NDEFReader' in window)) return status.textContent='NFC не поддерживается';
     try {
         const reader = new NDEFReader();
         await reader.scan();
-        status.textContent = '📡 Поднесите карту к телефону...';
-        reader.onreading = e => {
-            status.textContent = '✅ Карта считана!';
-            pushNotify('NFC', 'Карта успешно распознана');
-        };
-    } catch(err) { status.textContent = 'Ошибка NFC: ' + err; }
+        status.textContent = '📡 Поднесите карту Profit Bank...';
+        reader.onreading = () => { status.textContent = '✅ Карта распознана!'; };
+    } catch(err) { status.textContent = 'Ошибка доступа к NFC'; }
 }
 
 function logout(){ location.reload(); }
