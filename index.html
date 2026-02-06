@@ -158,37 +158,31 @@ transform:translateY(0);
 </div>
 </div>
 
-<!-- 🔥 ВКЛАДКИ -->
 <div class="tabs">
 <button onclick="openTab('transferTab',this)" class="active">Переводы</button>
 <button onclick="openTab('nfcTab',this)">NFC</button>
 <button onclick="openTab('historyTab',this)">История</button>
 </div>
 
-<!-- ПЕРЕВОДЫ -->
 <div id="transferTab">
-
 <div class="block">
 <select id="to"></select>
 <input id="amount" type="number" placeholder="Сумма">
 <input id="comment" placeholder="Комментарий">
 <button onclick="transfer()">Перевести</button>
 </div>
-
 </div>
 
-<!-- NFC -->
 <div id="nfcTab" class="hidden">
-
 <div class="block">
 <h3>Приложить карту</h3>
 <button onclick="startNFC()">📡 Начать сканирование</button>
+<button onclick="bindNFCCard()">🔗 Привязать карту</button>
+<button onclick="unbindNFCCard()">❌ Отвязать карту</button>
 <div id="nfcStatus"></div>
 </div>
-
 </div>
 
-<!-- ИСТОРИЯ -->
 <div id="historyTab" class="hidden">
 
 <div class="block">
@@ -237,48 +231,53 @@ const historyEl=document.getElementById('history');
 function openTab(id,btn){
 document.querySelectorAll('#transferTab,#nfcTab,#historyTab')
 .forEach(e=>e.classList.add('hidden'));
-
 document.getElementById(id).classList.remove('hidden');
-
 document.querySelectorAll('.tabs button')
 .forEach(b=>b.classList.remove('active'));
-
 btn.classList.add('active');
 }
 
 async function startNFC(){
-
 const status=document.getElementById('nfcStatus');
-
 if(!('NDEFReader' in window)){
 status.textContent='NFC не поддерживается';
 return;
 }
-
 const reader=new NDEFReader();
-
 await reader.scan();
-
 status.textContent='📡 Поднесите карту...';
-
 reader.onreading=e=>{
-
-const id=e.serialNumber;
-
-status.textContent='💳 Карта считана: '+id;
-
-if(id===cardNumber.textContent){
-pushNotify('💳 Ваша карта',balance.textContent);
-}else{
-to.value=findUserByCard(id);
-pushNotify('💳 Получатель выбран','Можно переводить');
-}
-
+status.textContent='💳 Карта считана: '+e.serialNumber;
 };
 }
 
-function findUserByCard(card){
-return Object.keys(names)[0];
+async function bindNFCCard(){
+const status=document.getElementById('nfcStatus');
+if(!('NDEFReader' in window)){
+status.textContent='NFC не поддерживается';
+return;
+}
+const reader=new NDEFReader();
+await reader.scan();
+status.textContent='📲 Приложите карту...';
+reader.onreading=async e=>{
+await fetch(API,{
+method:'POST',
+body:JSON.stringify({action:'bindCard',email:userEmail,uid:e.serialNumber})
+});
+status.textContent='✅ Карта привязана';
+pushNotify("💳 Карта привязана","Теперь она связана с аккаунтом");
+};
+}
+
+async function unbindNFCCard(){
+const status=document.getElementById('nfcStatus');
+await fetch(API,{
+method:'POST',
+body:JSON.stringify({action:'unbindCard',email:userEmail})
+});
+status.textContent='❌ Карта отвязана';
+pushNotify("💳 Карта отвязана","Карта удалена из аккаунта");
 }
 
 function pushNotify(title,body){
@@ -299,90 +298,65 @@ bankCard.classList.toggle('flipped');
 }
 
 async function login(){
-
 const email=emailInput.value.trim();
 const password=passwordInput.value.trim();
-
 const r=await fetch(API,{method:'POST',body:JSON.stringify({action:'login',email,password})});
 const d=await r.json();
-
 if(!d.success) return alert('Ошибка входа');
-
 userEmail=email;
 balance.textContent=d.balance+' ₽';
 cardNumber.textContent=d.card||'0000 0000 0000 0000';
-
 auth.classList.add('hidden');
 app.classList.remove('hidden');
-
 if(Notification.permission!=="granted"){
 Notification.requestPermission();
 }
-
 loadUsers();
 loadHistory();
 startAutoUpdate();
 }
 
 function startAutoUpdate(){
-
 if(autoUpdateInterval) clearInterval(autoUpdateInterval);
-
 autoUpdateInterval=setInterval(async ()=>{
 await refreshBalance();
 await loadHistory();
 },5000);
-
 }
 
 async function refreshBalance(){
-
 const r=await fetch(API,{
 method:'POST',
 body:JSON.stringify({action:'balance',email:userEmail})
 });
-
 const d=await r.json();
-
 if(d.balance!==undefined){
 balance.textContent=d.balance+' ₽';
 }
-
 }
 
 async function loadUsers(){
-
 to.innerHTML='<option value="">Получатель</option>';
-
 Object.keys(names).filter(e=>e!==userEmail).forEach(e=>{
 const o=document.createElement('option');
 o.value=e;
 o.textContent=getName(e);
 to.appendChild(o);
 });
-
 }
 
 function addTransactionInstant(toUser,amountVal){
-
 const div=document.createElement('div');
 div.className='history-item out';
-
-div.innerHTML=`
-<b>Перевод: ${getName(toUser)} — ${amountVal} ₽</b><br>
-<small>только что</small>
-`;
-
+div.innerHTML=`<b>Перевод: ${getName(toUser)} — ${amountVal} ₽</b><br><small>только что</small>`;
 historyEl.prepend(div);
 }
 
 async function transfer(){
-
 const amountVal=Number(amount.value);
 if(!to.value||amountVal<=0) return;
-
 addTransactionInstant(to.value,amountVal);
-
+pushNotify("💸 Перевод отправлен",`-${amountVal} ₽`);
 await fetch(API,{
 method:'POST',
 body:JSON.stringify({
@@ -393,92 +367,66 @@ amount:amountVal,
 comment:comment.value
 })
 });
-
 await refreshBalance();
 await loadHistory();
-
 comment.value='';
 amount.value='';
 }
 
 async function loadHistory(){
-
 const r=await fetch(API,{
 method:'POST',
 body:JSON.stringify({action:'history',email:userEmail})
 });
-
 const d=await r.json();
 const newHistory=d.history||[];
-
 if(lastTxCount!==0 && newHistory.length>lastTxCount){
-
 const newTx=newHistory[0];
-
 const from=newTx[1];
 const amountVal=newTx[3];
-
 if(from===userEmail){
 pushNotify("💸 Списание",`-${amountVal} ₽`);
 }else{
-pushNotify("💰 Зачисление",`+${amountVal} ₽`);
+pushNotify("💰 Поступление",`+${amountVal} ₽`);
 }
-
 }
-
 lastTxCount=newHistory.length;
 lastHistory=newHistory;
-
 historyEl.innerHTML='<h3>История операций</h3>';
-
 lastHistory.forEach(h=>{
-
 const from=h[1];
 const toUser=h[2];
 const amountVal=h[3];
 const dateVal=new Date(h[0]).toLocaleString();
-
 const type=from===userEmail?'out':'in';
-
 const div=document.createElement('div');
 div.className='history-item '+type;
-
-div.innerHTML=`
-<b>${type==='out'
+div.innerHTML=`<b>${type==='out'
 ?`Перевод: ${getName(toUser)} — ${amountVal} ₽`
 :`Зачисление: ${getName(from)} — ${amountVal} ₽`
-}</b><br>
-<small>${dateVal}</small>
-`;
-
+}</b><br><small>${dateVal}</small>`;
 historyEl.appendChild(div);
 });
-
 }
 
 function downloadStatement(){
-
 let text='Выписка PayBank\n\n';
-
 lastHistory.forEach(h=>{
 const from=h[1];
 const toUser=h[2];
 const amountVal=h[3];
 const dateVal=new Date(h[0]).toLocaleString();
-
 if(from===userEmail){
 text+=`${dateVal} | Перевод ${getName(toUser)} | ${amountVal} ₽\n`;
 }else{
 text+=`${dateVal} | Зачисление ${getName(from)} | ${amountVal} ₽\n`;
 }
 });
-
 const blob=new Blob([text],{type:'text/plain'});
 const a=document.createElement('a');
 a.href=URL.createObjectURL(blob);
 a.download='paybank_vypiska.txt';
 a.click();
-
 }
 
 function logout(){
