@@ -2,9 +2,9 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Profit Bank Premium</title>
+    <title>Profit Bank Premium Social</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
     <style>
         :root {
             --bg: #050508;
@@ -16,10 +16,15 @@
             --muted: #8e8e9a;
             --success: #00ff88;
             --error: #ff3d71;
-            --glass: rgba(255, 255, 255, 0.03);
+            --glass: rgba(255, 255, 255, 0.05);
         }
 
-        * { box-sizing: border-box; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
+        * {
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+            outline: none;
+        }
 
         body {
             margin: 0;
@@ -30,65 +35,70 @@
             display: flex;
             justify-content: center;
             align-items: flex-start;
-            padding: 20px 10px;
+            padding: 20px 15px;
         }
 
         .hidden { display: none !important; }
 
-        /* --- ЭКРАН ВХОДА --- */
+        /* --- АВТОРИЗАЦИЯ --- */
         .auth-container {
             background: var(--card);
             padding: 40px 30px;
-            border-radius: 32px;
+            border-radius: 35px;
             width: 100%;
             max-width: 380px;
-            box-shadow: 0 25px 50px rgba(0,0,0,0.5);
-            border: 1px solid rgba(255,255,255,0.05);
+            box-shadow: 0 30px 60px rgba(0,0,0,0.6);
+            border: 1px solid var(--glass);
             text-align: center;
-            margin-top: 50px;
+            margin-top: 40px;
+            animation: fadeIn 0.8s ease;
         }
 
-        .auth-container h1 { margin: 0 0 10px; font-size: 32px; font-weight: 800; color: var(--accent); }
-        .auth-container p { color: var(--muted); margin-bottom: 30px; font-size: 14px; }
+        .auth-container h1 { font-size: 34px; font-weight: 900; color: var(--accent); margin: 0 0 10px; }
+        .auth-container p { color: var(--muted); font-size: 14px; margin-bottom: 30px; }
 
-        .field { margin-bottom: 15px; text-align: left; }
-        .field label { display: block; color: var(--muted); font-size: 12px; margin-left: 10px; margin-bottom: 5px; }
+        /* --- ПОЛЯ ВВОДА --- */
+        .field { margin-bottom: 20px; text-align: left; }
+        .field label { display: block; color: var(--muted); font-size: 12px; margin-left: 12px; margin-bottom: 8px; font-weight: 600; }
 
         input, select {
             width: 100%;
-            padding: 16px;
+            padding: 18px;
             background: var(--input);
-            border: 1px solid rgba(255,255,255,0.05);
-            border-radius: 18px;
+            border: 1px solid var(--glass);
+            border-radius: 20px;
             color: #fff;
             font-size: 16px;
-            outline: none;
-            transition: 0.3s;
+            transition: all 0.3s ease;
         }
 
-        input:focus { border-color: var(--accent); box-shadow: 0 0 15px var(--accent-glow); }
+        input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 20px var(--accent-glow);
+            background: #232332;
+        }
 
         .btn-main {
             width: 100%;
-            padding: 18px;
+            padding: 20px;
             background: var(--accent);
             border: none;
-            border-radius: 18px;
+            border-radius: 20px;
             color: #000;
             font-weight: 800;
             font-size: 16px;
             cursor: pointer;
-            margin-top: 20px;
-            transition: 0.3s;
+            margin-top: 10px;
+            transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
-        .btn-main:active { transform: scale(0.96); }
+        .btn-main:active { transform: scale(0.95); }
 
-        /* --- ПРИЛОЖЕНИЕ --- */
-        .app-shell { width: 100%; max-width: 420px; }
+        /* --- ОСНОВНОЕ ПРИЛОЖЕНИЕ --- */
+        .app-shell { width: 100%; max-width: 420px; animation: fadeIn 0.5s ease; }
 
-        /* КАРТА */
-        .card-wrap { perspective: 1000px; margin-bottom: 25px; height: 220px; }
+        /* --- 3D КАРТА --- */
+        .card-wrap { perspective: 1200px; margin-bottom: 30px; height: 230px; }
         .card {
             width: 100%;
             height: 100%;
@@ -103,151 +113,231 @@
             position: absolute;
             inset: 0;
             backface-visibility: hidden;
-            border-radius: 28px;
+            border-radius: 30px;
             padding: 25px;
             border: 1px solid rgba(255,255,255,0.1);
             display: flex;
             flex-direction: column;
             justify-content: space-between;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.4);
         }
 
-        .card-front { background: linear-gradient(135deg, #1e1e2e, #111118); }
-        .card-back { background: linear-gradient(135deg, #111118, #1e1e2e); transform: rotateY(180deg); text-align: center; justify-content: center; }
+        .card-front {
+            background: linear-gradient(135deg, #1e1e2e, #111118);
+            overflow: hidden;
+        }
+        .card-front::after {
+            content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(255,255,255,0.03), transparent);
+            transform: rotate(45deg); pointer-events: none;
+        }
 
-        .card-header { display: flex; justify-content: space-between; align-items: flex-start; }
-        .avatar-img { width: 65px; height: 65px; border-radius: 50%; object-fit: cover; border: 2px solid var(--accent); background: #222; }
-        .chip { width: 45px; height: 35px; background: linear-gradient(135deg, #fceabb, #f8b500); border-radius: 8px; }
+        .card-back {
+            background: linear-gradient(135deg, #111118, #1e1e2e);
+            transform: rotateY(180deg);
+            text-align: center;
+            justify-content: center;
+        }
 
-        .balance-label { color: var(--muted); font-size: 14px; text-transform: uppercase; letter-spacing: 1px; }
-        .balance-val { font-size: 36px; font-weight: 800; margin-top: 5px; }
+        .avatar-img {
+            width: 75px;
+            height: 75px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid var(--accent);
+            background: #222;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+        }
 
-        .card-no { font-family: 'Courier New', monospace; font-size: 20px; letter-spacing: 2px; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 10px; }
+        .balance-label { color: var(--muted); font-size: 13px; text-transform: uppercase; letter-spacing: 1.5px; }
+        .balance-val { font-size: 38px; font-weight: 900; margin-top: 5px; color: #fff; }
 
-        /* НАВИГАЦИЯ */
+        .card-no-box {
+            font-family: 'Courier New', monospace;
+            font-size: 21px;
+            letter-spacing: 3px;
+            background: rgba(0,0,0,0.4);
+            padding: 15px;
+            border-radius: 15px;
+            display: inline-block;
+        }
+
+        /* --- ТАБЫ (НАВИГАЦИЯ) --- */
         .nav-tabs {
             display: flex;
-            gap: 8px;
-            margin-bottom: 20px;
+            gap: 10px;
+            margin-bottom: 25px;
             overflow-x: auto;
-            padding-bottom: 5px;
+            padding-bottom: 10px;
         }
         .nav-tabs::-webkit-scrollbar { display: none; }
+        
         .nav-tab {
             flex: 1;
-            min-width: 90px;
-            padding: 12px;
-            background: var(--glass);
-            border: 1px solid rgba(255,255,255,0.05);
-            border-radius: 15px;
+            min-width: 95px;
+            padding: 14px;
+            background: var(--card);
+            border: 1px solid var(--glass);
+            border-radius: 18px;
             color: var(--muted);
             font-size: 12px;
-            font-weight: 600;
+            font-weight: 700;
             text-align: center;
             cursor: pointer;
             transition: 0.3s;
         }
-        .nav-tab.active { background: var(--accent); color: #000; border-color: var(--accent); }
+        .nav-tab.active { background: var(--accent); color: #000; border-color: var(--accent); transform: translateY(-3px); }
 
-        /* КОНТЕНТ */
-        .content-section { animation: fadeIn 0.4s ease; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        /* --- СЕКЦИИ КОНТЕНТА --- */
+        .content-section { animation: slideIn 0.4s ease-out; }
+        @keyframes slideIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
-        .block { background: var(--card); border-radius: 24px; padding: 20px; border: 1px solid rgba(255,255,255,0.05); margin-bottom: 15px; }
-        .block h3 { margin: 0 0 15px; font-size: 18px; font-weight: 700; }
-
-        /* ЧАТ */
-        .chat-container { height: 300px; display: flex; flex-direction: column; }
-        .chat-messages { flex: 1; overflow-y: auto; padding-right: 5px; display: flex; flex-direction: column-reverse; }
-        .chat-messages::-webkit-scrollbar { width: 3px; }
-        .chat-messages::-webkit-scrollbar-thumb { background: var(--muted); border-radius: 10px; }
-        
-        .chat-msg { margin-bottom: 12px; font-size: 14px; line-height: 1.4; }
-        .chat-msg b { color: var(--accent); display: block; font-size: 11px; text-transform: uppercase; }
-        .chat-msg span { background: var(--input); padding: 8px 12px; border-radius: 14px; display: inline-block; margin-top: 4px; }
-
-        /* ИСТОРИЯ */
-        .hist-card {
-            display: flex; justify-content: space-between; align-items: center;
-            padding: 15px; background: var(--glass); border-radius: 18px; margin-bottom: 10px;
-            border-left: 4px solid var(--accent);
+        .block {
+            background: var(--card);
+            border-radius: 28px;
+            padding: 25px;
+            border: 1px solid var(--glass);
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
         }
-        .hist-info b { display: block; font-size: 15px; }
-        .hist-info small { color: var(--muted); font-size: 11px; }
-        .hist-sum { font-weight: 800; font-size: 16px; }
+        .block h3 { margin: 0 0 20px; font-size: 19px; font-weight: 800; display: flex; align-items: center; gap: 10px; }
 
-        .logout-btn { background: none; border: 1px solid var(--error); color: var(--error); margin-top: 20px; width: 100%; padding: 15px; border-radius: 18px; font-weight: 600; cursor: pointer; }
+        /* --- ЧАТ --- */
+        .chat-container { height: 350px; display: flex; flex-direction: column; }
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column-reverse;
+            padding-right: 5px;
+        }
+        .chat-messages::-webkit-scrollbar { width: 4px; }
+        .chat-messages::-webkit-scrollbar-thumb { background: var(--glass); border-radius: 10px; }
+
+        .chat-item {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 18px;
+            align-items: flex-start;
+            animation: fadeIn 0.3s ease;
+        }
+        .chat-ava { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 1.5px solid var(--accent); flex-shrink: 0; }
+        .chat-bubble {
+            background: var(--input);
+            padding: 12px 16px;
+            border-radius: 20px;
+            border-top-left-radius: 4px;
+            max-width: 80%;
+        }
+        .chat-bubble b { display: block; color: var(--accent); font-size: 11px; text-transform: uppercase; margin-bottom: 4px; }
+        .chat-bubble p { margin: 0; font-size: 14px; line-height: 1.5; color: #eee; }
+
+        /* --- ИСТОРИЯ --- */
+        .hist-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 18px;
+            background: var(--glass);
+            border-radius: 20px;
+            margin-bottom: 12px;
+            border-left: 5px solid var(--accent);
+            transition: 0.3s;
+        }
+        .hist-item:active { background: rgba(255,255,255,0.08); }
+        .hist-meta b { display: block; font-size: 15px; margin-bottom: 4px; }
+        .hist-meta span { color: var(--muted); font-size: 11px; }
+        .hist-amount { font-weight: 900; font-size: 17px; }
+
+        /* --- ПРОЧЕЕ --- */
+        .logout-btn {
+            background: none;
+            border: 1.5px solid var(--error);
+            color: var(--error);
+            margin: 20px 0 40px;
+            width: 100%;
+            padding: 18px;
+            border-radius: 20px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .logout-btn:active { background: var(--error); color: #fff; }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     </style>
 </head>
 <body>
 
     <div id="authScreen" class="auth-container">
         <h1>Profit Bank</h1>
-        <p>Премиальный банкинг для вас</p>
+        <p>Войдите в свой личный кабинет</p>
         <div class="field">
-            <label>Электронная почта</label>
-            <input type="email" id="loginEmail" placeholder="example@mail.ru">
+            <label>E-MAIL АДРЕС</label>
+            <input type="email" id="loginEmail" placeholder="name@mail.ru">
         </div>
         <div class="field">
-            <label>Пароль</label>
+            <label>ПАРОЛЬ</label>
             <input type="password" id="loginPass" placeholder="••••••••">
         </div>
-        <button class="btn-main" onclick="handleLogin()">Войти в систему</button>
+        <button class="btn-main" onclick="handleLogin()">АВТОРИЗОВАТЬСЯ</button>
     </div>
 
     <div id="appScreen" class="app-shell hidden">
+        
         <div class="card-wrap">
             <div class="card" id="mainCard" onclick="this.classList.toggle('flipped')">
                 <div class="card-face card-front">
-                    <div class="card-header">
+                    <div style="display:flex; justify-content:space-between; align-items:flex-start;">
                         <img id="avatarDisp" src="https://via.placeholder.com/100" class="avatar-img">
-                        <div class="chip"></div>
+                        <div style="width:50px; height:35px; background:linear-gradient(135deg, #ffd600, #ffaa00); border-radius:8px;"></div>
                     </div>
                     <div>
-                        <div class="balance-label">Доступный баланс</div>
+                        <div class="balance-label">Доступные средства</div>
                         <div id="balanceDisp" class="balance-val">0 ₽</div>
                     </div>
                 </div>
                 <div class="card-face card-back">
-                    <div style="color:var(--muted); font-size:12px; margin-bottom:10px;">НОМЕР ВАШЕЙ КАРТЫ</div>
-                    <div id="cardNoDisp" class="card-no">0000 0000 0000 0000</div>
-                    <div style="margin-top:20px; font-weight:800; color:var(--accent); font-style:italic;">PROFIT PLATINUM</div>
+                    <div style="color:var(--muted); font-size:12px; margin-bottom:12px;">НОМЕР ПЛАСТИКОВОЙ КАРТЫ</div>
+                    <div id="cardNoDisp" class="card-no-box">0000 0000 0000 0000</div>
+                    <div style="margin-top:25px; font-weight:900; color:var(--accent); font-style:italic; letter-spacing:2px;">PROFIT PLATINUM</div>
                 </div>
             </div>
         </div>
 
         <div class="nav-tabs">
-            <div class="nav-tab active" onclick="showTab('pay', this)">Переводы</div>
-            <div class="nav-tab" onclick="showTab('chat', this)">Чат</div>
-            <div class="nav-tab" onclick="showTab('history', this)">История</div>
-            <div class="nav-tab" onclick="showTab('profile', this)">Профиль</div>
+            <div class="nav-tab active" onclick="showTab('pay', this)">ПЕРЕВОДЫ</div>
+            <div class="nav-tab" onclick="showTab('chat', this)">ОБЩИЙ ЧАТ</div>
+            <div class="nav-tab" onclick="showTab('history', this)">ИСТОРИЯ</div>
+            <div class="nav-tab" onclick="showTab('profile', this)">ПРОФИЛЬ</div>
         </div>
 
         <div id="tab-pay" class="content-section">
             <div class="block">
-                <h3>Новый перевод</h3>
+                <h3>💸 Новый перевод</h3>
                 <div class="field">
-                    <label>Получатель</label>
+                    <label>ПОЛУЧАТЕЛЬ</label>
                     <select id="payTarget"></select>
                 </div>
                 <div class="field">
-                    <label>Сумма перевода</label>
+                    <label>СУММА (₽)</label>
                     <input type="number" id="payAmount" placeholder="0.00">
                 </div>
                 <div class="field">
-                    <label>Комментарий</label>
-                    <input type="text" id="payComm" placeholder="За обед...">
+                    <label>КОММЕНТАРИЙ</label>
+                    <input type="text" id="payComm" placeholder="Напишите за что...">
                 </div>
-                <button class="btn-main" onclick="handleTransfer()">Отправить деньги</button>
+                <button class="btn-main" onclick="handleTransfer()">ОТПРАВИТЬ СРЕДСТВА</button>
             </div>
         </div>
 
         <div id="tab-chat" class="content-section hidden">
             <div class="block chat-container">
-                <h3>Общий чат</h3>
+                <h3>💬 Чат банковского сообщества</h3>
                 <div id="chatBox" class="chat-messages"></div>
                 <div style="display:flex; gap:10px; margin-top:15px;">
-                    <input type="text" id="chatMsgInput" placeholder="Ваше сообщение...">
-                    <button class="btn-main" style="width:70px; margin-top:0;" onclick="handleSendChat()">→</button>
+                    <input type="text" id="chatMsgInput" placeholder="Введите сообщение..." style="padding:15px;">
+                    <button class="btn-main" style="width:70px; margin:0;" onclick="handleSendChat()">→</button>
                 </div>
             </div>
         </div>
@@ -258,25 +348,26 @@
 
         <div id="tab-profile" class="content-section hidden">
             <div class="block">
-                <h3>Ваше селфи</h3>
-                <button class="btn-main" style="background:var(--input); color:#fff; border:1px solid var(--accent);" onclick="handleCamera()">📸 Сделать новое фото</button>
+                <h3>📸 Идентификация</h3>
+                <p style="color:var(--muted); font-size:12px; margin-bottom:15px;">Обновите свое селфи, чтобы другие пользователи видели вас в чате и при переводах.</p>
+                <button class="btn-main" style="background:var(--input); color:#fff; border:1px solid var(--accent);" onclick="handleCamera()">СДЕЛАТЬ НОВОЕ ФОТО</button>
             </div>
             <div class="block">
-                <h3>Безопасность</h3>
+                <h3>🔐 Безопасность</h3>
                 <div class="field">
-                    <label>Новый пароль</label>
-                    <input type="password" id="newPassInput" placeholder="Минимум 4 символа">
+                    <label>НОВЫЙ ПАРОЛЬ</label>
+                    <input type="password" id="newPassInput" placeholder="Минимум 4 знака">
                 </div>
-                <button class="btn-main" onclick="handleUpdatePass()">Обновить пароль</button>
+                <button class="btn-main" onclick="handleUpdatePass()">ИЗМЕНИТЬ ПАРОЛЬ</button>
             </div>
         </div>
 
-        <button class="logout-btn" onclick="location.reload()">Выйти из аккаунта</button>
+        <button class="logout-btn" onclick="location.reload()">ВЫЙТИ ИЗ АККАУНТА</button>
     </div>
 
     <script>
-        // ТВОЯ ССЫЛКА НА API (Google Apps Script)
-        const API_URL = 'https://script.google.com/macros/s/AKfycbyNryoaXusn4jOUeyVKmlBngmGsV8cTvWfQ3RNrM1P0TssN-17yS8Hg8LUaa-a378S4VQ/exec'; 
+        // --- КОНФИГУРАЦИЯ ---
+        const API_URL = 'https://script.google.com/macros/s/AKfycbzii6SJsgc56X41ilMWYeekf3KJql4scSIwKn4F09i3IQsRpYE72nWSaeHUQoiziWtP5w/exec'; // ВСТАВЬ СЮДА URL ИЗ GOOGLE SCRIPTS
 
         let currentUser = { email: '', name: '', avatar: '' };
         const userNames = {
@@ -286,7 +377,7 @@
             'artemant@mail.ru': 'Артем'
         };
 
-        // Переключение вкладок
+        // --- ЛОГИКА ИНТЕРФЕЙСА ---
         function showTab(tabName, el) {
             document.querySelectorAll('.content-section').forEach(s => s.classList.add('hidden'));
             document.getElementById('tab-' + tabName).classList.remove('hidden');
@@ -294,37 +385,38 @@
             el.classList.add('active');
         }
 
-        // Авторизация
+        // --- ЛОГИКА API ---
         async function handleLogin() {
-            const email = document.getElementById('loginEmail').value;
-            const pass = document.getElementById('loginPass').value;
-            if(!email || !pass) return alert("Введите данные!");
+            const email = document.getElementById('loginEmail').value.trim();
+            const pass = document.getElementById('loginPass').value.trim();
+            if(!email || !pass) return alert("Пожалуйста, заполните все поля!");
 
-            const res = await fetch(API_URL, {
-                method: 'POST',
-                body: JSON.stringify({ action: 'login', email: email, password: pass })
-            });
-            const data = await res.json();
+            try {
+                const res = await fetch(API_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({ action: 'login', email: email, password: pass })
+                });
+                const data = await res.json();
 
-            if(data.success) {
-                currentUser.email = email;
-                currentUser.name = userNames[email] || email;
-                
-                document.getElementById('balanceDisp').innerText = data.balance + ' ₽';
-                document.getElementById('cardNoDisp').innerText = data.card;
-                if(data.avatar) document.getElementById('avatarDisp').src = data.avatar;
+                if(data.success) {
+                    currentUser.email = email;
+                    currentUser.name = userNames[email] || email;
+                    
+                    document.getElementById('balanceDisp').innerText = (data.balance || 0) + ' ₽';
+                    document.getElementById('cardNoDisp').innerText = data.card || '4400 0000 0000 0000';
+                    if(data.avatar) document.getElementById('avatarDisp').src = data.avatar;
 
-                document.getElementById('authScreen').classList.add('hidden');
-                document.getElementById('appScreen').classList.remove('hidden');
+                    document.getElementById('authScreen').classList.add('hidden');
+                    document.getElementById('appScreen').classList.remove('hidden');
 
-                initUserList();
-                startSync();
-            } else {
-                alert("Ошибка входа!");
-            }
+                    initUserList();
+                    startSync();
+                } else {
+                    alert("Ошибка авторизации! Проверьте данные.");
+                }
+            } catch(e) { alert("Ошибка подключения к серверу!"); }
         }
 
-        // Список пользователей для перевода
         function initUserList() {
             const sel = document.getElementById('payTarget');
             sel.innerHTML = '<option value="">Выберите получателя</option>';
@@ -335,25 +427,29 @@
             }
         }
 
-        // Перевод денег
         async function handleTransfer() {
             const to = document.getElementById('payTarget').value;
             const sum = document.getElementById('payAmount').value;
             const comm = document.getElementById('payComm').value;
 
-            if(!to || sum <= 0) return alert("Проверьте данные перевода!");
+            if(!to || sum <= 0) return alert("Укажите получателя и корректную сумму!");
 
-            await fetch(API_URL, {
+            const res = await fetch(API_URL, {
                 method: 'POST',
                 body: JSON.stringify({ action: 'transfer', from: currentUser.email, to: to, amount: sum, comment: comm })
             });
-
-            document.getElementById('payAmount').value = '';
-            document.getElementById('payComm').value = '';
-            syncAll();
+            const data = await res.json();
+            
+            if(data.success) {
+                document.getElementById('payAmount').value = '';
+                document.getElementById('payComm').value = '';
+                alert("Перевод успешно выполнен!");
+                syncAll();
+            } else {
+                alert("Недостаточно средств или ошибка!");
+            }
         }
 
-        // Работа с камерой
         async function handleCamera() {
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
@@ -361,38 +457,36 @@
                 video.srcObject = stream;
                 await video.play();
 
-                // Снимок через секунду
-                setTimeout(() => {
+                setTimeout(async () => {
                     const canvas = document.createElement('canvas');
                     canvas.width = 200; canvas.height = 200;
                     const ctx = canvas.getContext('2d');
-                    // Обрезка под квадрат
                     ctx.drawImage(video, 0, 0, 200, 200);
                     const base64 = canvas.toDataURL('image/jpeg', 0.6);
                     
                     document.getElementById('avatarDisp').src = base64;
-                    fetch(API_URL, {
+                    await fetch(API_URL, {
                         method: 'POST',
                         body: JSON.stringify({ action: 'updateAvatar', email: currentUser.email, image: base64 })
                     });
 
                     stream.getTracks().forEach(t => t.stop());
-                    alert("Фото обновлено!");
-                }, 1000);
-            } catch(e) {
-                alert("Нет доступа к камере!");
-            }
+                    alert("Фотография профиля обновлена!");
+                    syncChat();
+                }, 1200);
+            } catch(e) { alert("Не удалось получить доступ к камере."); }
         }
 
-        // Чат
         async function handleSendChat() {
             const input = document.getElementById('chatMsgInput');
-            if(!input.value) return;
+            if(!input.value.trim()) return;
+            const text = input.value;
+            input.value = '';
+
             await fetch(API_URL, {
                 method: 'POST',
-                body: JSON.stringify({ action: 'chat', sub: 'send', name: currentUser.name, text: input.value })
+                body: JSON.stringify({ action: 'chat', sub: 'send', name: currentUser.name, email: currentUser.email, text: text })
             });
-            input.value = '';
             syncChat();
         }
 
@@ -400,61 +494,17 @@
             const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'chat', sub: 'get' }) });
             const data = await res.json();
             const box = document.getElementById('chatBox');
-            box.innerHTML = data.messages.map(m => `
-                <div class="chat-msg">
-                    <b>${m[1]}</b>
-                    <span>${m[2]}</span>
-                </div>
-            `).join('');
-        }
-
-        // Общая синхронизация
-        async function syncAll() {
-            // Баланс и История
-            const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'history', email: currentUser.email }) });
-            const data = await res.json();
-            
-            // Отрисовка истории
-            const hList = document.getElementById('historyList');
-            hList.innerHTML = '<h3>История операций</h3>';
-            data.history.forEach(h => {
-                const isOut = h[1] === currentUser.email;
-                hList.innerHTML += `
-                    <div class="hist-card" style="border-color:${isOut ? 'var(--error)' : 'var(--success)'}">
-                        <div class="hist-info">
-                            <b>${isOut ? 'Перевод: ' + (userNames[h[2]] || h[2]) : 'Зачисление: ' + (userNames[h[1]] || h[1])}</b>
-                            <small>${new Date(h[0]).toLocaleString()}</small><br>
-                            <small>${h[4] || ''}</small>
-                        </div>
-                        <div class="hist-sum" style="color:${isOut ? 'var(--error)' : 'var(--success)'}">
-                            ${isOut ? '-' : '+'}${h[3]} ₽
+            if(data.messages) {
+                box.innerHTML = data.messages.map(m => `
+                    <div class="chat-item">
+                        <img class="chat-ava" src="${m[3] || 'https://via.placeholder.com/40'}">
+                        <div class="chat-bubble">
+                            <b>${m[1]}</b>
+                            <p>${m[2]}</p>
                         </div>
                     </div>
-                `;
-            });
-
-            // Обновить баланс (берем из первого ряда истории для скорости или делаем запрос)
-            const bRes = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'balance', email: currentUser.email }) });
-            const bData = await bRes.json();
-            document.getElementById('balanceDisp').innerText = bData.balance + ' ₽';
+                `).join('');
+            }
         }
 
-        async function handleUpdatePass() {
-            const pass = document.getElementById('newPassInput').value;
-            if(pass.length < 4) return alert("Пароль от 4 символов!");
-            await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'changePassword', email: currentUser.email, newPassword: pass }) });
-            alert("Готово!");
-            document.getElementById('newPassInput').value = '';
-        }
-
-        function startSync() {
-            syncAll();
-            syncChat();
-            setInterval(() => {
-                syncAll();
-                syncChat();
-            }, 5000);
-        }
-    </script>
-</body>
-</html>
+        as
