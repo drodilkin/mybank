@@ -3,336 +3,387 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>PROFIT BANK ULTIMATE</title>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <title>PROFIT BANK ULTIMATE v11</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
     <style>
-        :root { 
-            --gold: #ffd600; 
-            --bg: #050508; 
-            --card: #0f0f13; 
-            --glass: rgba(255, 255, 255, 0.03);
+        /* --- ПЕРЕМЕННЫЕ И ОСНОВА --- */
+        :root {
+            --accent: #ffd600;
+            --bg: #050508;
+            --surface: #0f0f13;
             --border: rgba(255, 255, 255, 0.08);
-            --danger: #ff3366;
+            --text-main: #ffffff;
+            --text-dim: #666666;
+            --error: #ff3366;
             --success: #00ffaa;
+            --glass: rgba(255, 255, 255, 0.03);
         }
+
+        * { box-sizing: border-box; outline: none; -webkit-tap-highlight-color: transparent; }
         
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
-        
-        body { 
-            margin: 0; background: var(--bg); color: #fff; 
-            font-family: 'Inter', sans-serif; height: 100vh; 
-            display: flex; flex-direction: column; overflow: hidden;
+        body {
+            margin: 0; background-color: var(--bg); color: var(--text-main);
+            font-family: 'Inter', sans-serif; height: 100vh; overflow: hidden;
+            display: flex; flex-direction: column;
         }
 
-        /* ЭКРАН ВХОДА */
-        #authScreen {
-            position: fixed; inset: 0; z-index: 1000; background: var(--bg);
-            display: flex; align-items: center; justify-content: center; padding: 20px;
-            transition: 1s cubic-bezier(0.4, 0, 0.2, 1);
+        /* --- АНИМАЦИИ --- */
+        @keyframes slideIn { from { transform: translateY(50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        @keyframes pulseSuccess { 0% { box-shadow: 0 0 0 0 rgba(0, 255, 170, 0.4); } 70% { box-shadow: 0 0 0 15px rgba(0, 255, 170, 0); } 100% { box-shadow: 0 0 0 0 rgba(0, 255, 170, 0); } }
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
+
+        /* --- ЭКРАН ВХОДА --- */
+        #auth-view {
+            position: fixed; inset: 0; z-index: 9999; background: var(--bg);
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            padding: 30px; transition: 1s cubic-bezier(0.85, 0, 0.15, 1);
         }
-        #authScreen.hide { transform: translateY(-110%); pointer-events: none; }
+        #auth-view.hidden { transform: translateY(-110%); }
 
-        .login-card {
-            width: 100%; max-width: 400px; padding: 50px 30px;
-            background: var(--card); border-radius: 40px;
-            border: 1px solid var(--border); text-align: center;
-            box-shadow: 0 40px 100px rgba(0,0,0,0.8);
+        .auth-container {
+            width: 100%; max-width: 400px; text-align: center;
+            animation: slideIn 0.8s ease-out;
         }
 
-        .logo { font-family: 'Orbitron'; font-size: 35px; font-weight: 900; color: var(--gold); letter-spacing: 5px; margin-bottom: 40px; }
-
-        /* ПОЛЯ ВВОДА */
-        .field { position: relative; margin-bottom: 20px; text-align: left; }
-        .field label { font-size: 10px; color: #555; text-transform: uppercase; letter-spacing: 1px; margin-left: 15px; margin-bottom: 8px; display: block; }
-        
-        input, select {
-            width: 100%; padding: 18px 22px; background: #000; border: 1px solid #1a1a1a;
-            border-radius: 20px; color: #fff; font-size: 16px; transition: 0.3s;
-            font-family: 'Inter'; appearance: none;
+        .main-logo {
+            font-family: 'Orbitron'; font-size: 42px; font-weight: 900;
+            color: var(--accent); letter-spacing: 8px; margin-bottom: 10px;
+            text-shadow: 0 0 30px rgba(255, 214, 0, 0.3);
         }
-        input:focus, select:focus { border-color: var(--gold); box-shadow: 0 0 20px rgba(255,214,0,0.1); }
 
-        .btn {
-            width: 100%; padding: 20px; background: var(--gold); border: none;
-            border-radius: 20px; font-family: 'Orbitron'; font-weight: 900;
-            font-size: 14px; cursor: pointer; transition: 0.3s; color: #000;
-            text-transform: uppercase;
+        /* --- ИНПУТЫ И КНОПКИ --- */
+        .input-group { margin-bottom: 20px; text-align: left; }
+        .input-group label {
+            display: block; font-size: 10px; font-family: 'Orbitron';
+            color: var(--text-dim); margin-left: 15px; margin-bottom: 8px;
+            letter-spacing: 2px;
         }
-        .btn:active { transform: scale(0.96); }
-        .btn-secondary { background: transparent; color: #fff; border: 1px solid var(--border); margin-top: 10px; }
 
-        /* ОСНОВНОЕ ПРИЛОЖЕНИЕ */
-        .main-app { flex: 1; padding: 25px; overflow-y: auto; padding-bottom: 120px; }
-
-        .bal-card {
-            background: linear-gradient(135deg, #12121a 0%, #050508 100%);
-            padding: 40px 30px; border-radius: 40px; border: 1px solid var(--border);
-            margin-bottom: 35px; box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        input, select, textarea {
+            width: 100%; padding: 20px 25px; background: #000;
+            border: 1px solid #1a1a1a; border-radius: 22px;
+            color: #fff; font-size: 16px; font-family: 'Inter';
+            transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        .bal-label { font-size: 11px; color: #444; letter-spacing: 2px; font-weight: 800; margin-bottom: 10px; }
-        .bal-val { font-family: 'Orbitron'; font-size: 48px; font-weight: 900; }
-        .bal-val span { font-size: 22px; color: var(--gold); margin-left: 8px; }
-        .card-info { font-family: 'Orbitron'; font-size: 13px; color: var(--gold); opacity: 0.4; margin-top: 20px; letter-spacing: 2px; }
+        input:focus { border-color: var(--accent); box-shadow: 0 0 25px rgba(255, 214, 0, 0.1); }
 
-        /* ВКЛАДКИ */
-        .tab-content { display: none; animation: fadeInUp 0.5s ease; }
-        .tab-content.active { display: block; }
-        @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+        .primary-btn {
+            width: 100%; padding: 22px; background: var(--accent);
+            border: none; border-radius: 22px; font-family: 'Orbitron';
+            font-weight: 900; font-size: 14px; cursor: pointer;
+            color: #000; text-transform: uppercase; letter-spacing: 2px;
+            transition: 0.3s; margin-top: 10px;
+        }
+        .primary-btn:active { transform: scale(0.95); }
 
-        /* ИСТОРИЯ */
+        /* --- ГЛАВНЫЙ ИНТЕРФЕЙС --- */
+        .app-container {
+            flex: 1; padding: 25px; overflow-y: auto;
+            display: flex; flex-direction: column; padding-bottom: 120px;
+        }
+
+        .wallet-card {
+            background: linear-gradient(135deg, #1a1a25 0%, #050508 100%);
+            padding: 45px 35px; border-radius: 45px; border: 1px solid var(--border);
+            margin-bottom: 40px; position: relative; overflow: hidden;
+            box-shadow: 0 30px 60px rgba(0,0,0,0.5);
+        }
+
+        .wallet-card::before {
+            content: ''; position: absolute; top: -50%; right: -50%;
+            width: 100%; height: 100%; background: radial-gradient(circle, rgba(255,214,0,0.05) 0%, transparent 70%);
+        }
+
+        .balance-label { font-family: 'Orbitron'; font-size: 11px; color: var(--text-dim); letter-spacing: 3px; }
+        .balance-value { 
+            font-family: 'Orbitron'; font-size: 52px; font-weight: 900; 
+            margin: 15px 0; display: flex; align-items: baseline;
+        }
+        .balance-value span { font-size: 24px; color: var(--accent); margin-left: 12px; }
+
+        /* --- ВКЛАДКИ --- */
+        .view-section { display: none; }
+        .view-section.active { display: block; animation: slideIn 0.5s ease-out; }
+
+        /* --- ИСТОРИЯ --- */
         .history-item {
-            background: var(--glass); padding: 20px; border-radius: 25px;
+            background: var(--glass); padding: 22px; border-radius: 28px;
             margin-bottom: 15px; display: flex; justify-content: space-between;
-            align-items: center; border: 1px solid rgba(255,255,255,0.02);
+            align-items: center; border: 1px solid rgba(255, 255, 255, 0.02);
+            backdrop-filter: blur(10px);
         }
-        .hist-meta { display: flex; flex-direction: column; }
-        .hist-user { font-weight: 700; font-size: 15px; margin-bottom: 4px; color: #eee; }
-        .hist-date { font-size: 10px; color: #444; }
-        .hist-amount { font-family: 'Orbitron'; font-weight: 900; font-size: 18px; }
-        .amt-plus { color: var(--success); }
-        .amt-minus { color: var(--danger); }
+        .item-info { display: flex; flex-direction: column; }
+        .item-user { font-weight: 800; font-size: 15px; color: #fff; margin-bottom: 5px; }
+        .item-comment { font-size: 11px; color: var(--text-dim); font-style: italic; }
+        .item-amount { font-family: 'Orbitron'; font-weight: 900; font-size: 18px; }
+        .income { color: var(--success); }
+        .expense { color: var(--error); }
 
-        /* НАВИГАЦИЯ */
-        .nav {
-            position: fixed; bottom: 30px; left: 20px; right: 20px;
-            background: rgba(10, 10, 15, 0.85); backdrop-filter: blur(30px);
-            border-radius: 35px; display: flex; padding: 10px;
-            border: 1px solid var(--border); z-index: 500;
+        /* --- НАВИГАЦИЯ --- */
+        nav {
+            position: fixed; bottom: 35px; left: 25px; right: 25px;
+            background: rgba(15, 15, 19, 0.8); backdrop-filter: blur(40px);
+            border-radius: 40px; display: flex; padding: 10px;
+            border: 1px solid var(--border); z-index: 1000;
         }
-        .nav-item {
-            flex: 1; padding: 15px; border: none; background: transparent;
-            color: #444; font-weight: 800; font-size: 10px; transition: 0.3s;
-            font-family: 'Orbitron'; cursor: pointer; text-align: center;
+        .nav-link {
+            flex: 1; padding: 18px; border: none; background: transparent;
+            color: var(--text-dim); font-weight: 900; font-size: 10px;
+            font-family: 'Orbitron'; cursor: pointer; transition: 0.4s;
+            text-align: center;
         }
-        .nav-item.active { color: var(--gold); transform: translateY(-2px); }
+        .nav-link.active { color: var(--accent); text-shadow: 0 0 15px rgba(255, 214, 0, 0.5); }
 
-        /* NFC ОБЛАСТЬ */
-        .nfc-scanner {
-            width: 200px; height: 200px; border: 2px dashed var(--gold);
-            border-radius: 50%; margin: 40px auto; display: flex;
-            align-items: center; justify-content: center; position: relative;
+        /* --- ТОСТЕР --- */
+        #notification {
+            position: fixed; top: -100px; left: 50%; transform: translateX(-50%);
+            background: var(--accent); color: #000; padding: 20px 40px;
+            border-radius: 50px; font-family: 'Orbitron'; font-weight: 900;
+            font-size: 13px; z-index: 10000; transition: 0.6s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
         }
-        .nfc-scanner::before {
-            content: ''; position: absolute; width: 80%; height: 80%;
-            background: radial-gradient(circle, rgba(255,214,0,0.1) 0%, transparent 70%);
-            animation: pulse 2s infinite; border-radius: 50%;
-        }
-        @keyframes pulse { 0% { transform: scale(1); opacity: 0.6; } 100% { transform: scale(1.4); opacity: 0; } }
     </style>
 </head>
 <body>
 
-<div id="authScreen">
-    <div class="login-card">
-        <div class="logo">PROFIT</div>
-        <div class="field">
-            <label>Доступ в систему</label>
-            <input type="email" id="auth-email" placeholder="Email">
-        </div>
-        <div class="field">
-            <input type="password" id="auth-pass" placeholder="Пароль">
-        </div>
-        <button class="btn" onclick="app.login()">Войти</button>
-    </div>
-</div>
+    <div id="notification">СИСТЕМА ГОТОВА</div>
 
-<div class="main-app">
-    <div class="bal-card">
-        <div class="bal-label">Доступные средства</div>
-        <div class="bal-val" id="display-bal">0<span>₽</span></div>
-        <div class="card-info" id="display-card">•••• •••• •••• ••••</div>
-    </div>
-
-    <div id="view-home" class="tab-content active">
-        <h3 style="font-size: 11px; letter-spacing: 2px; color: #444; margin-bottom: 25px; text-transform: uppercase;">История транзакций</h3>
-        <div id="history-container"></div>
-    </div>
-
-    <div id="view-send" class="tab-content">
-        <div class="field">
-            <label>Получатель из базы</label>
-            <select id="recipient-list">
-                <option value="">Загрузка списка...</option>
-            </select>
-        </div>
-        <div class="field">
-            <label>Сумма перевода</label>
-            <input type="number" id="send-amount" placeholder="0.00">
-        </div>
-        <button class="btn" onclick="app.sendMoney()">Подтвердить перевод</button>
-    </div>
-
-    <div id="view-nfc" class="tab-content" style="text-align: center;">
-        <div class="nfc-scanner">
-            <span style="font-family: 'Orbitron'; font-weight: 900; color: var(--gold); font-size: 24px;">NFC</span>
-        </div>
-        <p id="nfc-log" style="font-size: 12px; color: #555; margin-bottom: 30px;">Выберите действие для активации</p>
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-            <button class="btn btn-secondary" style="font-size: 10px;" onclick="app.nfcBind()">Привязать мой</button>
-            <button class="btn" style="font-size: 10px;" onclick="app.nfcPay()">Принять оплату</button>
-        </div>
-    </div>
-
-    <div id="view-settings" class="tab-content">
-        <h3 style="font-family: 'Orbitron'; font-size: 14px; color: var(--gold); margin-bottom: 30px;">Безопасность</h3>
-        <div class="field">
-            <label>Текущий пароль</label>
-            <input type="password" id="set-old-pass">
-        </div>
-        <div class="field">
-            <label>Новый пароль</label>
-            <input type="password" id="set-new-pass">
-        </div>
-        <button class="btn" onclick="app.changePassword()">Сменить пароль</button>
-        <button class="btn btn-secondary" onclick="location.reload()">Выйти из аккаунта</button>
-    </div>
-</div>
-
-<nav class="nav">
-    <button class="nav-item active" onclick="app.switchTab('home', this)">ГЛАВНАЯ</button>
-    <button class="nav-item" onclick="app.switchTab('send', this)">ПЕРЕВОД</button>
-    <button class="nav-item" onclick="app.switchTab('nfc', this)">NFC</button>
-    <button class="nav-item" onclick="app.switchTab('settings', this)">ИНФО</button>
-</nav>
-
-<script>
-    const API_URL = 'https://script.google.com/macros/s/AKfycbxgdTwz5Q1dR1GoeuXUFC_QqNJ3Uq5Q0vRlZi60dL7kPc7Yy6dR3HHt2RF0yGRw6he6jg/exec'; // <--- ЗАМЕНИ ЭТО!
-
-    const app = {
-        user: null,
-
-        async login() {
-            const email = document.getElementById('auth-email').value;
-            const pass = document.getElementById('auth-pass').value;
+    <section id="auth-view">
+        <div class="auth-container">
+            <div class="main-logo">PROFIT</div>
+            <p style="color: var(--text-dim); font-size: 12px; margin-bottom: 40px; letter-spacing: 2px;">SECURE BANKING INTERFACE</p>
             
-            try {
-                const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'login', email, pass })});
+            <div class="input-group">
+                <label>Идентификатор</label>
+                <input type="email" id="login-email" placeholder="example@mail.com">
+            </div>
+            
+            <div class="input-group">
+                <label>Ключ доступа</label>
+                <input type="password" id="login-pass" placeholder="••••••••">
+            </div>
+            
+            <button class="primary-btn" onclick="core.handleLogin()">Авторизоваться</button>
+        </div>
+    </section>
+
+    <main class="app-container">
+        
+        <div class="wallet-card" id="main-wallet">
+            <div class="balance-label">ДОСТУПНЫЕ АКТИВЫ</div>
+            <div class="balance-value" id="ui-balance">0<span>₽</span></div>
+            <div id="ui-card-number" style="font-family: 'Orbitron'; font-size: 12px; color: var(--accent); opacity: 0.4;">9771 0000 0000 0000</div>
+        </div>
+
+        <div id="view-wallet" class="view-section active">
+            <h2 style="font-family: 'Orbitron'; font-size: 11px; color: var(--text-dim); letter-spacing: 3px; margin-bottom: 25px;">НЕДАВНИЕ ОПЕРАЦИИ</h2>
+            <div id="history-feed"></div>
+        </div>
+
+        <div id="view-send" class="view-section">
+            <div class="input-group">
+                <label>Получатель из базы</label>
+                <select id="send-to-select">
+                    <option value="">Поиск контактов...</option>
+                </select>
+            </div>
+            
+            <div class="input-group">
+                <label>Сумма актива</label>
+                <input type="number" id="send-amount-val" placeholder="0.00">
+            </div>
+
+            <div class="input-group">
+                <label>Комментарий к транзакции</label>
+                <textarea id="send-comment-val" rows="2" placeholder="Укажите назначение платежа..."></textarea>
+            </div>
+            
+            <button class="primary-btn" onclick="core.initTransfer()">Выполнить перевод</button>
+        </div>
+
+        <div id="view-settings" class="view-section">
+            <h2 style="font-family: 'Orbitron'; font-size: 14px; color: var(--accent); margin-bottom: 30px;">БЕЗОПАСНОСТЬ</h2>
+            
+            <div class="input-group">
+                <label>Старый пароль</label>
+                <input type="password" id="pass-old">
+            </div>
+            
+            <div class="input-group">
+                <label>Новый пароль</label>
+                <input type="password" id="pass-new">
+            </div>
+            
+            <button class="primary-btn" onclick="core.updatePassword()">Обновить данные</button>
+            <button class="primary-btn" onclick="location.reload()" style="background: transparent; color: var(--error); border: 1px solid var(--error); margin-top: 30px;">Выйти из системы</button>
+        </div>
+    </main>
+
+    <nav>
+        <button class="nav-link active" onclick="core.switchTab('wallet', this)">WALLET</button>
+        <button class="nav-link" onclick="core.switchTab('send', this)">SEND</button>
+        <button class="nav-link" onclick="core.switchTab('settings', this)">INFO</button>
+    </nav>
+
+    <script>
+        const API_ENDPOINT = 'https://script.google.com/macros/s/AKfycbwtrKUhnNxU9yNGsIiw4KlbQe7pbOlQRx6msAVz44WzNZkpv1M_pNuurypisGWLEnXjIg/exec';
+
+        const core = {
+            session: null,
+
+            // --- УПРАВЛЕНИЕ УВЕДОМЛЕНИЯМИ ---
+            showToast(text, isError = false) {
+                const t = document.getElementById('notification');
+                t.innerText = text;
+                t.style.background = isError ? 'var(--error)' : 'var(--accent)';
+                t.style.top = '40px';
+                setTimeout(() => t.style.top = '-100px', 3000);
+            },
+
+            // --- АВТОРИЗАЦИЯ ---
+            async handleLogin() {
+                const email = document.getElementById('login-email').value;
+                const pass = document.getElementById('login-pass').value;
+                
+                if(!email || !pass) return this.showToast("ЗАПОЛНИТЕ ПОЛЯ", true);
+
+                try {
+                    const res = await fetch(API_ENDPOINT, { 
+                        method: 'POST', 
+                        body: JSON.stringify({ action: 'login', email, pass }) 
+                    });
+                    const data = await res.json();
+                    
+                    if (data.success) {
+                        this.session = { email, ...data };
+                        document.getElementById('auth-view').classList.add('hidden');
+                        document.getElementById('ui-card-number').innerText = data.card;
+                        this.startEngine();
+                    } else {
+                        this.showToast(data.message, true);
+                    }
+                } catch (e) { this.showToast("ОШИБКА СЕТИ", true); }
+            },
+
+            // --- ЗАПУСК МОДУЛЕЙ ---
+            startEngine() {
+                this.syncData();
+                this.fetchUsers();
+                setInterval(() => this.syncData(), 10000);
+            },
+
+            // --- СИНХРОНИЗАЦИЯ БАЛАНСА И ИСТОРИИ ---
+            async syncData() {
+                try {
+                    const res = await fetch(API_ENDPOINT, { 
+                        method: 'POST', 
+                        body: JSON.stringify({ action: 'sync', email: this.session.email }) 
+                    });
+                    const data = await res.json();
+                    
+                    const balEl = document.getElementById('ui-balance');
+                    if (parseFloat(data.balance) !== parseFloat(balEl.innerText)) {
+                        balEl.style.animation = 'none';
+                        void balEl.offsetWidth;
+                        balEl.style.animation = 'slideIn 0.5s ease-out';
+                    }
+                    balEl.innerHTML = `${data.balance.toLocaleString()}<span>₽</span>`;
+
+                    const historyHtml = data.history.map(h => {
+                        const isExpense = h[1].toLowerCase() === this.session.email.toLowerCase();
+                        return `
+                            <div class="history-item">
+                                <div class="item-info">
+                                    <span class="item-user">${isExpense ? '→ ' + h[2] : '← ' + h[1]}</span>
+                                    <span class="item-comment">${h[4] || 'Транзакция Profit'}</span>
+                                </div>
+                                <div class="item-amount ${isExpense ? 'expense' : 'income'}">
+                                    ${isExpense ? '-' : '+'}${h[3].toLocaleString()}
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+                    document.getElementById('history-feed').innerHTML = historyHtml || '<p style="color:#333; text-align:center;">ОПЕРАЦИЙ НЕТ</p>';
+                } catch(e) {}
+            },
+
+            // --- ПОЛУЧЕНИЕ СПИСКА ЛЮДЕЙ ---
+            async fetchUsers() {
+                const res = await fetch(API_ENDPOINT, { 
+                    method: 'POST', 
+                    body: JSON.stringify({ action: 'get_users', myEmail: this.session.email }) 
+                });
+                const data = await res.json();
+                const select = document.getElementById('send-to-select');
+                select.innerHTML = '<option value="">ВЫБЕРИТЕ ПОЛУЧАТЕЛЯ</option>' + 
+                    data.users.map(u => `<option value="${u.email}">${u.name} (${u.email})</option>`).join('');
+            },
+
+            // --- ВЫПОЛНЕНИЕ ПЕРЕВОДА ---
+            async initTransfer() {
+                const to = document.getElementById('send-to-select').value;
+                const amount = document.getElementById('send-amount-val').value;
+                const comment = document.getElementById('send-comment-val').value;
+
+                if (!to || !amount || amount <= 0) return this.showToast("ПРОВЕРЬТЕ ДАННЫЕ", true);
+
+                // Оптимистичное обновление UI
+                this.showToast("ТРАНЗАКЦИЯ В ОБРАБОТКЕ...");
+                this.switchTab('wallet', document.querySelector('.nav-link'));
+
+                const res = await fetch(API_ENDPOINT, { 
+                    method: 'POST', 
+                    body: JSON.stringify({ 
+                        action: 'transfer', from: this.session.email, to, amount, comment 
+                    }) 
+                });
                 const data = await res.json();
                 
                 if (data.success) {
-                    this.user = { email, ...data };
-                    document.getElementById('authScreen').classList.add('hide');
-                    document.getElementById('display-card').innerText = data.card;
-                    this.init();
+                    this.showToast("ПЕРЕВОД ВЫПОЛНЕН");
+                    this.syncData();
+                    document.getElementById('send-amount-val').value = '';
+                    document.getElementById('send-comment-val').value = '';
                 } else {
-                    alert("Ошибка доступа. Проверьте данные.");
+                    this.showToast(data.message, true);
+                    this.syncData();
                 }
-            } catch (e) { alert("Ошибка соединения с API"); }
-        },
+            },
 
-        init() {
-            this.sync();
-            this.loadRecipients();
-            setInterval(() => this.sync(), 15000); // Авто-обновление каждые 15 сек
-        },
+            // --- СМЕНА ПАРОЛЯ ---
+            async updatePassword() {
+                const oldPass = document.getElementById('pass-old').value;
+                const newPass = document.getElementById('pass-new').value;
+                
+                if(!oldPass || !newPass) return this.showToast("ЗАПОЛНИТЕ ПАРОЛИ", true);
 
-        async sync() {
-            const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'sync', email: this.user.email })});
-            const data = await res.json();
-            
-            document.getElementById('display-bal').innerHTML = `${data.bal.toLocaleString()}<span>₽</span>`;
-            
-            const container = document.getElementById('history-container');
-            container.innerHTML = data.history.map(h => {
-                const isOut = h[1].toLowerCase() === this.user.email.toLowerCase();
-                return `
-                    <div class="history-item">
-                        <div class="hist-meta">
-                            <span class="hist-user">${isOut ? 'Кому: ' + h[2] : 'От: ' + h[1]}</span>
-                            <span class="hist-date">${new Date(h[0]).toLocaleString('ru-RU')}</span>
-                        </div>
-                        <div class="hist-amount ${isOut ? 'amt-minus' : 'amt-plus'}">
-                            ${isOut ? '-' : '+'}${h[3]}
-                        </div>
-                    </div>
-                `;
-            }).join('');
-        },
+                const res = await fetch(API_ENDPOINT, { 
+                    method: 'POST', 
+                    body: JSON.stringify({ 
+                        action: 'change_pass', email: this.session.email, oldPass, newPass 
+                    }) 
+                });
+                const data = await res.json();
+                
+                if(data.success) {
+                    this.showToast("ПАРОЛЬ ОБНОВЛЕН");
+                    document.getElementById('pass-old').value = '';
+                    document.getElementById('pass-new').value = '';
+                } else {
+                    this.showToast(data.message, true);
+                }
+            },
 
-        async loadRecipients() {
-            const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'get_users', myEmail: this.user.email })});
-            const data = await res.json();
-            const select = document.getElementById('recipient-list');
-            select.innerHTML = '<option value="">Выберите человека</option>' + 
-                data.users.map(u => `<option value="${u}">${u}</option>`).join('');
-        },
-
-        async sendMoney() {
-            const to = document.getElementById('recipient-list').value;
-            const amount = document.getElementById('send-amount').value;
-            if (!to || !amount) return alert("Заполните все поля");
-
-            const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ 
-                action: 'transfer', from: this.user.email, to, amount 
-            })});
-            const data = await res.json();
-            
-            if (data.success) {
-                alert("Транзакция выполнена!");
-                this.sync();
-                this.switchTab('home', document.querySelector('.nav-item'));
-            } else alert(data.msg || "Ошибка перевода");
-        },
-
-        async changePassword() {
-            const oldPass = document.getElementById('set-old-pass').value;
-            const newPass = document.getElementById('set-new-pass').value;
-            
-            const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify({
-                action: 'change_pass', email: this.user.email, oldPass, newPass
-            })});
-            const data = await res.json();
-            
-            if (data.success) {
-                alert("Пароль обновлен!");
-                document.getElementById('set-old-pass').value = '';
-                document.getElementById('set-new-pass').value = '';
-            } else alert(data.msg);
-        },
-
-        // NFC ЛОГИКА
-        async nfcPay() {
-            if (!('NDEFReader' in window)) return alert("NFC не поддерживается браузером");
-            const log = document.getElementById('nfc-log');
-            log.innerText = "Ожидание сканирования чужой метки...";
-            
-            try {
-                const ndef = new NDEFReader(); await ndef.scan();
-                ndef.onreading = async ({ serialNumber }) => {
-                    const amount = prompt("Сумма к списанию?");
-                    if (!amount) return;
-                    const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify({
-                        action: 'nfc_pay', tagId: serialNumber, myEmail: this.user.email, amount
-                    })});
-                    const data = await res.json();
-                    log.innerText = data.success ? "Оплата получена!" : "Ошибка: " + data.msg;
-                    this.sync();
-                };
-            } catch(e) { log.innerText = "Ошибка запуска NFC"; }
-        },
-
-        async nfcBind() {
-            if (!('NDEFReader' in window)) return alert("NFC не поддерживается");
-            const log = document.getElementById('nfc-log');
-            log.innerText = "Поднесите ВАШУ метку для привязки...";
-            try {
-                const ndef = new NDEFReader(); await ndef.scan();
-                ndef.onreading = async ({ serialNumber }) => {
-                    await fetch(API_URL, { method: 'POST', body: JSON.stringify({ 
-                        action: 'bind_nfc', email: this.user.email, tagId: serialNumber 
-                    })});
-                    log.innerText = "Ваша метка успешно привязана!";
-                };
-            } catch(e) { log.innerText = "Ошибка привязки"; }
-        },
-
-        switchTab(viewId, btn) {
-            document.querySelectorAll('.tab-content').forEach(v => v.classList.remove('active'));
-            document.getElementById('view-' + viewId).classList.add('active');
-            document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-        }
-    };
-</script>
+            // --- ПЕРЕКЛЮЧЕНИЕ ВКЛАДОК ---
+            switchTab(id, btn) {
+                document.querySelectorAll('.view-section').forEach(s => s.classList.remove('active'));
+                document.getElementById('view-' + id).classList.add('active');
+                document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+                btn.classList.add('active');
+            }
+        };
+    </script>
 </body>
 </html>
