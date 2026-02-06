@@ -103,6 +103,12 @@
             100% { top: 40px; }
         }
 
+        @keyframes coinPulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
         /**
          * AUTHENTICATION MODULE STYLES
          */
@@ -479,6 +485,62 @@
             transition: all 0.7s cubic-bezier(0.68, -0.55, 0.27, 1.55);
             box-shadow: 0 30px 60px rgba(0,0,0,0.5);
         }
+
+        /**
+         * QUEST SYSTEM STYLES
+         */
+        .quest-card {
+            background: var(--glass-effect);
+            border: 1px solid var(--border-color);
+            border-radius: 32px;
+            padding: 25px;
+            margin-bottom: 15px;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+
+        .quest-card.completed {
+            border-color: var(--status-success);
+            background: rgba(0, 255, 170, 0.05);
+        }
+
+        .quest-card.ready {
+            border-color: var(--accent-primary);
+            background: rgba(255, 214, 0, 0.05);
+        }
+
+        .quest-reward {
+            background: var(--accent-primary);
+            color: #000;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-family: var(--font-header-stack);
+            font-size: 9px;
+            font-weight: 900;
+            letter-spacing: 1px;
+        }
+
+        .progress-bar {
+            height: 6px;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 3px;
+            overflow: hidden;
+            margin: 8px 0 20px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--accent-primary);
+            transition: width 0.5s ease;
+        }
+
+        .progress-fill.completed {
+            background: var(--status-success);
+        }
+
+        .coin-animation {
+            animation: coinPulse 0.5s ease;
+        }
     </style>
 </head>
 <body class="">
@@ -615,12 +677,42 @@
             </div>
         </div>
 
+        <!-- НОВАЯ СЕКЦИЯ: ЗАДАНИЯ -->
+        <div id="sect-quests" class="content-section">
+            <h2 style="font-family: var(--font-header-stack); font-size: 11px; color: var(--accent-primary); margin-bottom: 35px; text-transform: uppercase; letter-spacing: 2px;">
+                PROFIT QUESTS SYSTEM
+            </h2>
+            
+            <div class="header-asset-card" style="margin-bottom: 30px; padding: 40px;">
+                <div class="asset-label">PROFIT COINS</div>
+                <div class="asset-balance-value" id="display-coins">0<span style="font-size: 24px; margin-left: 10px;">PFT</span></div>
+                <div class="asset-card-number" style="margin-top: 15px; opacity: 0.7;">
+                    Игровая валюта экосистемы PROFIT
+                </div>
+            </div>
+
+            <div class="quests-container" id="quests-feed">
+                <!-- Задания будут генерироваться через JS -->
+            </div>
+
+            <div style="margin-top: 40px; padding: 30px; background: var(--accent-soft); border-radius: 32px; text-align: center;">
+                <h3 style="font-family: var(--font-header-stack); font-size: 10px; color: var(--text-white); margin-bottom: 10px; letter-spacing: 1px;">
+                    КАК ЭТО РАБОТАЕТ?
+                </h3>
+                <p style="font-size: 11px; color: var(--text-gray); line-height: 1.5;">
+                    Выполняйте задания → Получайте PFT коины → Обменивайте на бонусы<br>
+                    PFT можно использовать для разблокировки премиум-функций системы
+                </p>
+            </div>
+        </div>
+
     </main>
 
     <nav class="bottom-nav-dock">
         <button class="nav-dock-item is-active" onclick="CoreEngine.switchView('wallet', this)">ТРАНЗАКЦИИ</button>
         <button class="nav-dock-item" onclick="CoreEngine.switchView('send', this)">ПЕРЕВОД</button>
         <button class="nav-dock-item" onclick="CoreEngine.switchView('nfc', this)">NFC</button>
+        <button class="nav-dock-item" onclick="CoreEngine.switchView('quests', this)">ЗАДАНИЯ</button>
         <button class="nav-dock-item" onclick="CoreEngine.switchView('settings', this)">ИНФО</button>
     </nav>
 
@@ -642,6 +734,359 @@
                 userName: null,
                 userCard: null,
                 userNfcId: null
+            },
+
+            quests: {
+                userCoins: 0,
+                availableQuests: [],
+                
+                // Статистика для отслеживания прогресса
+                stats: {
+                    transfersCount: 0,
+                    nfcBindCount: 0,
+                    nfcOperations: 0,
+                    totalSent: 0,
+                    nfcToMainTransfers: 0
+                },
+
+                /**
+                 * Инициализация системы заданий
+                 */
+                initialize() {
+                    this.loadUserStats();
+                    this.generateQuests();
+                    this.renderQuests();
+                },
+
+                /**
+                 * Загрузка статистики пользователя
+                 */
+                loadUserStats() {
+                    // Загружаем сохраненные данные
+                    const savedStats = localStorage.getItem('profit_quests_stats');
+                    if (savedStats) {
+                        this.stats = JSON.parse(savedStats);
+                    }
+                    
+                    // Загружаем PFT коины
+                    this.userCoins = parseInt(localStorage.getItem('profit_coins') || '0');
+                    this.updateCoinsDisplay();
+                },
+
+                /**
+                 * Создание списка заданий
+                 */
+                generateQuests() {
+                    this.availableQuests = [
+                        // ФИНАНСОВЫЕ ЗАДАНИЯ
+                        {
+                            id: 'quest_finance_1',
+                            title: 'ЩЕДРАЯ ДУША',
+                            description: 'Отправить 500₽ другому пользователю',
+                            reward: 50,
+                            progress: this.stats.totalSent,
+                            target: 500,
+                            type: 'total_sent',
+                            icon: '💰',
+                            completed: localStorage.getItem('quest_finance_1') === 'true'
+                        },
+                        {
+                            id: 'quest_finance_2',
+                            title: 'СОЦИАЛЬНЫЙ МЕЦЕНАТ',
+                            description: 'Отправить 3 перевода разным пользователям',
+                            reward: 75,
+                            progress: this.stats.transfersCount,
+                            target: 3,
+                            type: 'transfer_count',
+                            icon: '💸',
+                            completed: localStorage.getItem('quest_finance_2') === 'true'
+                        },
+                        {
+                            id: 'quest_finance_3',
+                            title: 'БАЛАНСОВЫЙ БАРОН',
+                            description: 'Иметь общий баланс более 2000₽',
+                            reward: 100,
+                            progress: 0, // Будет обновляться из текущего баланса
+                            target: 2000,
+                            type: 'total_balance',
+                            icon: '👑',
+                            completed: localStorage.getItem('quest_finance_3') === 'true'
+                        },
+
+                        // NFC ЗАДАНИЯ
+                        {
+                            id: 'quest_nfc_1',
+                            title: 'ТЕХНОЛОГ',
+                            description: 'Привязать NFC карту к аккаунту',
+                            reward: 80,
+                            progress: this.stats.nfcBindCount,
+                            target: 1,
+                            type: 'nfc_bind',
+                            icon: '📱',
+                            completed: localStorage.getItem('quest_nfc_1') === 'true'
+                        },
+                        {
+                            id: 'quest_nfc_2',
+                            title: 'ТЕРМИНАЛ',
+                            description: 'Провести 2 операции с NFC (пополнение+списание)',
+                            reward: 120,
+                            progress: this.stats.nfcOperations,
+                            target: 2,
+                            type: 'nfc_operations',
+                            icon: '🔧',
+                            completed: localStorage.getItem('quest_nfc_2') === 'true'
+                        },
+                        {
+                            id: 'quest_nfc_3',
+                            title: 'БАЛАНСИРОВЩИК',
+                            description: 'Перевести 1000₽ с основного счета на NFC',
+                            reward: 150,
+                            progress: this.stats.nfcToMainTransfers,
+                            target: 1000,
+                            type: 'nfc_transfer',
+                            icon: '⚖️',
+                            completed: localStorage.getItem('quest_nfc_3') === 'true'
+                        },
+
+                        // СИСТЕМНЫЕ ЗАДАНИЯ
+                        {
+                            id: 'quest_system_1',
+                            title: 'ИНИЦИАТОР',
+                            description: 'Авторизоваться в системе 3 дня подряд',
+                            reward: 60,
+                            progress: parseInt(localStorage.getItem('login_streak') || '0'),
+                            target: 3,
+                            type: 'login_streak',
+                            icon: '🔓',
+                            completed: localStorage.getItem('quest_system_1') === 'true'
+                        },
+                        {
+                            id: 'quest_system_2',
+                            title: 'ИССЛЕДОВАТЕЛЬ',
+                            description: 'Посетить все разделы терминала',
+                            reward: 90,
+                            progress: parseInt(localStorage.getItem('sections_visited') || '0'),
+                            target: 5,
+                            type: 'section_explore',
+                            icon: '🧭',
+                            completed: localStorage.getItem('quest_system_2') === 'true'
+                        },
+                        {
+                            id: 'quest_system_3',
+                            title: 'ПЕРВЫЙ ШАГ',
+                            description: 'Создать свою первую NFC метку',
+                            reward: 40,
+                            progress: this.stats.nfcBindCount,
+                            target: 1,
+                            type: 'first_nfc',
+                            icon: '🎯',
+                            completed: localStorage.getItem('quest_system_3') === 'true'
+                        }
+                    ];
+                },
+
+                /**
+                 * Обновление отображения коинов
+                 */
+                updateCoinsDisplay() {
+                    const coinsElement = document.getElementById('display-coins');
+                    if (coinsElement) {
+                        coinsElement.innerHTML = `${this.userCoins.toLocaleString('ru-RU')}<span style="font-size: 24px; margin-left: 10px;">PFT</span>`;
+                        coinsElement.classList.add('coin-animation');
+                        setTimeout(() => coinsElement.classList.remove('coin-animation'), 500);
+                    }
+                },
+
+                /**
+                 * Рендер заданий
+                 */
+                renderQuests() {
+                    const container = document.getElementById('quests-feed');
+                    if (!container) return;
+                    
+                    let html = '';
+                    
+                    this.availableQuests.forEach(quest => {
+                        const percent = Math.min((quest.progress / quest.target) * 100, 100);
+                        const isReady = quest.progress >= quest.target && !quest.completed;
+                        const isCompleted = quest.completed;
+                        
+                        let cardClass = 'quest-card';
+                        if (isCompleted) cardClass += ' completed';
+                        else if (isReady) cardClass += ' ready';
+                        
+                        html += `
+                            <div class="${cardClass}">
+                                <div style="display: flex; align-items: flex-start; gap: 20px; margin-bottom: 15px;">
+                                    <div style="
+                                        font-size: 24px;
+                                        background: ${isCompleted ? 'var(--status-success)' : isReady ? 'var(--accent-soft)' : 'rgba(255,255,255,0.05)'};
+                                        width: 50px;
+                                        height: 50px;
+                                        border-radius: 16px;
+                                        display: flex;
+                                        align-items: center;
+                                        justify-content: center;
+                                    ">
+                                        ${quest.icon}
+                                    </div>
+                                    
+                                    <div style="flex: 1;">
+                                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
+                                            <h3 style="
+                                                font-family: var(--font-header-stack);
+                                                font-size: 13px;
+                                                color: ${isCompleted ? 'var(--status-success)' : isReady ? 'var(--accent-primary)' : 'var(--text-white)'};
+                                            ">
+                                                ${quest.title}
+                                            </h3>
+                                            <div class="quest-reward" style="background: ${isCompleted ? 'var(--status-success)' : 'var(--accent-primary)'}">
+                                                +${quest.reward} PFT
+                                            </div>
+                                        </div>
+                                        
+                                        <p style="font-size: 12px; color: var(--text-gray); margin-bottom: 15px; line-height: 1.4;">
+                                            ${quest.description}
+                                        </p>
+                                    </div>
+                                </div>
+                                
+                                <!-- Прогресс бар -->
+                                <div>
+                                    <div style="
+                                        display: flex;
+                                        justify-content: space-between;
+                                        font-size: 9px;
+                                        color: var(--text-gray);
+                                        margin-bottom: 8px;
+                                        font-family: var(--font-header-stack);
+                                        letter-spacing: 1px;
+                                    ">
+                                        <span>ПРОГРЕСС</span>
+                                        <span>${quest.progress}/${quest.target}</span>
+                                    </div>
+                                    <div class="progress-bar">
+                                        <div class="progress-fill ${isCompleted ? 'completed' : ''}" 
+                                             style="width: ${percent}%"></div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Кнопка получения награды -->
+                                <button 
+                                    onclick="CoreEngine.quests.claimReward('${quest.id}')"
+                                    style="
+                                        width: 100%;
+                                        margin-top: 20px;
+                                        padding: 18px;
+                                        background: ${isCompleted ? 'var(--status-success)' : isReady ? 'var(--accent-primary)' : 'transparent'};
+                                        border: 1px solid ${isReady ? 'var(--accent-primary)' : 'var(--border-color)'};
+                                        border-radius: 22px;
+                                        color: ${isReady || isCompleted ? '#000' : 'var(--text-gray)'};
+                                        font-family: var(--font-header-stack);
+                                        font-size: 10px;
+                                        font-weight: 900;
+                                        text-transform: uppercase;
+                                        cursor: ${isReady ? 'pointer' : 'not-allowed'};
+                                        letter-spacing: 1px;
+                                        transition: all 0.3s ease;
+                                    "
+                                    ${isReady ? '' : 'disabled'}
+                                >
+                                    ${isCompleted ? '✅ НАГРАДА ПОЛУЧЕНА' : isReady ? 'ПОЛУЧИТЬ НАГРАДУ' : 'В ПРОЦЕССЕ'}
+                                </button>
+                            </div>
+                        `;
+                    });
+                    
+                    container.innerHTML = html;
+                },
+
+                /**
+                 * Получение награды за задание
+                 */
+                claimReward(questId) {
+                    const quest = this.availableQuests.find(q => q.id === questId);
+                    if (!quest || quest.completed || quest.progress < quest.target) return;
+                    
+                    // Начисляем коины
+                    this.userCoins += quest.reward;
+                    localStorage.setItem('profit_coins', this.userCoins.toString());
+                    
+                    // Отмечаем задание как выполненное
+                    quest.completed = true;
+                    localStorage.setItem(questId, 'true');
+                    
+                    // Обновляем UI
+                    this.updateCoinsDisplay();
+                    this.renderQuests();
+                    
+                    // Показываем уведомление
+                    CoreEngine.pushNotification(`+${quest.reward} PFT НАЧИСЛЕНЫ!`);
+                    
+                    // Сохраняем обновленные данные
+                    this.saveStats();
+                },
+
+                /**
+                 * Обновление статистики при выполнении действий
+                 */
+                updateProgress(type, value = 1) {
+                    let updated = false;
+                    
+                    switch(type) {
+                        case 'transfer_sent':
+                            this.stats.transfersCount += 1;
+                            this.stats.totalSent += parseFloat(value) || 0;
+                            updated = true;
+                            break;
+                            
+                        case 'nfc_bind':
+                            this.stats.nfcBindCount = 1;
+                            updated = true;
+                            break;
+                            
+                        case 'nfc_operation':
+                            this.stats.nfcOperations += 1;
+                            updated = true;
+                            break;
+                            
+                        case 'nfc_transfer':
+                            this.stats.nfcToMainTransfers += parseFloat(value) || 0;
+                            updated = true;
+                            break;
+                            
+                        case 'login_streak':
+                            const streak = parseInt(localStorage.getItem('login_streak') || '0') + 1;
+                            localStorage.setItem('login_streak', streak.toString());
+                            updated = true;
+                            break;
+                    }
+                    
+                    if (updated) {
+                        this.saveStats();
+                        this.generateQuests();
+                        this.renderQuests();
+                    }
+                },
+
+                /**
+                 * Сохранение статистики
+                 */
+                saveStats() {
+                    localStorage.setItem('profit_quests_stats', JSON.stringify(this.stats));
+                },
+
+                /**
+                 * Проверка выполнения заданий по балансу
+                 */
+                checkBalanceQuests(currentBalance) {
+                    this.availableQuests.forEach(quest => {
+                        if (quest.type === 'total_balance' && !quest.completed) {
+                            quest.progress = currentBalance;
+                        }
+                    });
+                    this.renderQuests();
+                }
             },
 
             /**
@@ -712,6 +1157,9 @@
                         document.getElementById('view-authentication').classList.add('system-hidden');
                         document.getElementById('display-card-id').innerText = data.card;
                         
+                        // Обновляем статистику логинов для заданий
+                        this.quests.updateProgress('login_streak');
+                        
                         this.pushNotification("ACCESS GRANTED");
                         this.bootSystem();
                     } else {
@@ -731,6 +1179,9 @@
                 this.syncDataPack();
                 this.syncUserList();
                 this.initHardwareNFC();
+                
+                // Инициализация системы заданий
+                this.quests.initialize();
 
                 // Set background persistence
                 setInterval(() => {
@@ -761,7 +1212,11 @@
                     // Update Main Balance UI
                     const balElement = document.getElementById('display-balance');
                     if (data.balance !== undefined) {
-                        balElement.innerHTML = `${parseFloat(data.balance || 0).toLocaleString('ru-RU')}<span>₽</span>`;
+                        const balance = parseFloat(data.balance || 0);
+                        balElement.innerHTML = `${balance.toLocaleString('ru-RU')}<span>₽</span>`;
+                        
+                        // Проверяем задания по балансу
+                        this.quests.checkBalanceQuests(balance);
                     }
 
                     // Update NFC Balance UI
@@ -843,7 +1298,7 @@
             },
 
             /**
-             * FUND TRANSFER EXECUTION
+             * FUND TRANSFER EXECUTION (ОБНОВЛЕННЫЙ ДЛЯ ЗАДАНИЙ)
              */
             async executeTransfer() {
                 const target = document.getElementById('field-send-target').value;
@@ -877,6 +1332,9 @@
                         this.pushNotification("TRANSFER COMPLETE");
                         this.log("Transaction finalized successfully");
                         
+                        // Обновляем статистику для заданий
+                        this.quests.updateProgress('transfer_sent', amount);
+                        
                         // Clear Inputs
                         document.getElementById('field-send-amount').value = '';
                         document.getElementById('field-send-note').value = '';
@@ -893,7 +1351,7 @@
             },
 
             /**
-             * NFC HARDWARE MANAGER (ИСПРАВЛЕННЫЙ)
+             * NFC HARDWARE MANAGER (ОБНОВЛЕННЫЙ ДЛЯ ЗАДАНИЙ)
              */
             nfcManager: {
                 async perform(operationType) {
@@ -925,7 +1383,6 @@
                                 myEmail: CoreEngine.session.userEmail
                             };
                         } else if (operationType === 'withdraw') {
-                            // При списании с NFC - деньги поступают администратору
                             payload = {
                                 action: 'nfc_hardware_op',
                                 tagId: tagId,
@@ -934,7 +1391,6 @@
                                 adminEmail: CoreEngine.session.userEmail
                             };
                         } else if (operationType === 'deposit') {
-                            // При пополнении NFC - деньги списываются с администратора
                             payload = {
                                 action: 'nfc_hardware_op',
                                 tagId: tagId,
@@ -953,6 +1409,18 @@
 
                         if (data.success) {
                             CoreEngine.pushNotification(data.message || "SUCCESS");
+                            
+                            // Обновляем статистику для заданий
+                            if (operationType === 'bind') {
+                                CoreEngine.quests.updateProgress('nfc_bind');
+                            } else if (operationType === 'withdraw' || operationType === 'deposit') {
+                                CoreEngine.quests.updateProgress('nfc_operation');
+                                
+                                // Для задания "Балансировщик"
+                                if (operationType === 'deposit') {
+                                    CoreEngine.quests.updateProgress('nfc_transfer', amountValue);
+                                }
+                            }
                             
                             if (operationType === 'identify' && data.owner) {
                                 alert(`ВЛАДЕЛЕЦ МЕТКИ:\nИмя: ${data.name}\nEmail: ${data.owner}\nБаланс NFC: ${data.nfcBalance} ₽`);
@@ -1058,7 +1526,7 @@
             },
 
             /**
-             * UI VIEW CONTROLLER
+             * UI VIEW CONTROLLER (ОБНОВЛЕННЫЙ ДЛЯ ЗАДАНИЙ)
              */
             switchView(targetSect, navBtn) {
                 this.log(`Switching view to: ${targetSect}`);
@@ -1082,6 +1550,16 @@
                 navItems.forEach(n => n.classList.remove('is-active'));
                 
                 if (navBtn) navBtn.classList.add('is-active');
+                
+                // Обновляем статистику посещений для заданий
+                if (targetSect !== 'wallet') {
+                    const visited = JSON.parse(localStorage.getItem('visited_sections') || '[]');
+                    if (!visited.includes(targetSect)) {
+                        visited.push(targetSect);
+                        localStorage.setItem('visited_sections', JSON.stringify(visited));
+                        this.quests.updateProgress('section_explore');
+                    }
+                }
             }
         };
 
