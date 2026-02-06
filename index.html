@@ -3,482 +3,381 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Profit Bank Social Premium</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
+    <title>Profit Bank | Premium Social System</title>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg: #08080c;
-            --card-bg: #13131d;
-            --input-bg: #1c1c2b;
+            --bg: #0b0b0f;
+            --card: #16161e;
+            --input: #1f1f2b;
             --accent: #ffd600;
-            --accent-soft: rgba(255, 214, 0, 0.15);
             --text: #ffffff;
-            --muted: #8e8e9a;
-            --success: #00ff88;
-            --error: #ff3d71;
-            --grad: linear-gradient(135deg, #1e1e2e, #111118);
-            --shadow: 0 20px 40px rgba(0,0,0,0.5);
+            --muted: #838391;
+            --success: #00ffa3;
+            --error: #ff3e6d;
+            --glass: rgba(255, 255, 255, 0.03);
         }
 
-        /* Общие стили */
-        * { box-sizing: border-box; font-family: 'Inter', sans-serif; transition: all 0.25s ease; outline: none; -webkit-tap-highlight-color: transparent; }
+        * { box-sizing: border-box; font-family: 'Manrope', sans-serif; -webkit-tap-highlight-color: transparent; }
         
         body {
             margin: 0;
             background: var(--bg);
-            background-image: 
-                radial-gradient(circle at 10% 10%, rgba(255,214,0,0.05) 0%, transparent 40%),
-                radial-gradient(circle at 90% 90%, rgba(255,214,0,0.05) 0%, transparent 40%);
             color: var(--text);
-            min-height: 100vh;
-            overflow-x: hidden;
             display: flex;
             justify-content: center;
+            min-height: 100vh;
         }
 
-        .hidden { display: none !important; opacity: 0; pointer-events: none; }
+        .hidden { display: none !important; }
 
-        /* ЭКРАН ВХОДА */
-        .auth-screen {
+        /* --- ЭКРАН ВХОДА --- */
+        #authScreen {
             width: 100%;
             max-width: 400px;
-            padding: 40px 25px;
-            text-align: center;
+            padding: 40px 20px;
             display: flex;
             flex-direction: column;
             justify-content: center;
-            min-height: 100vh;
-            animation: fadeIn 0.8s ease;
+            animation: fadeIn 0.5s ease;
         }
 
-        .logo-area { margin-bottom: 40px; }
-        .logo-area h1 { font-size: 42px; font-weight: 900; color: var(--accent); margin: 0; letter-spacing: -1px; }
-        .logo-area p { color: var(--muted); font-size: 14px; margin-top: 5px; }
-
-        .auth-form {
-            background: var(--card-bg);
+        .auth-card {
+            background: var(--card);
             padding: 35px 25px;
-            border-radius: 35px;
-            border: 1px solid rgba(255,255,255,0.05);
-            box-shadow: var(--shadow);
+            border-radius: 30px;
+            border: 1px solid var(--glass);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.3);
         }
 
-        .input-group { margin-bottom: 20px; text-align: left; }
-        .input-group label { display: block; font-size: 11px; font-weight: 700; color: var(--muted); margin-left: 15px; margin-bottom: 8px; text-transform: uppercase; }
-        
+        h1 { font-weight: 800; font-size: 32px; margin: 0 0 10px; color: var(--accent); }
+        .subtitle { color: var(--muted); font-size: 14px; margin-bottom: 30px; }
+
         input, select {
             width: 100%;
-            padding: 18px 22px;
-            background: var(--input-bg);
-            border: 1px solid rgba(255,255,255,0.05);
-            border-radius: 20px;
+            padding: 18px;
+            background: var(--input);
+            border: 1px solid var(--glass);
+            border-radius: 18px;
             color: #fff;
             font-size: 16px;
+            margin-bottom: 15px;
         }
 
-        input:focus { border-color: var(--accent); background: #232335; box-shadow: 0 0 0 4px var(--accent-soft); }
+        input:focus { border-color: var(--accent); outline: none; }
 
-        .btn-action {
+        .btn {
             width: 100%;
-            padding: 20px;
+            padding: 18px;
             background: var(--accent);
-            color: #000;
             border: none;
-            border-radius: 20px;
+            border-radius: 18px;
             font-weight: 800;
             font-size: 16px;
             cursor: pointer;
-            margin-top: 10px;
-            box-shadow: 0 10px 20px rgba(255, 214, 0, 0.2);
+            transition: 0.2s;
         }
 
-        .btn-action:active { transform: scale(0.96); }
+        .btn:active { transform: scale(0.97); }
 
-        /* ПРИЛОЖЕНИЕ */
-        .app-container { width: 100%; max-width: 450px; padding: 20px 15px; }
+        /* --- ОСНОВНОЙ КОНТЕНТ --- */
+        #appScreen { width: 100%; max-width: 450px; padding: 20px 15px; animation: slideUp 0.4s ease; }
 
-        /* 3D КАРТА */
-        .card-container { perspective: 1500px; height: 240px; margin-bottom: 30px; }
+        /* БАНКОВСКАЯ КАРТА */
+        .card-box { perspective: 1000px; height: 220px; margin-bottom: 25px; }
         .card-inner {
-            position: relative;
-            width: 100%;
-            height: 100%;
-            transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            transform-style: preserve-3d;
-            cursor: pointer;
+            position: relative; width: 100%; height: 100%;
+            transition: transform 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+            transform-style: preserve-3d; cursor: pointer;
         }
-        .card-inner.is-flipped { transform: rotateY(180deg); }
+        .card-inner.flipped { transform: rotateY(180deg); }
 
         .card-face {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            backface-visibility: hidden;
-            border-radius: 32px;
-            padding: 30px;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            border: 1px solid rgba(255,255,255,0.1);
-            box-shadow: 0 25px 50px rgba(0,0,0,0.4);
+            position: absolute; inset: 0; padding: 25px;
+            backface-visibility: hidden; border-radius: 28px;
+            display: flex; flex-direction: column; justify-content: space-between;
+            border: 1px solid rgba(255,255,255,0.08);
+            background: linear-gradient(135deg, #1e1e2b, #111119);
         }
 
-        .face-front { background: var(--grad); }
-        .face-back { background: var(--grad); transform: rotateY(180deg); text-align: center; justify-content: center; }
+        .card-back { transform: rotateY(180deg); justify-content: center; text-align: center; }
 
-        .card-header { display: flex; justify-content: space-between; align-items: flex-start; }
-        .user-avatar { width: 75px; height: 75px; border-radius: 50%; object-fit: cover; border: 3px solid var(--accent); background: #222; }
-        .chip { width: 50px; height: 38px; background: linear-gradient(135deg, #fceabb, #f8b500); border-radius: 8px; }
-
-        .balance-box { margin-top: 10px; }
-        .label-sm { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: 1.5px; }
-        .val-lg { font-size: 40px; font-weight: 900; margin-top: 5px; }
-
-        .card-number-display { font-family: 'Courier New', monospace; font-size: 22px; letter-spacing: 2px; }
+        .user-ava { width: 65px; height: 65px; border-radius: 50%; object-fit: cover; border: 2px solid var(--accent); }
+        .balance { font-size: 36px; font-weight: 800; margin-top: 10px; }
+        .card-no { font-family: monospace; letter-spacing: 2px; font-size: 18px; opacity: 0.8; }
 
         /* НАВИГАЦИЯ */
-        .navbar {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 25px;
-            overflow-x: auto;
-            padding: 5px 0;
+        .tabs { display: flex; gap: 8px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 5px; }
+        .tabs::-webkit-scrollbar { display: none; }
+        .tab-btn {
+            padding: 14px 20px; background: var(--card); border-radius: 15px;
+            font-size: 12px; font-weight: 700; color: var(--muted); cursor: pointer;
+            white-space: nowrap; border: 1px solid transparent;
         }
-        .navbar::-webkit-scrollbar { display: none; }
-        .nav-item {
-            flex: 1;
-            min-width: 100px;
-            padding: 15px 10px;
-            background: var(--card-bg);
-            border-radius: 20px;
-            color: var(--muted);
-            font-size: 12px;
-            font-weight: 700;
-            text-align: center;
-            cursor: pointer;
-            border: 1px solid transparent;
-        }
-        .nav-item.is-active { background: var(--accent); color: #000; border-color: var(--accent); }
-
-        /* СЕКЦИИ */
-        .section { animation: slideUp 0.5s ease; }
-        @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
-
-        .card-block {
-            background: var(--card-bg);
-            border-radius: 30px;
-            padding: 25px;
-            margin-bottom: 20px;
-            border: 1px solid rgba(255,255,255,0.03);
-        }
-
-        .card-block h2 { font-size: 20px; font-weight: 800; margin: 0 0 20px 0; display: flex; align-items: center; gap: 10px; }
+        .tab-btn.active { background: var(--accent); color: #000; }
 
         /* ЧАТ */
-        .chat-viewport { height: 380px; display: flex; flex-direction: column; }
-        .chat-list {
-            flex: 1;
-            overflow-y: auto;
-            padding-right: 5px;
-            display: flex;
-            flex-direction: column-reverse;
-        }
-        .chat-list::-webkit-scrollbar { width: 4px; }
-        .chat-list::-webkit-scrollbar-thumb { background: var(--muted); border-radius: 10px; }
-
-        .chat-msg { display: flex; gap: 12px; margin-bottom: 20px; animation: fadeIn 0.4s ease; }
-        .chat-ava { width: 42px; height: 42px; border-radius: 50%; border: 2px solid var(--accent); flex-shrink: 0; object-fit: cover; }
-        .chat-text { background: var(--input-bg); padding: 12px 18px; border-radius: 20px; border-top-left-radius: 2px; max-width: 85%; }
-        .chat-text b { display: block; color: var(--accent); font-size: 11px; text-transform: uppercase; margin-bottom: 4px; }
-        .chat-text p { margin: 0; font-size: 14px; line-height: 1.5; }
+        .chat-wrap { background: var(--card); border-radius: 25px; height: 400px; display: flex; flex-direction: column; padding: 15px; border: 1px solid var(--glass); }
+        #chatMessages { flex: 1; overflow-y: auto; display: flex; flex-direction: column-reverse; gap: 15px; padding-right: 5px; }
+        
+        .msg { display: flex; gap: 10px; align-items: flex-start; animation: msgIn 0.3s ease; }
+        .msg-img { width: 38px; height: 38px; border-radius: 50%; border: 1.5px solid var(--accent); flex-shrink: 0; }
+        .msg-body { background: var(--input); padding: 10px 14px; border-radius: 18px; border-top-left-radius: 2px; max-width: 80%; }
+        .msg-name { display: block; font-size: 10px; font-weight: 800; color: var(--accent); margin-bottom: 3px; text-transform: uppercase; }
+        .msg-text { font-size: 14px; line-height: 1.4; color: #eee; }
 
         /* ИСТОРИЯ */
-        .history-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 18px;
-            background: rgba(255,255,255,0.03);
-            border-radius: 22px;
-            margin-bottom: 12px;
-            border-left: 5px solid var(--accent);
+        .hist-item {
+            background: var(--card); padding: 15px; border-radius: 20px;
+            margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;
+            border-left: 4px solid var(--accent);
         }
-        .h-info b { display: block; font-size: 15px; margin-bottom: 3px; }
-        .h-info span { font-size: 11px; color: var(--muted); }
-        .h-amount { font-weight: 900; font-size: 17px; }
+        .hist-info b { display: block; font-size: 14px; }
+        .hist-info small { color: var(--muted); font-size: 11px; }
 
-        /* ЗАГРУЗКА */
-        .loader {
-            position: fixed; inset: 0; background: var(--bg); z-index: 9999;
-            display: flex; justify-content: center; align-items: center;
-            transition: 0.5s;
+        /* КНОПКА ФОТО */
+        .photo-btn {
+            background: var(--input); color: #fff; padding: 15px;
+            border-radius: 18px; border: 1px dashed var(--accent);
+            cursor: pointer; text-align: center; margin-bottom: 20px;
         }
 
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes msgIn { from { opacity: 0; transform: translateX(-10px); } to { opacity: 1; transform: translateX(0); } }
     </style>
 </head>
 <body>
 
-    <div id="loader" class="loader">
-        <h1 style="color:var(--accent); font-weight:900; letter-spacing:10px; animation: pulse 1.5s infinite;">PROFIT</h1>
-    </div>
-
-    <div id="authScreen" class="auth-screen">
-        <div class="logo-area">
+    <div id="authScreen">
+        <div class="auth-card">
             <h1>Profit Bank</h1>
-            <p>Премиальный доступ к вашим финансам</p>
-        </div>
-        <div class="auth-form">
-            <div class="input-group">
-                <label>Электронный адрес</label>
-                <input type="email" id="email" placeholder="mail@example.com">
-            </div>
-            <div class="input-group">
-                <label>Пароль доступа</label>
-                <input type="password" id="password" placeholder="••••••••">
-            </div>
-            <button class="btn-action" onclick="tryLogin()" id="loginBtn">ВОЙТИ В СИСТЕМУ</button>
-            <p id="errorMsg" style="color:var(--error); font-size:12px; margin-top:15px; display:none;"></p>
+            <p class="subtitle">Введите учетные данные для доступа</p>
+            <input type="email" id="email" placeholder="Email">
+            <input type="password" id="password" placeholder="Пароль">
+            <button class="btn" onclick="login()">ВОЙТИ В СИСТЕМУ</button>
+            <p id="loginError" style="color:var(--error); font-size:12px; margin-top:15px; text-align:center; display:none;">Ошибка входа!</p>
         </div>
     </div>
 
-    <div id="appScreen" class="app-container hidden">
+    <div id="appScreen" class="hidden">
         
-        <div class="card-container">
-            <div class="card-inner" id="cardRotate">
-                <div class="card-face face-front">
-                    <div class="card-header">
-                        <img id="dispAva" src="" class="user-avatar">
-                        <div class="chip"></div>
+        <div class="card-box">
+            <div class="card-inner" onclick="this.classList.toggle('flipped')">
+                <div class="card-face">
+                    <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                        <img id="myAva" src="https://via.placeholder.com/65" class="user-ava">
+                        <div style="width:45px; height:30px; background:linear-gradient(135deg, #ffd600, #ffaa00); border-radius:6px;"></div>
                     </div>
-                    <div class="balance-box">
-                        <div class="label-sm">Ваш баланс</div>
-                        <div class="val-lg" id="dispBalance">0 ₽</div>
-                    </div>
-                    <div style="display:flex; justify-content:space-between; align-items:flex-end;">
-                        <span id="dispName" style="font-weight:700; font-size:14px; text-transform:uppercase;">USER NAME</span>
-                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/2a/Mastercard-logo.svg/1280px-Mastercard-logo.svg.png" width="40">
+                    <div>
+                        <div style="color:var(--muted); font-size:12px; text-transform:uppercase;">Баланс счета</div>
+                        <div class="balance" id="myBalance">0 ₽</div>
                     </div>
                 </div>
-                <div class="card-face face-back">
-                    <div class="label-sm">Номер карты</div>
-                    <div class="card-number-display" id="dispCard">0000 0000 0000 0000</div>
-                    <div style="margin-top:20px; color:var(--accent); font-weight:800; letter-spacing:2px;">PLATINUM MEMBER</div>
+                <div class="card-face card-back">
+                    <div style="color:var(--muted); font-size:11px; margin-bottom:10px;">VIRTUAL CARD NUMBER</div>
+                    <div class="card-no" id="myCard">0000 0000 0000 0000</div>
+                    <div style="margin-top:20px; font-weight:800; color:var(--accent);">PLATINUM MEMBER</div>
                 </div>
             </div>
         </div>
 
-        <div class="navbar">
-            <div class="nav-item is-active" onclick="switchTab('pay', this)">ПЕРЕВОДЫ</div>
-            <div class="nav-item" onclick="switchTab('chat', this)">ЧАТ</div>
-            <div class="nav-item" onclick="switchTab('hist', this)">ИСТОРИЯ</div>
-            <div class="nav-item" onclick="switchTab('prof', this)">ПРОФИЛЬ</div>
+        <div class="tabs">
+            <div class="tab-btn active" onclick="showTab('pay', this)">ПЕРЕВОДЫ</div>
+            <div class="tab-btn" onclick="showTab('chat', this)">ОБЩИЙ ЧАТ</div>
+            <div class="tab-btn" onclick="showTab('hist', this)">ИСТОРИЯ</div>
+            <div class="tab-btn" onclick="showTab('prof', this)">ПРОФИЛЬ</div>
         </div>
 
-        <div id="sec-pay" class="section">
-            <div class="card-block">
-                <h2>💸 Отправить деньги</h2>
-                <div class="input-group">
-                    <label>Получатель</label>
-                    <select id="sendTo"></select>
-                </div>
-                <div class="input-group">
-                    <label>Сумма перевода</label>
-                    <input type="number" id="sendAmount" placeholder="0.00 ₽">
-                </div>
-                <div class="input-group">
-                    <label>Комментарий</label>
-                    <input type="text" id="sendComm" placeholder="На кофе, долг и т.д.">
-                </div>
-                <button class="btn-action" onclick="executeTransfer()">ПОДТВЕРДИТЬ И ОТПРАВИТЬ</button>
+        <div id="payTab" class="section">
+            <div style="background:var(--card); padding:20px; border-radius:25px; border:1px solid var(--glass);">
+                <h3 style="margin-top:0;">Перевод средств</h3>
+                <select id="toUser"></select>
+                <input type="number" id="amount" placeholder="Сумма ₽">
+                <input type="text" id="comment" placeholder="Сообщение получателю">
+                <button class="btn" onclick="sendMoney()">ОТПРАВИТЬ</button>
             </div>
         </div>
 
-        <div id="sec-chat" class="section hidden">
-            <div class="card-block chat-viewport">
-                <h2>💬 Общий чат</h2>
-                <div id="chatMessages" class="chat-list"></div>
-                <div style="display:flex; gap:10px; margin-top:20px;">
-                    <input type="text" id="chatInput" placeholder="Ваше сообщение..." style="padding:15px;">
-                    <button class="btn-action" style="width:70px; margin:0;" onclick="sendChatMessage()">→</button>
-                </div>
+        <div id="chatTab" class="section hidden">
+            <div class="chat-wrap">
+                <div id="chatMessages"></div>
+            </div>
+            <div style="display:flex; gap:10px; margin-top:10px;">
+                <input type="text" id="chatInp" placeholder="Ваше сообщение..." style="margin-bottom:0;">
+                <button class="btn" style="width:70px;" onclick="sendChat()">→</button>
             </div>
         </div>
 
-        <div id="sec-hist" class="section hidden">
-            <div class="card-block" id="historyList">
-                <h2>📜 История операций</h2>
-                </div>
+        <div id="histTab" class="section hidden">
+            <div id="historyList"></div>
         </div>
 
-        <div id="sec-prof" class="section hidden">
-            <div class="card-block">
-                <h2>👤 Личные настройки</h2>
-                <button class="btn-action" style="background:var(--input-bg); color:#fff; border:1px solid var(--accent); margin-bottom:20px;" onclick="startCamera()">СДЕЛАТЬ ФОТО ПРОФИЛЯ</button>
-                
-                <div class="input-group">
-                    <label>Смена пароля</label>
-                    <input type="password" id="newPass" placeholder="Новый безопасный пароль">
-                </div>
-                <button class="btn-action" onclick="updatePassword()">ОБНОВИТЬ ДАННЫЕ</button>
+        <div id="profTab" class="section hidden">
+            <div style="background:var(--card); padding:20px; border-radius:25px;">
+                <div class="photo-btn" onclick="takePhoto()">📸 ОБНОВИТЬ СЕЛФИ</div>
+                <input type="password" id="newPass" placeholder="Новый пароль">
+                <button class="btn" onclick="changePass()">СОХРАНИТЬ ПАРОЛЬ</button>
             </div>
         </div>
 
-        <button onclick="location.reload()" style="width:100%; background:none; border:1px solid var(--error); color:var(--error); padding:18px; border-radius:20px; font-weight:700; margin:30px 0;">ВЫЙТИ ИЗ СИСТЕМЫ</button>
+        <button onclick="location.reload()" style="width:100%; background:none; border:none; color:var(--error); margin-top:30px; font-weight:700; cursor:pointer;">ВЫЙТИ ИЗ АККАУНТА</button>
     </div>
 
     <script>
-        // КОНФИГУРАЦИЯ
-        const API = 'https://script.google.com/macros/s/AKfycbzsLK9FxBEOFl4XDliOBm-qdmCRJL_Du4uOUjQrGqIdghrvqdt2_4YSbeNeSON2hDxrqg/exec'; // ВСТАВЬТЕ ВАШУ ССЫЛКУ ПОСЛЕ ДЕПЛОЯ
-
-        let user = { email: '', name: '', balance: 0, card: '', avatar: '' };
-        const userEmails = {
-            'ilyasvaliev@mail.ru': 'Ильяс Валиев',
-            'prokhormart@mail.ru': 'Прохор Март',
-            'romankisel@mail.ru': 'Роман Кисель',
-            'artemant@mail.ru': 'Артем Ант'
+        const API = 'https://script.google.com/macros/s/AKfycbzsLK9FxBEOFl4XDliOBm-qdmCRJL_Du4uOUjQrGqIdghrvqdt2_4YSbeNeSON2hDxrqg/exec'; // <--- ВСТАВЬ СЮДА URL ИЗ GOOGLE SCRIPTS
+        let me = { email: '', name: '', avatar: '' };
+        const users = {
+            'ilyasvaliev@mail.ru': 'Ильяс',
+            'prokhormart@mail.ru': 'Прохор',
+            'romankisel@mail.ru': 'Роман',
+            'artemant@mail.ru': 'Артем'
         };
 
-        // Запуск
-        window.onload = () => {
-            setTimeout(() => document.getElementById('loader').style.opacity = '0', 800);
-            setTimeout(() => document.getElementById('loader').classList.add('hidden'), 1300);
-        };
-
-        // Логика карты
-        document.getElementById('cardRotate').addEventListener('click', function() {
-            this.classList.toggle('is-flipped');
-        });
-
-        // Переключение вкладок
-        function switchTab(name, el) {
+        function showTab(name, btn) {
             document.querySelectorAll('.section').forEach(s => s.classList.add('hidden'));
-            document.getElementById('sec-' + name).classList.remove('hidden');
-            document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('is-active'));
-            el.classList.add('is-active');
+            document.getElementById(name+'Tab').classList.remove('hidden');
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            if(name === 'chat') setTimeout(scrollChat, 100);
         }
 
-        // ВХОД
-        async function tryLogin() {
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-            const btn = document.getElementById('loginBtn');
-            const err = document.getElementById('errorMsg');
-
-            if(!email || !password) return;
-
-            btn.disabled = true;
-            btn.innerText = 'ВХОД...';
-            err.style.display = 'none';
+        async function login() {
+            const email = document.getElementById('email').value.trim();
+            const pass = document.getElementById('password').value.trim();
+            const err = document.getElementById('loginError');
 
             try {
-                const response = await fetch(API, {
-                    method: 'POST',
-                    mode: 'no-cors', // Попробуем сначала так, если будут проблемы
-                    body: JSON.stringify({ action: 'login', email, password })
-                });
-                
-                // Из-за no-cors мы не увидим тело, если гугл блокирует. 
-                // Поэтому лучше использовать стандартный FETCH и настроить API как я дал выше.
-                
-                const res = await fetch(API, {
-                    method: 'POST',
-                    body: JSON.stringify({ action: 'login', email, password })
-                });
+                const res = await fetch(API, { method: 'POST', body: JSON.stringify({ action: 'login', email, password: pass }) });
                 const d = await res.json();
 
                 if(d.success) {
-                    user = { email, name: d.name, balance: d.balance, card: d.card, avatar: d.avatar };
-                    updateUI();
+                    me = { email, name: users[email] || email, avatar: d.avatar };
+                    document.getElementById('myBalance').innerText = d.balance + ' ₽';
+                    document.getElementById('myCard').innerText = d.card;
+                    if(d.avatar) document.getElementById('myAva').src = d.avatar;
+
                     document.getElementById('authScreen').classList.add('hidden');
                     document.getElementById('appScreen').classList.remove('hidden');
-                    initDropdown();
+
+                    initReceiverList();
                     startSync();
                 } else {
-                    err.innerText = d.message;
                     err.style.display = 'block';
                 }
-            } catch(e) {
-                console.error(e);
-                alert("Ошибка сети. Проверьте ссылку API и доступ 'Anyone'.");
-            } finally {
-                btn.disabled = false;
-                btn.innerText = 'ВОЙТИ В СИСТЕМУ';
+            } catch(e) { alert("Ошибка сети. Проверьте деплой API."); }
+        }
+
+        function initReceiverList() {
+            const sel = document.getElementById('toUser');
+            sel.innerHTML = '<option value="">Выберите получателя</option>';
+            for(let em in users) {
+                if(em !== me.email) sel.innerHTML += `<option value="${em}">${users[em]}</option>`;
             }
         }
 
-        function updateUI() {
-            document.getElementById('dispBalance').innerText = user.balance.toLocaleString() + ' ₽';
-            document.getElementById('dispCard').innerText = user.card;
-            document.getElementById('dispName').innerText = user.name;
-            if(user.avatar) document.getElementById('dispAva').src = user.avatar;
-            else document.getElementById('dispAva').src = 'https://via.placeholder.com/75';
-        }
+        async function sync() {
+            if(!me.email) return;
+            try {
+                // Баланс и история
+                const resH = await fetch(API, { method: 'POST', body: JSON.stringify({ action: 'history', email: me.email }) });
+                const dH = await resH.json();
+                
+                const balRes = await fetch(API, { method: 'POST', body: JSON.stringify({ action: 'balance', email: me.email }) });
+                const balD = await balRes.json();
+                document.getElementById('myBalance').innerText = balD.balance + ' ₽';
 
-        function initDropdown() {
-            const sel = document.getElementById('sendTo');
-            sel.innerHTML = '<option value="">Выберите человека</option>';
-            for(let em in userEmails) {
-                if(em !== user.email) sel.innerHTML += `<option value="${em}">${userEmails[em]}</option>`;
-            }
-        }
+                const hList = document.getElementById('historyList');
+                hList.innerHTML = dH.history.map(h => {
+                    const isOut = h[1] === me.email;
+                    return `
+                        <div class="hist-item" style="border-color:${isOut ? 'var(--error)' : 'var(--success)'}">
+                            <div class="hist-info">
+                                <b>${isOut ? 'Выплата' : 'Приход'}</b>
+                                <small>${h[4] || 'Без комментария'}</small>
+                            </div>
+                            <b style="color:${isOut ? 'var(--error)' : 'var(--success)'}">${isOut?'-':'+'}${h[3]} ₽</b>
+                        </div>
+                    `;
+                }).join('');
 
-        // ПЕРЕВОД
-        async function executeTransfer() {
-            const to = document.getElementById('sendTo').value;
-            const amount = document.getElementById('sendAmount').value;
-            const comment = document.getElementById('sendComm').value;
-
-            if(!to || amount <= 0) return alert("Проверьте данные");
-
-            const res = await fetch(API, {
-                method: 'POST',
-                body: JSON.stringify({ action: 'transfer', from: user.email, to, amount, comment })
-            });
-            const d = await res.json();
-
-            if(d.success) {
-                alert("Перевод успешно выполнен!");
-                document.getElementById('sendAmount').value = '';
-                document.getElementById('sendComm').value = '';
-                syncData();
-            } else {
-                alert("Ошибка: недостаточно средств");
-            }
-        }
-
-        // ЧАТ
-        async function sendChatMessage() {
-            const inp = document.getElementById('chatInput');
-            if(!inp.value) return;
-            const text = inp.value;
-            inp.value = '';
-
-            await fetch(API, {
-                method: 'POST',
-                body: JSON.stringify({ action: 'chat', sub: 'send', email: user.email, name: user.name, text: text })
-            });
-            syncChat();
-        }
-
-        async function syncChat() {
-            const res = await fetch(API, { method: 'POST', body: JSON.stringify({ action: 'chat', sub: 'get' }) });
-            const d = await res.json();
-            const list = document.getElementById('chatMessages');
-            if(d.messages) {
-                list.innerHTML = d.messages.map(m => `
-                    <div class="chat-msg">
-                        <img class="chat-ava" src="${m[3] || 'https://via.placeholder.com/42'}">
-                        <div class="chat-text">
-                            <b>${m[1]}</b>
-                            <p>${m[2]}</p>
+                // Чат
+                const resC = await fetch(API, { method: 'POST', body: JSON.stringify({ action: 'chat', sub: 'get' }) });
+                const dC = await resC.json();
+                const chatBox = document.getElementById('chatMessages');
+                chatBox.innerHTML = dC.messages.map(m => `
+                    <div class="msg">
+                        <img class="msg-img" src="${m[3] || 'https://via.placeholder.com/38'}">
+                        <div class="msg-body">
+                            <span class="msg-name">${m[1]}</span>
+                            <div class="msg-text">${m[2]}</div>
                         </div>
                     </div>
                 `).join('');
-            }
+            } catch(e) { console.log("Sync error"); }
         }
 
-        // ИСТОРИЯ
-        async function syncData() {
-            // Баланс
-            const resB = await fetch(API, { method: 'POST', body: JSON.string
+        async function sendChat() {
+            const inp = document.getElementById('chatInp');
+            if(!inp.value.trim()) return;
+            const text = inp.value;
+            inp.value = '';
+            await fetch(API, { method: 'POST', body: JSON.stringify({ action: 'chat', sub: 'send', email: me.email, name: me.name, text }) });
+            sync();
+        }
+
+        async function sendMoney() {
+            const to = document.getElementById('toUser').value;
+            const amount = document.getElementById('amount').value;
+            const comment = document.getElementById('comment').value;
+            if(!to || !amount) return alert("Заполните поля");
+
+            await fetch(API, { method: 'POST', body: JSON.stringify({ action: 'transfer', from: me.email, to, amount, comment }) });
+            document.getElementById('amount').value = '';
+            document.getElementById('comment').value = '';
+            alert("Переведено!");
+            sync();
+        }
+
+        async function takePhoto() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
+                const video = document.createElement('video');
+                video.srcObject = stream;
+                await video.play();
+
+                setTimeout(async () => {
+                    const canvas = document.createElement('canvas');
+                    canvas.width = 250; canvas.height = 250;
+                    canvas.getContext('2d').drawImage(video, 0, 0, 250, 250);
+                    const img = canvas.toDataURL('image/jpeg', 0.6);
+                    document.getElementById('myAva').src = img;
+                    me.avatar = img;
+                    await fetch(API, { method: 'POST', body: JSON.stringify({ action: 'updateAvatar', email: me.email, image: img }) });
+                    stream.getTracks().forEach(t => t.stop());
+                    alert("Фото обновлено!");
+                    sync();
+                }, 1500);
+            } catch(e) { alert("Нет доступа к камере"); }
+        }
+
+        async function changePass() {
+            const newPassword = document.getElementById('newPass').value;
+            if(!newPassword) return;
+            await fetch(API, { method: 'POST', body: JSON.stringify({ action: 'changePassword', email: me.email, newPassword }) });
+            document.getElementById('newPass').value = '';
+            alert("Пароль изменен!");
+        }
+
+        function scrollChat() {
+            const b = document.getElementById('chatMessages');
+            b.scrollTop = b.scrollHeight;
+        }
+
+        function startSync() {
+            sync();
+            setInterval(sync, 4000);
+        }
+    </script>
+</body>
+</html>
