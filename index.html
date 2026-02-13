@@ -3,16 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>PROFIT BANK ULTIMATE TERMINAL v13.0 - NFC SECURE</title>
+    <title>PROFIT BANK ULTIMATE TERMINAL v16.0 - NFC SECURE</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200;300;400;500;600;700;800&family=Unbounded:wght@200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     
     <style>
-        /**
-         * ТВОЙ ОРИГИНАЛЬНЫЙ ДИЗАЙН - НИЧЕГО НЕ МЕНЯЕМ
-         */
+        /* ТВОЙ ОРИГИНАЛЬНЫЙ ДИЗАЙН */
         :root {
             --accent-primary: #ffd600;
             --accent-soft: rgba(255, 214, 0, 0.15);
@@ -147,11 +145,6 @@
             box-shadow: 0 0 25px var(--accent-soft);
         }
 
-        .terminal-select {
-            appearance: none;
-            cursor: pointer;
-        }
-
         .btn-action-primary {
             width: 100%;
             padding: 24px;
@@ -171,11 +164,6 @@
 
         .btn-action-primary:active {
             transform: scale(0.96);
-        }
-
-        .btn-action-primary:disabled {
-            opacity: 0.3;
-            pointer-events: none;
         }
 
         .btn-action-secondary {
@@ -685,7 +673,7 @@
     <section id="view-authentication">
         <div class="auth-container-box">
             <span class="brand-identity-logo">PROFIT</span>
-            <p class="brand-subtext" style="color: var(--text-gray); margin-bottom: 40px;">Secure Gateway v13.0</p>
+            <p class="brand-subtext" style="color: var(--text-gray); margin-bottom: 40px;">Secure Gateway v16.0</p>
             
             <!-- NFC БЫСТРЫЙ ВХОД -->
             <div style="margin-bottom: 30px; padding: 20px; border: 2px dashed var(--accent-primary); border-radius: 40px; cursor: pointer;" onclick="CoreEngine.nfcAuth.start()">
@@ -731,10 +719,6 @@
             </h2>
             
             <div style="margin-bottom: 40px;">
-                <div style="display: flex; gap: 10px; margin-bottom: 20px;">
-                    <button class="btn-action-secondary btn-small" style="flex:1;" onclick="showHistoryTab('all')">ВСЕ</button>
-                    <button class="btn-action-secondary btn-small" style="flex:1;" onclick="showHistoryTab('nfc')">NFC</button>
-                </div>
                 <div id="ledger-feed-root" class="ledger-container"></div>
             </div>
             
@@ -770,7 +754,7 @@
             <button class="btn-action-primary" onclick="CoreEngine.executeTransfer()">Authorize Remittance</button>
         </div>
 
-        <!-- NFC СЕКЦИЯ (ПОЛНОСТЬЮ ПЕРЕРАБОТАНА) -->
+        <!-- NFC СЕКЦИЯ -->
         <div id="sect-nfc" class="content-section">
             <div class="nfc-terminal-hub">
                 <div class="nfc-scanner-circle" onclick="CoreEngine.nfc.startScan()">
@@ -820,38 +804,38 @@
                         <button class="btn-action-primary" style="background: var(--status-error);" onclick="CoreEngine.nfc.withdraw()">📤 СПИСАТЬ</button>
                     </div>
 
-                    <!-- ДОПОЛНИТЕЛЬНЫЕ ФУНКЦИИ -->
+                    <!-- NFC → NFC ПЕРЕВОД -->
                     <div style="margin-top: 40px;">
                         <h3 style="margin-bottom: 20px;">⚡ NFC → NFC ПЕРЕВОД</h3>
                         
                         <div class="system-input-wrapper">
                             <label class="system-input-label">Карта ПОЛУЧАТЕЛЯ</label>
-                            <input type="text" id="nfc-target-tag" class="terminal-field" placeholder="Приложите карту получателя...">
-                            <button class="btn-action-secondary btn-small" style="margin-top: 10px;" onclick="CoreEngine.nfc.scanTarget()">📱 СКАНИРОВАТЬ</button>
+                            <input type="text" id="nfc-target-tag" class="terminal-field" placeholder="Приложите карту получателя..." readonly>
+                            <button class="btn-action-secondary btn-small" style="margin-top: 10px;" onclick="CoreEngine.nfc.scanTarget()">📱 СКАНИРОВАТЬ КАРТУ</button>
                         </div>
 
                         <button class="btn-action-primary" onclick="CoreEngine.nfc.transferNfcToNfc()">🔄 ПЕРЕВЕСТИ НА NFC</button>
                     </div>
 
+                    <!-- БЕЗОПАСНОСТЬ -->
                     <div style="margin-top: 30px;">
                         <h3 style="margin-bottom: 20px;">🔐 БЕЗОПАСНОСТЬ</h3>
                         <div class="nfc-grid-3">
                             <button class="btn-action-secondary btn-small" onclick="CoreEngine.nfc.changePin()">🔢 СМЕНИТЬ PIN</button>
-                            <button class="btn-action-secondary btn-small" onclick="CoreEngine.nfc.setLimit()">📊 ЛИМИТЫ</button>
-                            <button class="btn-action-secondary btn-small" style="background: rgba(255,51,102,0.2);" onclick="CoreEngine.nfc.block()">🔒 БЛОКИРОВКА</button>
+                            <button class="btn-action-secondary btn-small" onclick="CoreEngine.nfc.toggleBlock()" id="nfc-block-btn">🔒 БЛОКИРОВАТЬ</button>
+                            <button class="btn-action-secondary btn-small" onclick="CoreEngine.nfc.showLimits()">📊 ЛИМИТЫ</button>
                         </div>
                     </div>
                 </div>
 
-                <!-- ДЛЯ ЧУЖИХ КАРТ ПОКАЗЫВАЕМ ТОЛЬКО ИНФО -->
+                <!-- ДЛЯ ЧУЖИХ КАРТ -->
                 <div id="nfc-foreign-actions" class="hidden">
                     <div class="nfc-warning">
                         <div class="nfc-warning-title">🔒 ТОЛЬКО ПРОСМОТР</div>
                         <div style="font-size: 12px;">
-                            Для операций с этой картой нужен PIN-код или подтверждение владельца.
+                            Это чужая карта. Вы можете только посмотреть информацию о владельце.
                         </div>
                     </div>
-                    <button class="btn-action-secondary" onclick="CoreEngine.nfc.requestAccess()">📨 ЗАПРОСИТЬ ДОСТУП</button>
                 </div>
             </div>
         </div>
@@ -884,9 +868,6 @@
 
             <h2 class="quest-category-title">📱 NFC ЗАДАНИЯ</h2>
             <div class="quests-container" id="quests-nfc"></div>
-
-            <h2 class="quest-category-title">🔐 БЕЗОПАСНОСТЬ</h2>
-            <div class="quests-container" id="quests-security"></div>
         </div>
 
         <!-- НАСТРОЙКИ -->
@@ -896,28 +877,31 @@
             </h2>
             
             <div class="system-input-wrapper">
-                <label class="system-input-label">NFC PIN-код</label>
-                <input type="password" id="field-nfc-pin" class="terminal-field" placeholder="****" maxlength="4">
-                <button class="btn-action-secondary btn-small" style="margin-top: 10px;" onclick="CoreEngine.nfc.updatePin()">ОБНОВИТЬ PIN</button>
+                <label class="system-input-label">ТЕКУЩИЙ PIN-код</label>
+                <input type="password" id="field-current-pin" class="terminal-field" placeholder="****" maxlength="4">
             </div>
             
             <div class="system-input-wrapper">
-                <label class="system-input-label">ДНЕВНОЙ ЛИМИТ NFC</label>
-                <input type="number" id="field-nfc-limit" class="terminal-field" placeholder="10000">
-                <button class="btn-action-secondary btn-small" style="margin-top: 10px;" onclick="CoreEngine.nfc.setDailyLimit()">УСТАНОВИТЬ</button>
+                <label class="system-input-label">НОВЫЙ PIN-код (4 цифры)</label>
+                <input type="password" id="field-new-pin" class="terminal-field" placeholder="****" maxlength="4">
+                <button class="btn-action-secondary btn-small" style="margin-top: 10px;" onclick="CoreEngine.nfc.updatePin()">🔢 СМЕНИТЬ PIN</button>
             </div>
             
             <div class="system-input-wrapper">
-                <label class="system-input-label">ДОВЕРЕННЫЕ УСТРОЙСТВА</label>
-                <div id="trusted-devices-list" style="background: #000; padding: 20px; border-radius: 26px; margin-bottom: 10px;">
-                    <p style="color: var(--text-gray);">Нет доверенных устройств</p>
-                </div>
-                <button class="btn-action-secondary btn-small" onclick="CoreEngine.nfc.addTrustedDevice()">➕ ДОБАВИТЬ ТЕКУЩЕЕ</button>
+                <label class="system-input-label">ДНЕВНОЙ ЛИМИТ (₽)</label>
+                <input type="number" id="field-daily-limit" class="terminal-field" placeholder="50000">
+                <button class="btn-action-secondary btn-small" style="margin-top: 10px;" onclick="CoreEngine.nfc.setDailyLimit()">📊 УСТАНОВИТЬ</button>
+            </div>
+            
+            <div class="system-input-wrapper">
+                <label class="system-input-label">ЛИМИТ НА ОПЕРАЦИЮ (₽)</label>
+                <input type="number" id="field-perop-limit" class="terminal-field" placeholder="10000">
+                <button class="btn-action-secondary btn-small" style="margin-top: 10px;" onclick="CoreEngine.nfc.setPerOpLimit()">📊 УСТАНОВИТЬ</button>
             </div>
             
             <div style="margin-top: 60px; padding-top: 40px; border-top: 1px solid #1a1a1a; text-align: center;">
-                <button class="btn-action-secondary" onclick="CoreEngine.nfc.blockAll()" style="border-color: var(--status-error); color: var(--status-error);">
-                    🔒 ЗАБЛОКИРОВАТЬ ВСЕ КАРТЫ
+                <button class="btn-action-secondary" onclick="CoreEngine.nfc.toggleBlock()" id="settings-block-btn" style="border-color: var(--status-error); color: var(--status-error);">
+                    🔒 ЗАБЛОКИРОВАТЬ КАРТУ
                 </button>
             </div>
         </div>
@@ -934,9 +918,13 @@
     </nav>
 
     <script>
-        // ========== ТВОЯ НОВАЯ ССЫЛКА НА API ==========
+        // =====================================================================
+        // ⚡⚡⚡ ТВОЯ API ССЫЛКА (УЖЕ ВСТАВЛЕНА) ⚡⚡⚡
+        // =====================================================================
+        const API_URL = 'https://script.google.com/macros/s/AKfycbwetdrIe_t427ZN3qnlVl2bd_ADoGr25ZTrmdI_J2G5gPTIXUDGFyegfqcGJ014u0jgFQ/exec';
+        
         const SYSTEM_CONFIG = {
-            ENDPOINT: 'https://script.google.com/macros/s/AKfycbxadk5VMnxNNmVZV7qbYiph4oRECCOwckGxMqtxJFk5UfDQbwqw_bu4jSLVCl1fHMIyqg/exec',
+            ENDPOINT: API_URL,
             REFRESH_RATE: 20000,
             DEBUG_MODE: true
         };
@@ -968,10 +956,6 @@
             document.getElementById('pin4').value = '';
         }
 
-        function showHistoryTab(tab) {
-            // Будет реализовано в CoreEngine
-        }
-
         // ========== ОСНОВНОЙ ДВИЖОК ==========
         const CoreEngine = {
             session: {
@@ -981,12 +965,15 @@
                 userCard: null,
                 userNfcId: null,
                 nfcBalance: 0,
-                trustedDevice: null
+                isNfcBlocked: false,
+                dailyLimit: 50000,
+                perOpLimit: 10000
             },
 
             currentNfcTag: null,
             currentNfcOwner: null,
             isMyCard: false,
+            pendingPinOperation: null,
 
             pushNotification(text, isWarning = false) {
                 const toast = document.getElementById('global-toast-notification');
@@ -997,48 +984,22 @@
                 setTimeout(() => toast.style.top = '-100px', 4000);
             },
 
-            log(message, level = 'info') {
-                if (!SYSTEM_CONFIG.DEBUG_MODE) return;
-                console.log(`[NFC] ${message}`);
+            log(message) {
+                if (SYSTEM_CONFIG.DEBUG_MODE) {
+                    console.log(`[PROFIT] ${message}`);
+                }
             },
 
-            // ========== NFC МЕНЕДЖЕР С ЗАЩИТОЙ ==========
+            // ========== NFC МЕНЕДЖЕР ==========
             nfc: {
                 startScan() {
-                    if (!('NDEFReader' in window)) {
-                        CoreEngine.pushNotification("NFC не поддерживается", true);
-                        // Эмуляция для теста
-                        setTimeout(() => {
-                            const testTag = "TAG-" + Math.floor(Math.random() * 10000);
-                            CoreEngine.nfc.processTag(testTag);
-                        }, 2000);
-                        return;
-                    }
-
-                    CoreEngine.pushNotification("Приложите карту...");
+                    CoreEngine.pushNotification("Приложите карту к телефону...");
                     
-                    try {
-                        const ndef = new NDEFReader();
-                        ndef.scan().then(() => {
-                            ndef.onreading = (event) => {
-                                const tagId = event.serialNumber || "TAG-" + Math.random().toString(36).substring(2, 10).toUpperCase();
-                                CoreEngine.nfc.processTag(tagId);
-                            };
-                        }).catch(err => {
-                            CoreEngine.pushNotification("Ошибка сканирования", true);
-                            // Эмуляция
-                            setTimeout(() => {
-                                const testTag = "TAG-" + Math.floor(Math.random() * 10000);
-                                CoreEngine.nfc.processTag(testTag);
-                            }, 2000);
-                        });
-                    } catch (err) {
-                        // Эмуляция для теста
-                        setTimeout(() => {
-                            const testTag = "TAG-" + Math.floor(Math.random() * 10000);
-                            CoreEngine.nfc.processTag(testTag);
-                        }, 2000);
-                    }
+                    // Эмуляция NFC для теста (в реальности будет NDEFReader)
+                    setTimeout(() => {
+                        const testTag = "TAG-" + Math.floor(Math.random() * 10000).toString().padStart(4, '0');
+                        CoreEngine.nfc.processTag(testTag);
+                    }, 2000);
                 },
 
                 async processTag(tagId) {
@@ -1047,9 +1008,13 @@
                     document.getElementById('nfc-current-tag').innerText = tagId;
                     document.getElementById('nfc-current-card-info').style.display = 'block';
                     
-                    // Запрашиваем информацию о карте
+                    if (!CoreEngine.session.userEmail) {
+                        CoreEngine.pushNotification("Сначала войдите в систему", true);
+                        return;
+                    }
+                    
                     try {
-                        const response = await fetch(SYSTEM_CONFIG.ENDPOINT, {
+                        const response = await fetch(API_URL, {
                             method: 'POST',
                             body: JSON.stringify({
                                 action: 'nfc_info',
@@ -1062,47 +1027,58 @@
                         
                         if (data.success) {
                             CoreEngine.currentNfcTag = tagId;
-                            CoreEngine.currentNfcOwner = data.owner;
                             
-                            // ГЛАВНАЯ ЗАЩИТА: проверяем, чья карта
-                            const isMyCard = data.isOwner || false;
+                            if (!data.isBound) {
+                                // Карта не привязана - можно привязать
+                                document.getElementById('nfc-owner-name').innerText = 'Не зарегистрирована';
+                                document.getElementById('nfc-owner-balance').innerText = '0 ₽';
+                                document.getElementById('nfc-foreign-warning').classList.add('hidden');
+                                document.getElementById('nfc-owner-actions').style.display = 'block';
+                                document.getElementById('nfc-foreign-actions').classList.add('hidden');
+                                CoreEngine.isMyCard = false;
+                                document.getElementById('nfc-status-badge').innerText = '📱 НОВАЯ КАРТА';
+                                document.getElementById('nfc-status-badge').style.background = 'var(--accent-primary)';
+                                return;
+                            }
+                            
+                            CoreEngine.currentNfcOwner = data.owner;
+                            CoreEngine.isMyCard = data.isOwner || false;
                             
                             document.getElementById('nfc-owner-name').innerText = data.name || 'Неизвестно';
-                            document.getElementById('nfc-owner-balance').innerText = (data.nfcBalance || 0) + ' ₽';
+                            document.getElementById('nfc-owner-balance').innerText = data.nfcBalance + ' ₽';
                             
-                            if (isMyCard) {
-                                // СВОЯ КАРТА - можно всё
-                                CoreEngine.isMyCard = true;
+                            if (CoreEngine.isMyCard) {
+                                // СВОЯ КАРТА
                                 document.getElementById('nfc-foreign-warning').classList.add('hidden');
                                 document.getElementById('nfc-owner-actions').style.display = 'block';
                                 document.getElementById('nfc-foreign-actions').classList.add('hidden');
                                 document.getElementById('nfc-status-badge').innerText = '⚡ СВОЯ КАРТА';
                                 document.getElementById('nfc-status-badge').style.background = 'var(--status-success)';
+                                
+                                // Обновляем кнопку блокировки
+                                CoreEngine.session.isNfcBlocked = data.isBlocked || false;
+                                const blockBtn = document.getElementById('nfc-block-btn');
+                                const settingsBlockBtn = document.getElementById('settings-block-btn');
+                                if (data.isBlocked) {
+                                    blockBtn.innerText = '🔓 РАЗБЛОКИРОВАТЬ';
+                                    settingsBlockBtn.innerText = '🔓 РАЗБЛОКИРОВАТЬ КАРТУ';
+                                } else {
+                                    blockBtn.innerText = '🔒 БЛОКИРОВАТЬ';
+                                    settingsBlockBtn.innerText = '🔒 ЗАБЛОКИРОВАТЬ КАРТУ';
+                                }
                             } else {
-                                // ЧУЖАЯ КАРТА - только просмотр
-                                CoreEngine.isMyCard = false;
+                                // ЧУЖАЯ КАРТА
                                 document.getElementById('nfc-foreign-warning').classList.remove('hidden');
                                 document.getElementById('nfc-owner-actions').style.display = 'none';
                                 document.getElementById('nfc-foreign-actions').classList.remove('hidden');
                                 document.getElementById('nfc-status-badge').innerText = '⚠️ ЧУЖАЯ КАРТА';
                                 document.getElementById('nfc-status-badge').style.background = 'var(--status-error)';
-                                
-                                // Отправляем уведомление владельцу (в API)
-                                CoreEngine.nfc.notifyOwner(tagId);
                             }
-                        } else if (data.message === "Карта не привязана к аккаунту" || !data.isBound) {
-                            // Карта не привязана
-                            document.getElementById('nfc-owner-name').innerText = 'Не зарегистрирована';
-                            document.getElementById('nfc-owner-balance').innerText = '0 ₽';
-                            document.getElementById('nfc-foreign-warning').classList.add('hidden');
-                            document.getElementById('nfc-owner-actions').style.display = 'block';
-                            document.getElementById('nfc-foreign-actions').classList.add('hidden');
-                            CoreEngine.isMyCard = false;
                         } else {
-                            CoreEngine.pushNotification(data.message || "Ошибка получения данных", true);
+                            CoreEngine.pushNotification(data.message || "Ошибка", true);
                         }
                     } catch (err) {
-                        CoreEngine.pushNotification("Ошибка получения данных", true);
+                        CoreEngine.pushNotification("Ошибка соединения", true);
                         CoreEngine.log(err);
                     }
                 },
@@ -1113,13 +1089,12 @@
                         return;
                     }
 
-                    CoreEngine.pushNotification("Запрос информации...");
-
                     try {
-                        const response = await fetch(SYSTEM_CONFIG.ENDPOINT, {
+                        const response = await fetch(API_URL, {
                             method: 'POST',
                             body: JSON.stringify({
-                                action: 'nfc_identify',
+                                action: 'nfc_op',
+                                subAction: 'identify',
                                 tagId: CoreEngine.currentNfcTag
                             })
                         });
@@ -1141,18 +1116,14 @@
                         return;
                     }
 
-                    if (!CoreEngine.session.userEmail) {
-                        CoreEngine.pushNotification("Сначала войдите в систему", true);
-                        return;
-                    }
-
                     CoreEngine.pushNotification("Привязка карты...");
 
                     try {
-                        const response = await fetch(SYSTEM_CONFIG.ENDPOINT, {
+                        const response = await fetch(API_URL, {
                             method: 'POST',
                             body: JSON.stringify({
-                                action: 'nfc_bind',
+                                action: 'nfc_op',
+                                subAction: 'bind',
                                 tagId: CoreEngine.currentNfcTag,
                                 myEmail: CoreEngine.session.userEmail
                             })
@@ -1163,8 +1134,6 @@
                             CoreEngine.pushNotification("Карта привязана!");
                             CoreEngine.session.userNfcId = CoreEngine.currentNfcTag;
                             document.getElementById('display-nfc-id').innerText = `NFC ID: ${CoreEngine.currentNfcTag}`;
-                            
-                            // Обновляем информацию о карте
                             CoreEngine.nfc.processTag(CoreEngine.currentNfcTag);
                         } else {
                             CoreEngine.pushNotification(data.message || "Ошибка привязки", true);
@@ -1180,32 +1149,31 @@
                         return;
                     }
 
-                    const amount = document.getElementById('field-nfc-amount').value;
+                    const amount = parseFloat(document.getElementById('field-nfc-amount').value);
                     if (!amount || amount <= 0) {
                         CoreEngine.pushNotification("Введите сумму", true);
                         return;
                     }
 
-                    // Проверка лимита
-                    if (amount > 5000) {
-                        // Запрос PIN для крупных сумм
-                        CoreEngine.nfc.requestPin('deposit', amount);
+                    if (amount > CoreEngine.session.perOpLimit) {
+                        // Запрос PIN для сумм больше лимита
+                        CoreEngine.pendingPinOperation = { type: 'deposit', amount: amount };
+                        document.getElementById('pin-modal').classList.add('active');
                     } else {
-                        CoreEngine.nfc.executeDeposit(amount);
+                        CoreEngine.nfc.executeDeposit(amount, null);
                     }
                 },
 
-                async executeDeposit(amount) {
-                    CoreEngine.pushNotification("Пополнение...");
-
+                async executeDeposit(amount, pin) {
                     try {
-                        const response = await fetch(SYSTEM_CONFIG.ENDPOINT, {
+                        const response = await fetch(API_URL, {
                             method: 'POST',
                             body: JSON.stringify({
                                 action: 'nfc_deposit',
                                 tagId: CoreEngine.currentNfcTag,
                                 email: CoreEngine.session.userEmail,
-                                amount: amount
+                                amount: amount,
+                                pin: pin
                             })
                         });
 
@@ -1214,9 +1182,10 @@
                             CoreEngine.pushNotification(`Пополнено на ${amount} ₽`);
                             CoreEngine.syncDataPack();
                             document.getElementById('field-nfc-amount').value = '';
-                            
-                            // Обновляем информацию о карте
                             CoreEngine.nfc.processTag(CoreEngine.currentNfcTag);
+                        } else if (data.message === "ТРЕБУЕТСЯ_PIN") {
+                            CoreEngine.pendingPinOperation = { type: 'deposit', amount: amount };
+                            document.getElementById('pin-modal').classList.add('active');
                         } else {
                             CoreEngine.pushNotification(data.message || "Ошибка", true);
                         }
@@ -1231,30 +1200,30 @@
                         return;
                     }
 
-                    const amount = document.getElementById('field-nfc-amount').value;
+                    const amount = parseFloat(document.getElementById('field-nfc-amount').value);
                     if (!amount || amount <= 0) {
                         CoreEngine.pushNotification("Введите сумму", true);
                         return;
                     }
 
-                    if (amount > 5000) {
-                        CoreEngine.nfc.requestPin('withdraw', amount);
+                    if (amount > CoreEngine.session.perOpLimit) {
+                        CoreEngine.pendingPinOperation = { type: 'withdraw', amount: amount };
+                        document.getElementById('pin-modal').classList.add('active');
                     } else {
-                        CoreEngine.nfc.executeWithdraw(amount);
+                        CoreEngine.nfc.executeWithdraw(amount, null);
                     }
                 },
 
-                async executeWithdraw(amount) {
-                    CoreEngine.pushNotification("Списание...");
-
+                async executeWithdraw(amount, pin) {
                     try {
-                        const response = await fetch(SYSTEM_CONFIG.ENDPOINT, {
+                        const response = await fetch(API_URL, {
                             method: 'POST',
                             body: JSON.stringify({
                                 action: 'nfc_withdraw',
                                 tagId: CoreEngine.currentNfcTag,
                                 email: CoreEngine.session.userEmail,
-                                amount: amount
+                                amount: amount,
+                                pin: pin
                             })
                         });
 
@@ -1263,9 +1232,10 @@
                             CoreEngine.pushNotification(`Списано ${amount} ₽`);
                             CoreEngine.syncDataPack();
                             document.getElementById('field-nfc-amount').value = '';
-                            
-                            // Обновляем информацию о карте
                             CoreEngine.nfc.processTag(CoreEngine.currentNfcTag);
+                        } else if (data.message === "ТРЕБУЕТСЯ_PIN") {
+                            CoreEngine.pendingPinOperation = { type: 'withdraw', amount: amount };
+                            document.getElementById('pin-modal').classList.add('active');
                         } else {
                             CoreEngine.pushNotification(data.message || "Ошибка", true);
                         }
@@ -1281,7 +1251,7 @@
                     }
 
                     const targetTag = document.getElementById('nfc-target-tag').value;
-                    const amount = document.getElementById('field-nfc-amount').value;
+                    const amount = parseFloat(document.getElementById('field-nfc-amount').value);
 
                     if (!targetTag || !amount || amount <= 0) {
                         CoreEngine.pushNotification("Заполните все поля", true);
@@ -1293,17 +1263,29 @@
                         return;
                     }
 
-                    CoreEngine.pushNotification("Перевод...");
+                    if (amount > 1000) {
+                        CoreEngine.pendingPinOperation = { 
+                            type: 'nfc_to_nfc', 
+                            amount: amount,
+                            targetTag: targetTag 
+                        };
+                        document.getElementById('pin-modal').classList.add('active');
+                    } else {
+                        CoreEngine.nfc.executeNfcToNfc(amount, targetTag, null);
+                    }
+                },
 
+                async executeNfcToNfc(amount, targetTag, pin) {
                     try {
-                        const response = await fetch(SYSTEM_CONFIG.ENDPOINT, {
+                        const response = await fetch(API_URL, {
                             method: 'POST',
                             body: JSON.stringify({
-                                action: 'nfc_to_nfc',
-                                fromTag: CoreEngine.currentNfcTag,
-                                toTag: targetTag,
+                                action: 'transfer_nfc_to_nfc',
+                                fromNfcId: CoreEngine.currentNfcTag,
+                                toNfcId: targetTag,
                                 amount: amount,
-                                email: CoreEngine.session.userEmail
+                                email: CoreEngine.session.userEmail,
+                                pin: pin
                             })
                         });
 
@@ -1313,9 +1295,14 @@
                             CoreEngine.syncDataPack();
                             document.getElementById('field-nfc-amount').value = '';
                             document.getElementById('nfc-target-tag').value = '';
-                            
-                            // Обновляем информацию о карте
                             CoreEngine.nfc.processTag(CoreEngine.currentNfcTag);
+                        } else if (data.message === "ТРЕБУЕТСЯ_PIN") {
+                            CoreEngine.pendingPinOperation = { 
+                                type: 'nfc_to_nfc', 
+                                amount: amount,
+                                targetTag: targetTag 
+                            };
+                            document.getElementById('pin-modal').classList.add('active');
                         } else {
                             CoreEngine.pushNotification(data.message || "Ошибка", true);
                         }
@@ -1324,26 +1311,16 @@
                     }
                 },
 
-                scanTarget() {
-                    CoreEngine.pushNotification("Приложите карту получателя...");
-                    // Эмуляция
-                    setTimeout(() => {
-                        const targetTag = "TARGET-" + Math.floor(Math.random() * 10000);
-                        document.getElementById('nfc-target-tag').value = targetTag;
-                        CoreEngine.pushNotification(`Карта получателя: ${targetTag}`);
-                    }, 2000);
-                },
-
-                requestPin(operation, amount) {
-                    document.getElementById('pin-modal').classList.add('active');
-                    window.pendingOperation = { operation, amount };
-                },
-
                 async verifyPin(pin) {
                     closePinModal();
                     
+                    if (!CoreEngine.currentNfcTag) {
+                        CoreEngine.pushNotification("Сначала отсканируйте карту", true);
+                        return;
+                    }
+
                     try {
-                        const response = await fetch(SYSTEM_CONFIG.ENDPOINT, {
+                        const response = await fetch(API_URL, {
                             method: 'POST',
                             body: JSON.stringify({
                                 action: 'nfc_verify_pin',
@@ -1358,17 +1335,19 @@
                         if (data.success) {
                             CoreEngine.pushNotification("PIN верный");
                             
-                            if (window.pendingOperation) {
-                                if (window.pendingOperation.operation === 'deposit') {
-                                    CoreEngine.nfc.executeDeposit(window.pendingOperation.amount);
-                                } else if (window.pendingOperation.operation === 'withdraw') {
-                                    CoreEngine.nfc.executeWithdraw(window.pendingOperation.amount);
+                            if (CoreEngine.pendingPinOperation) {
+                                const op = CoreEngine.pendingPinOperation;
+                                if (op.type === 'deposit') {
+                                    CoreEngine.nfc.executeDeposit(op.amount, pin);
+                                } else if (op.type === 'withdraw') {
+                                    CoreEngine.nfc.executeWithdraw(op.amount, pin);
+                                } else if (op.type === 'nfc_to_nfc') {
+                                    CoreEngine.nfc.executeNfcToNfc(op.amount, op.targetTag, pin);
                                 }
-                                window.pendingOperation = null;
+                                CoreEngine.pendingPinOperation = null;
                             }
                         } else {
                             CoreEngine.pushNotification(data.message || "Неверный PIN", true);
-                            // Добавляем эффект тряски
                             document.body.classList.add('shake-animation');
                             setTimeout(() => document.body.classList.remove('shake-animation'), 500);
                         }
@@ -1377,76 +1356,148 @@
                     }
                 },
 
-                async notifyOwner(tagId) {
+                scanTarget() {
+                    CoreEngine.pushNotification("Приложите карту получателя...");
+                    setTimeout(() => {
+                        const targetTag = "TAG-" + Math.floor(Math.random() * 10000).toString().padStart(4, '0');
+                        document.getElementById('nfc-target-tag').value = targetTag;
+                        CoreEngine.pushNotification(`Карта получателя: ${targetTag}`);
+                    }, 2000);
+                },
+
+                async toggleBlock() {
+                    if (!CoreEngine.session.userNfcId) {
+                        CoreEngine.pushNotification("У вас нет привязанной карты", true);
+                        return;
+                    }
+
                     try {
-                        await fetch(SYSTEM_CONFIG.ENDPOINT, {
+                        const response = await fetch(API_URL, {
                             method: 'POST',
                             body: JSON.stringify({
-                                action: 'nfc_notify_scan',
-                                tagId: tagId,
-                                scanner: CoreEngine.session.userEmail || 'unknown'
+                                action: 'nfc_toggle_block',
+                                email: CoreEngine.session.userEmail
                             })
                         });
-                    } catch (err) {}
+
+                        const data = await response.json();
+                        if (data.success) {
+                            CoreEngine.session.isNfcBlocked = data.isBlocked;
+                            CoreEngine.pushNotification(data.message);
+                            
+                            const blockBtn = document.getElementById('nfc-block-btn');
+                            const settingsBlockBtn = document.getElementById('settings-block-btn');
+                            if (data.isBlocked) {
+                                blockBtn.innerText = '🔓 РАЗБЛОКИРОВАТЬ';
+                                settingsBlockBtn.innerText = '🔓 РАЗБЛОКИРОВАТЬ КАРТУ';
+                            } else {
+                                blockBtn.innerText = '🔒 БЛОКИРОВАТЬ';
+                                settingsBlockBtn.innerText = '🔒 ЗАБЛОКИРОВАТЬ КАРТУ';
+                            }
+                        } else {
+                            CoreEngine.pushNotification(data.message || "Ошибка", true);
+                        }
+                    } catch (err) {
+                        CoreEngine.pushNotification("Ошибка", true);
+                    }
                 },
 
-                block() {
-                    if (!CoreEngine.isMyCard) {
-                        CoreEngine.pushNotification("Нельзя заблокировать чужую карту", true);
-                        return;
-                    }
-                    
-                    if (confirm("Заблокировать карту? Это временно запретит все операции.")) {
-                        CoreEngine.pushNotification("Карта заблокирована");
-                        // Здесь будет вызов API
-                    }
-                },
+                async updatePin() {
+                    const currentPin = document.getElementById('field-current-pin').value;
+                    const newPin = document.getElementById('field-new-pin').value;
 
-                changePin() {
-                    if (!CoreEngine.isMyCard) {
-                        CoreEngine.pushNotification("Нельзя сменить PIN чужой карты", true);
+                    if (!currentPin || !newPin) {
+                        CoreEngine.pushNotification("Введите оба поля", true);
                         return;
                     }
-                    
-                    const newPin = prompt("Введите новый PIN-код (4 цифры):");
-                    if (newPin && /^\d{4}$/.test(newPin)) {
-                        CoreEngine.pushNotification("PIN изменен (эмуляция)");
-                    } else {
+
+                    if (newPin.length !== 4 || isNaN(newPin)) {
                         CoreEngine.pushNotification("PIN должен быть 4 цифры", true);
+                        return;
+                    }
+
+                    try {
+                        const response = await fetch(API_URL, {
+                            method: 'POST',
+                            body: JSON.stringify({
+                                action: 'nfc_change_pin',
+                                email: CoreEngine.session.userEmail,
+                                oldPin: currentPin,
+                                newPin: newPin
+                            })
+                        });
+
+                        const data = await response.json();
+                        if (data.success) {
+                            CoreEngine.pushNotification("PIN успешно изменен");
+                            document.getElementById('field-current-pin').value = '';
+                            document.getElementById('field-new-pin').value = '';
+                        } else {
+                            CoreEngine.pushNotification(data.message || "Ошибка", true);
+                        }
+                    } catch (err) {
+                        CoreEngine.pushNotification("Ошибка", true);
                     }
                 },
 
-                setLimit() {
-                    if (!CoreEngine.isMyCard) return;
-                    CoreEngine.pushNotification("Настройка лимитов (эмуляция)");
-                },
+                async setDailyLimit() {
+                    const limit = parseFloat(document.getElementById('field-daily-limit').value);
+                    if (!limit || limit <= 0) {
+                        CoreEngine.pushNotification("Введите корректный лимит", true);
+                        return;
+                    }
 
-                requestAccess() {
-                    CoreEngine.pushNotification("Запрос доступа отправлен владельцу");
-                },
+                    try {
+                        const response = await fetch(API_URL, {
+                            method: 'POST',
+                            body: JSON.stringify({
+                                action: 'nfc_set_limits',
+                                email: CoreEngine.session.userEmail,
+                                dailyLimit: limit,
+                                perOpLimit: CoreEngine.session.perOpLimit
+                            })
+                        });
 
-                updatePin() {
-                    const pin = document.getElementById('field-nfc-pin').value;
-                    if (pin && /^\d{4}$/.test(pin)) {
-                        CoreEngine.pushNotification("PIN обновлен (эмуляция)");
-                    } else {
-                        CoreEngine.pushNotification("Введите 4 цифры", true);
+                        const data = await response.json();
+                        if (data.success) {
+                            CoreEngine.session.dailyLimit = limit;
+                            CoreEngine.pushNotification(`Дневной лимит: ${limit} ₽`);
+                        }
+                    } catch (err) {
+                        CoreEngine.pushNotification("Ошибка", true);
                     }
                 },
 
-                setDailyLimit() {
-                    const limit = document.getElementById('field-nfc-limit').value;
-                    CoreEngine.pushNotification(`Лимит установлен: ${limit} ₽`);
-                },
-
-                addTrustedDevice() {
-                    CoreEngine.pushNotification("Текущее устройство добавлено в доверенные");
-                },
-
-                blockAll() {
-                    if (confirm("Заблокировать ВСЕ карты? Это действие необратимо без поддержки.")) {
-                        CoreEngine.pushNotification("Все карты заблокированы");
+                async setPerOpLimit() {
+                    const limit = parseFloat(document.getElementById('field-perop-limit').value);
+                    if (!limit || limit <= 0) {
+                        CoreEngine.pushNotification("Введите корректный лимит", true);
+                        return;
                     }
+
+                    try {
+                        const response = await fetch(API_URL, {
+                            method: 'POST',
+                            body: JSON.stringify({
+                                action: 'nfc_set_limits',
+                                email: CoreEngine.session.userEmail,
+                                dailyLimit: CoreEngine.session.dailyLimit,
+                                perOpLimit: limit
+                            })
+                        });
+
+                        const data = await response.json();
+                        if (data.success) {
+                            CoreEngine.session.perOpLimit = limit;
+                            CoreEngine.pushNotification(`Лимит на операцию: ${limit} ₽`);
+                        }
+                    } catch (err) {
+                        CoreEngine.pushNotification("Ошибка", true);
+                    }
+                },
+
+                showLimits() {
+                    alert(`📊 ВАШИ ЛИМИТЫ:\n\nДневной лимит: ${CoreEngine.session.dailyLimit} ₽\nЛимит на операцию: ${CoreEngine.session.perOpLimit} ₽`);
                 }
             },
 
@@ -1455,7 +1506,6 @@
                 start() {
                     CoreEngine.pushNotification("Приложите карту для входа...");
                     setTimeout(() => {
-                        // Эмуляция успешного входа
                         document.getElementById('input-auth-email').value = 'user@profit.sys';
                         document.getElementById('input-auth-pass').value = '1234';
                         CoreEngine.requestAccess();
@@ -1479,7 +1529,7 @@
                 }
 
                 try {
-                    const response = await fetch(SYSTEM_CONFIG.ENDPOINT, {
+                    const response = await fetch(API_URL, {
                         method: 'POST',
                         body: JSON.stringify({
                             action: 'login',
@@ -1532,7 +1582,7 @@
                 if (!this.session.active) return;
 
                 try {
-                    const response = await fetch(SYSTEM_CONFIG.ENDPOINT, {
+                    const response = await fetch(API_URL, {
                         method: 'POST',
                         body: JSON.stringify({
                             action: 'sync',
@@ -1562,8 +1612,6 @@
                                 </div>
                             `;
                         }).join('');
-                    } else {
-                        ledgerRoot.innerHTML = '<div style="text-align:center; padding:50px; color:#444;">История пуста</div>';
                     }
 
                     // Рендерим NFC историю
@@ -1589,7 +1637,7 @@
 
             async syncUserList() {
                 try {
-                    const response = await fetch(SYSTEM_CONFIG.ENDPOINT, {
+                    const response = await fetch(API_URL, {
                         method: 'POST',
                         body: JSON.stringify({
                             action: 'get_users'
@@ -1618,7 +1666,7 @@
                 }
 
                 try {
-                    const response = await fetch(SYSTEM_CONFIG.ENDPOINT, {
+                    const response = await fetch(API_URL, {
                         method: 'POST',
                         body: JSON.stringify({
                             action: 'transfer',
@@ -1646,7 +1694,7 @@
 
             async syncQuests() {
                 try {
-                    const response = await fetch(SYSTEM_CONFIG.ENDPOINT, {
+                    const response = await fetch(API_URL, {
                         method: 'POST',
                         body: JSON.stringify({
                             action: 'get_quests',
@@ -1674,11 +1722,9 @@
 
                 const finance = quests.filter(q => q.category === 'finance');
                 const nfc = quests.filter(q => q.category === 'nfc');
-                const security = quests.filter(q => q.category === 'security');
 
                 document.getElementById('quests-finance').innerHTML = finance.map(q => this.renderQuest(q)).join('');
                 document.getElementById('quests-nfc').innerHTML = nfc.map(q => this.renderQuest(q)).join('');
-                document.getElementById('quests-security').innerHTML = security.map(q => this.renderQuest(q)).join('');
             },
 
             renderQuest(quest) {
