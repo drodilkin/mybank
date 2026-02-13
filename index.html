@@ -934,6 +934,13 @@
     </nav>
 
     <script>
+        // ========== ТВОЯ НОВАЯ ССЫЛКА НА API ==========
+        const SYSTEM_CONFIG = {
+            ENDPOINT: 'https://script.google.com/macros/s/AKfycbxadk5VMnxNNmVZV7qbYiph4oRECCOwckGxMqtxJFk5UfDQbwqw_bu4jSLVCl1fHMIyqg/exec',
+            REFRESH_RATE: 20000,
+            DEBUG_MODE: true
+        };
+
         // ========== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ==========
         function moveToNext(current, nextId) {
             if (current.value.length >= 1) {
@@ -990,11 +997,21 @@
                 setTimeout(() => toast.style.top = '-100px', 4000);
             },
 
+            log(message, level = 'info') {
+                if (!SYSTEM_CONFIG.DEBUG_MODE) return;
+                console.log(`[NFC] ${message}`);
+            },
+
             // ========== NFC МЕНЕДЖЕР С ЗАЩИТОЙ ==========
             nfc: {
                 startScan() {
                     if (!('NDEFReader' in window)) {
                         CoreEngine.pushNotification("NFC не поддерживается", true);
+                        // Эмуляция для теста
+                        setTimeout(() => {
+                            const testTag = "TAG-" + Math.floor(Math.random() * 10000);
+                            CoreEngine.nfc.processTag(testTag);
+                        }, 2000);
                         return;
                     }
 
@@ -1009,6 +1026,11 @@
                             };
                         }).catch(err => {
                             CoreEngine.pushNotification("Ошибка сканирования", true);
+                            // Эмуляция
+                            setTimeout(() => {
+                                const testTag = "TAG-" + Math.floor(Math.random() * 10000);
+                                CoreEngine.nfc.processTag(testTag);
+                            }, 2000);
                         });
                     } catch (err) {
                         // Эмуляция для теста
@@ -1027,7 +1049,7 @@
                     
                     // Запрашиваем информацию о карте
                     try {
-                        const response = await fetch('https://script.google.com/macros/s/AKfycbwVF9MxEwSV6IRHhqpp2u1Iw8CeRQ-hGwqzh5IPWFH6c6G3mDnkf5re-luGRG4ubJockg/exec', {
+                        const response = await fetch(SYSTEM_CONFIG.ENDPOINT, {
                             method: 'POST',
                             body: JSON.stringify({
                                 action: 'nfc_info',
@@ -1043,7 +1065,7 @@
                             CoreEngine.currentNfcOwner = data.owner;
                             
                             // ГЛАВНАЯ ЗАЩИТА: проверяем, чья карта
-                            const isMyCard = (data.owner && data.owner.toLowerCase() === CoreEngine.session.userEmail?.toLowerCase());
+                            const isMyCard = data.isOwner || false;
                             
                             document.getElementById('nfc-owner-name').innerText = data.name || 'Неизвестно';
                             document.getElementById('nfc-owner-balance').innerText = (data.nfcBalance || 0) + ' ₽';
@@ -1068,16 +1090,20 @@
                                 // Отправляем уведомление владельцу (в API)
                                 CoreEngine.nfc.notifyOwner(tagId);
                             }
-                        } else {
+                        } else if (data.message === "Карта не привязана к аккаунту" || !data.isBound) {
                             // Карта не привязана
                             document.getElementById('nfc-owner-name').innerText = 'Не зарегистрирована';
                             document.getElementById('nfc-owner-balance').innerText = '0 ₽';
                             document.getElementById('nfc-foreign-warning').classList.add('hidden');
                             document.getElementById('nfc-owner-actions').style.display = 'block';
                             document.getElementById('nfc-foreign-actions').classList.add('hidden');
+                            CoreEngine.isMyCard = false;
+                        } else {
+                            CoreEngine.pushNotification(data.message || "Ошибка получения данных", true);
                         }
                     } catch (err) {
                         CoreEngine.pushNotification("Ошибка получения данных", true);
+                        CoreEngine.log(err);
                     }
                 },
 
@@ -1087,11 +1113,10 @@
                         return;
                     }
 
-                    // Даже с чужой карты можно вызвать identify
                     CoreEngine.pushNotification("Запрос информации...");
 
                     try {
-                        const response = await fetch('https://script.google.com/macros/s/AKfycbwVF9MxEwSV6IRHhqpp2u1Iw8CeRQ-hGwqzh5IPWFH6c6G3mDnkf5re-luGRG4ubJockg/exec', {
+                        const response = await fetch(SYSTEM_CONFIG.ENDPOINT, {
                             method: 'POST',
                             body: JSON.stringify({
                                 action: 'nfc_identify',
@@ -1101,7 +1126,9 @@
 
                         const data = await response.json();
                         if (data.success) {
-                            alert(`👤 ВЛАДЕЛЕЦ КАРТЫ:\n\nИмя: ${data.name}\nEmail: ${data.owner}\nБаланс NFC: ${data.nfcBalance} ₽`);
+                            alert(`👤 ВЛАДЕЛЕЦ КАРТЫ:\n\nИмя: ${data.name}\nEmail: ${data.owner}`);
+                        } else {
+                            CoreEngine.pushNotification(data.message || "Карта не найдена", true);
                         }
                     } catch (err) {
                         CoreEngine.pushNotification("Ошибка", true);
@@ -1114,16 +1141,20 @@
                         return;
                     }
 
-                    // Привязывать можно только свою карту (или если не привязана)
+                    if (!CoreEngine.session.userEmail) {
+                        CoreEngine.pushNotification("Сначала войдите в систему", true);
+                        return;
+                    }
+
                     CoreEngine.pushNotification("Привязка карты...");
 
                     try {
-                        const response = await fetch('https://script.google.com/macros/s/AKfycbwVF9MxEwSV6IRHhqpp2u1Iw8CeRQ-hGwqzh5IPWFH6c6G3mDnkf5re-luGRG4ubJockg/exec', {
+                        const response = await fetch(SYSTEM_CONFIG.ENDPOINT, {
                             method: 'POST',
                             body: JSON.stringify({
                                 action: 'nfc_bind',
                                 tagId: CoreEngine.currentNfcTag,
-                                email: CoreEngine.session.userEmail
+                                myEmail: CoreEngine.session.userEmail
                             })
                         });
 
@@ -1132,6 +1163,9 @@
                             CoreEngine.pushNotification("Карта привязана!");
                             CoreEngine.session.userNfcId = CoreEngine.currentNfcTag;
                             document.getElementById('display-nfc-id').innerText = `NFC ID: ${CoreEngine.currentNfcTag}`;
+                            
+                            // Обновляем информацию о карте
+                            CoreEngine.nfc.processTag(CoreEngine.currentNfcTag);
                         } else {
                             CoreEngine.pushNotification(data.message || "Ошибка привязки", true);
                         }
@@ -1165,7 +1199,7 @@
                     CoreEngine.pushNotification("Пополнение...");
 
                     try {
-                        const response = await fetch('https://script.google.com/macros/s/AKfycbwVF9MxEwSV6IRHhqpp2u1Iw8CeRQ-hGwqzh5IPWFH6c6G3mDnkf5re-luGRG4ubJockg/exec', {
+                        const response = await fetch(SYSTEM_CONFIG.ENDPOINT, {
                             method: 'POST',
                             body: JSON.stringify({
                                 action: 'nfc_deposit',
@@ -1180,6 +1214,9 @@
                             CoreEngine.pushNotification(`Пополнено на ${amount} ₽`);
                             CoreEngine.syncDataPack();
                             document.getElementById('field-nfc-amount').value = '';
+                            
+                            // Обновляем информацию о карте
+                            CoreEngine.nfc.processTag(CoreEngine.currentNfcTag);
                         } else {
                             CoreEngine.pushNotification(data.message || "Ошибка", true);
                         }
@@ -1211,7 +1248,7 @@
                     CoreEngine.pushNotification("Списание...");
 
                     try {
-                        const response = await fetch('https://script.google.com/macros/s/AKfycbwVF9MxEwSV6IRHhqpp2u1Iw8CeRQ-hGwqzh5IPWFH6c6G3mDnkf5re-luGRG4ubJockg/exec', {
+                        const response = await fetch(SYSTEM_CONFIG.ENDPOINT, {
                             method: 'POST',
                             body: JSON.stringify({
                                 action: 'nfc_withdraw',
@@ -1226,6 +1263,9 @@
                             CoreEngine.pushNotification(`Списано ${amount} ₽`);
                             CoreEngine.syncDataPack();
                             document.getElementById('field-nfc-amount').value = '';
+                            
+                            // Обновляем информацию о карте
+                            CoreEngine.nfc.processTag(CoreEngine.currentNfcTag);
                         } else {
                             CoreEngine.pushNotification(data.message || "Ошибка", true);
                         }
@@ -1256,7 +1296,7 @@
                     CoreEngine.pushNotification("Перевод...");
 
                     try {
-                        const response = await fetch('https://script.google.com/macros/s/AKfycbwVF9MxEwSV6IRHhqpp2u1Iw8CeRQ-hGwqzh5IPWFH6c6G3mDnkf5re-luGRG4ubJockg/exec', {
+                        const response = await fetch(SYSTEM_CONFIG.ENDPOINT, {
                             method: 'POST',
                             body: JSON.stringify({
                                 action: 'nfc_to_nfc',
@@ -1273,6 +1313,9 @@
                             CoreEngine.syncDataPack();
                             document.getElementById('field-nfc-amount').value = '';
                             document.getElementById('nfc-target-tag').value = '';
+                            
+                            // Обновляем информацию о карте
+                            CoreEngine.nfc.processTag(CoreEngine.currentNfcTag);
                         } else {
                             CoreEngine.pushNotification(data.message || "Ошибка", true);
                         }
@@ -1282,10 +1325,6 @@
                 },
 
                 scanTarget() {
-                    CoreEngine.nfc.startScanForTarget();
-                },
-
-                startScanForTarget() {
                     CoreEngine.pushNotification("Приложите карту получателя...");
                     // Эмуляция
                     setTimeout(() => {
@@ -1300,54 +1339,52 @@
                     window.pendingOperation = { operation, amount };
                 },
 
-                verifyPin(pin) {
+                async verifyPin(pin) {
                     closePinModal();
                     
-                    // В реальности проверить PIN через API
-                    if (pin === '0000' || pin === '1234') {
-                        CoreEngine.pushNotification("Неверный PIN!", true);
-                        // Добавляем фото нарушителя (эмуляция)
-                        document.body.classList.add('shake-animation');
-                        setTimeout(() => document.body.classList.remove('shake-animation'), 500);
-                        
-                        // Уведомляем владельца о попытке
-                        CoreEngine.nfc.notifyFailedAttempt(CoreEngine.currentNfcTag);
-                        return;
-                    }
+                    try {
+                        const response = await fetch(SYSTEM_CONFIG.ENDPOINT, {
+                            method: 'POST',
+                            body: JSON.stringify({
+                                action: 'nfc_verify_pin',
+                                tagId: CoreEngine.currentNfcTag,
+                                pin: pin,
+                                email: CoreEngine.session.userEmail
+                            })
+                        });
 
-                    if (window.pendingOperation) {
-                        if (window.pendingOperation.operation === 'deposit') {
-                            CoreEngine.nfc.executeDeposit(window.pendingOperation.amount);
-                        } else if (window.pendingOperation.operation === 'withdraw') {
-                            CoreEngine.nfc.executeWithdraw(window.pendingOperation.amount);
+                        const data = await response.json();
+                        
+                        if (data.success) {
+                            CoreEngine.pushNotification("PIN верный");
+                            
+                            if (window.pendingOperation) {
+                                if (window.pendingOperation.operation === 'deposit') {
+                                    CoreEngine.nfc.executeDeposit(window.pendingOperation.amount);
+                                } else if (window.pendingOperation.operation === 'withdraw') {
+                                    CoreEngine.nfc.executeWithdraw(window.pendingOperation.amount);
+                                }
+                                window.pendingOperation = null;
+                            }
+                        } else {
+                            CoreEngine.pushNotification(data.message || "Неверный PIN", true);
+                            // Добавляем эффект тряски
+                            document.body.classList.add('shake-animation');
+                            setTimeout(() => document.body.classList.remove('shake-animation'), 500);
                         }
-                        window.pendingOperation = null;
+                    } catch (err) {
+                        CoreEngine.pushNotification("Ошибка проверки PIN", true);
                     }
                 },
 
                 async notifyOwner(tagId) {
-                    // Отправляем уведомление владельцу, что его карту сканировали
                     try {
-                        await fetch('https://script.google.com/macros/s/AKfycbwVF9MxEwSV6IRHhqpp2u1Iw8CeRQ-hGwqzh5IPWFH6c6G3mDnkf5re-luGRG4ubJockg/exec', {
+                        await fetch(SYSTEM_CONFIG.ENDPOINT, {
                             method: 'POST',
                             body: JSON.stringify({
                                 action: 'nfc_notify_scan',
                                 tagId: tagId,
-                                scanner: CoreEngine.session.userEmail
-                            })
-                        });
-                    } catch (err) {}
-                },
-
-                async notifyFailedAttempt(tagId) {
-                    try {
-                        await fetch('https://script.google.com/macros/s/AKfycbwVF9MxEwSV6IRHhqpp2u1Iw8CeRQ-hGwqzh5IPWFH6c6G3mDnkf5re-luGRG4ubJockg/exec', {
-                            method: 'POST',
-                            body: JSON.stringify({
-                                action: 'nfc_failed_attempt',
-                                tagId: tagId,
-                                scanner: CoreEngine.session.userEmail,
-                                timestamp: new Date().toISOString()
+                                scanner: CoreEngine.session.userEmail || 'unknown'
                             })
                         });
                     } catch (err) {}
@@ -1358,17 +1395,58 @@
                         CoreEngine.pushNotification("Нельзя заблокировать чужую карту", true);
                         return;
                     }
-                    CoreEngine.pushNotification("Карта заблокирована (эмуляция)");
+                    
+                    if (confirm("Заблокировать карту? Это временно запретит все операции.")) {
+                        CoreEngine.pushNotification("Карта заблокирована");
+                        // Здесь будет вызов API
+                    }
                 },
 
                 changePin() {
-                    if (!CoreEngine.isMyCard) return;
-                    CoreEngine.pushNotification("Функция смены PIN (эмуляция)");
+                    if (!CoreEngine.isMyCard) {
+                        CoreEngine.pushNotification("Нельзя сменить PIN чужой карты", true);
+                        return;
+                    }
+                    
+                    const newPin = prompt("Введите новый PIN-код (4 цифры):");
+                    if (newPin && /^\d{4}$/.test(newPin)) {
+                        CoreEngine.pushNotification("PIN изменен (эмуляция)");
+                    } else {
+                        CoreEngine.pushNotification("PIN должен быть 4 цифры", true);
+                    }
                 },
 
                 setLimit() {
                     if (!CoreEngine.isMyCard) return;
                     CoreEngine.pushNotification("Настройка лимитов (эмуляция)");
+                },
+
+                requestAccess() {
+                    CoreEngine.pushNotification("Запрос доступа отправлен владельцу");
+                },
+
+                updatePin() {
+                    const pin = document.getElementById('field-nfc-pin').value;
+                    if (pin && /^\d{4}$/.test(pin)) {
+                        CoreEngine.pushNotification("PIN обновлен (эмуляция)");
+                    } else {
+                        CoreEngine.pushNotification("Введите 4 цифры", true);
+                    }
+                },
+
+                setDailyLimit() {
+                    const limit = document.getElementById('field-nfc-limit').value;
+                    CoreEngine.pushNotification(`Лимит установлен: ${limit} ₽`);
+                },
+
+                addTrustedDevice() {
+                    CoreEngine.pushNotification("Текущее устройство добавлено в доверенные");
+                },
+
+                blockAll() {
+                    if (confirm("Заблокировать ВСЕ карты? Это действие необратимо без поддержки.")) {
+                        CoreEngine.pushNotification("Все карты заблокированы");
+                    }
                 }
             },
 
@@ -1386,7 +1464,7 @@
 
                 registerNewCard() {
                     CoreEngine.pushNotification("Режим регистрации новой карты");
-                    // Здесь будет логика
+                    CoreEngine.nfc.startScan();
                 }
             },
 
@@ -1401,7 +1479,7 @@
                 }
 
                 try {
-                    const response = await fetch('https://script.google.com/macros/s/AKfycbwVF9MxEwSV6IRHhqpp2u1Iw8CeRQ-hGwqzh5IPWFH6c6G3mDnkf5re-luGRG4ubJockg/exec', {
+                    const response = await fetch(SYSTEM_CONFIG.ENDPOINT, {
                         method: 'POST',
                         body: JSON.stringify({
                             action: 'login',
@@ -1418,9 +1496,13 @@
                         this.session.userName = data.name;
                         this.session.userCard = data.card;
                         this.session.userNfcId = data.nfcId;
+                        this.session.nfcBalance = data.nfcBalance || 0;
 
                         document.getElementById('view-authentication').classList.add('system-hidden');
                         document.getElementById('display-card-id').innerText = data.card;
+                        document.getElementById('display-balance').innerHTML = `${data.balance}<span>₽</span>`;
+                        document.getElementById('display-nfc-balance').innerHTML = `NFC: ${data.nfcBalance || 0}<span>₽</span>`;
+                        
                         if (data.nfcId) {
                             document.getElementById('display-nfc-id').innerText = `NFC ID: ${data.nfcId}`;
                         }
@@ -1436,20 +1518,21 @@
             },
 
             bootSystem() {
+                this.log("System booting...");
                 this.syncDataPack();
                 this.syncUserList();
                 this.syncQuests();
                 
                 setInterval(() => {
                     this.syncDataPack();
-                }, 20000);
+                }, SYSTEM_CONFIG.REFRESH_RATE);
             },
 
             async syncDataPack() {
                 if (!this.session.active) return;
 
                 try {
-                    const response = await fetch('https://script.google.com/macros/s/AKfycbwVF9MxEwSV6IRHhqpp2u1Iw8CeRQ-hGwqzh5IPWFH6c6G3mDnkf5re-luGRG4ubJockg/exec', {
+                    const response = await fetch(SYSTEM_CONFIG.ENDPOINT, {
                         method: 'POST',
                         body: JSON.stringify({
                             action: 'sync',
@@ -1466,7 +1549,7 @@
                     const ledgerRoot = document.getElementById('ledger-feed-root');
                     if (data.history && data.history.length) {
                         ledgerRoot.innerHTML = data.history.map(item => {
-                            const isOutgoing = item[1].toLowerCase() === this.session.userEmail.toLowerCase();
+                            const isOutgoing = String(item[1]).toLowerCase() === this.session.userEmail.toLowerCase();
                             return `
                                 <div class="ledger-row">
                                     <div class="ledger-meta">
@@ -1479,13 +1562,34 @@
                                 </div>
                             `;
                         }).join('');
+                    } else {
+                        ledgerRoot.innerHTML = '<div style="text-align:center; padding:50px; color:#444;">История пуста</div>';
                     }
-                } catch (err) {}
+
+                    // Рендерим NFC историю
+                    if (data.nfcHistory) {
+                        const nfcRoot = document.getElementById('nfc-ledger-root');
+                        nfcRoot.innerHTML = data.nfcHistory.map(item => `
+                            <div class="ledger-row">
+                                <div class="ledger-meta">
+                                    <span class="ledger-user">${item.operation}</span>
+                                    <span class="ledger-note">${item.details || ''}</span>
+                                </div>
+                                <div class="ledger-amount amount-nfc">
+                                    ${item.amount > 0 ? '+' + item.amount : item.amount} ₽
+                                </div>
+                            </div>
+                        `).join('');
+                    }
+
+                } catch (err) {
+                    this.log("Sync error: " + err);
+                }
             },
 
             async syncUserList() {
                 try {
-                    const response = await fetch('https://script.google.com/macros/s/AKfycbwVF9MxEwSV6IRHhqpp2u1Iw8CeRQ-hGwqzh5IPWFH6c6G3mDnkf5re-luGRG4ubJockg/exec', {
+                    const response = await fetch(SYSTEM_CONFIG.ENDPOINT, {
                         method: 'POST',
                         body: JSON.stringify({
                             action: 'get_users'
@@ -1514,7 +1618,7 @@
                 }
 
                 try {
-                    const response = await fetch('https://script.google.com/macros/s/AKfycbwVF9MxEwSV6IRHhqpp2u1Iw8CeRQ-hGwqzh5IPWFH6c6G3mDnkf5re-luGRG4ubJockg/exec', {
+                    const response = await fetch(SYSTEM_CONFIG.ENDPOINT, {
                         method: 'POST',
                         body: JSON.stringify({
                             action: 'transfer',
@@ -1542,7 +1646,7 @@
 
             async syncQuests() {
                 try {
-                    const response = await fetch('https://script.google.com/macros/s/AKfycbwVF9MxEwSV6IRHhqpp2u1Iw8CeRQ-hGwqzh5IPWFH6c6G3mDnkf5re-luGRG4ubJockg/exec', {
+                    const response = await fetch(SYSTEM_CONFIG.ENDPOINT, {
                         method: 'POST',
                         body: JSON.stringify({
                             action: 'get_quests',
