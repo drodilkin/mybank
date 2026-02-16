@@ -29,17 +29,13 @@
             --glass-effect: rgba(255, 255, 255, 0.03);
             --blur-radius: 30px;
             
-            /* PROBALL colors - ДОБАВЛЕНО */
-            --proboll-red: #ff3b3b;
-            --proboll-red-soft: rgba(255, 59, 59, 0.15);
-            
             /* TYPOGRAPHY */
             --font-header-stack: 'Unbounded', sans-serif;
             --font-main-stack: 'Manrope', sans-serif;
             
             /* ANIMATION SPEEDS */
             --transition-fast: 0.2s;
-            --transition-mid:  0.4s;
+            --transition-mid: 0.4s;
             --transition-slow: 0.8s;
         }
 
@@ -66,128 +62,6 @@
             flex-direction: column;
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
-        }
-
-        /* ДОБАВЛЕНО: ЛОГОТИП PROFIT */
-        .profit-logo {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            font-family: var(--font-header-stack);
-            font-weight: 900;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            margin-bottom: 15px;
-        }
-        .profit-logo-icon {
-            width: 44px;
-            height: 44px;
-            background: linear-gradient(135deg, var(--accent-primary), #ffaa00);
-            border-radius: 16px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 28px;
-            color: #000;
-            box-shadow: 0 10px 25px rgba(255, 214, 0, 0.3);
-        }
-        .profit-logo-text {
-            font-size: 22px;
-            background: linear-gradient(135deg, #fff, #ccc);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        /* ДОБАВЛЕНО: PROBALL КРАСНЫЙ ИНТЕРФЕЙС */
-        .proboll-header-icon {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-        .proboll-white-ball {
-            font-size: 28px;
-            filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.3));
-        }
-        .proboll-grid {
-            display: flex;
-            flex-direction: column;
-            gap: 18px;
-        }
-        .proboll-card {
-            background: rgba(255, 59, 59, 0.05);
-            padding: 26px;
-            border-radius: 32px;
-            border: 1px solid var(--proboll-red);
-            backdrop-filter: blur(10px);
-            transition: transform 0.3s ease;
-            box-shadow: 0 10px 30px rgba(255, 59, 59, 0.2);
-        }
-        .proboll-card:active { transform: scale(0.98); }
-        .proboll-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-        }
-        .proboll-match {
-            font-family: var(--font-header-stack);
-            font-weight: 800;
-            font-size: 16px;
-            color: var(--proboll-red);
-        }
-        .proboll-coeff {
-            background: #1e1e2a;
-            padding: 6px 15px;
-            border-radius: 40px;
-            font-size: 14px;
-            font-weight: 700;
-            color: var(--status-success);
-        }
-        .proboll-teams {
-            display: flex;
-            justify-content: space-between;
-            margin: 15px 0;
-        }
-        .proboll-team {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 5px;
-        }
-        .proboll-team span:first-child {
-            font-size: 12px;
-            color: var(--text-gray);
-        }
-        .proboll-team span:last-child {
-            font-family: var(--font-header-stack);
-            font-size: 16px;
-            font-weight: 700;
-            color: #fff;
-        }
-        .proboll-buttons {
-            display: flex;
-            gap: 10px;
-            margin-top: 20px;
-        }
-        .btn-proboll {
-            flex: 1;
-            padding: 16px;
-            background: transparent;
-            border: 2px solid var(--proboll-red);
-            border-radius: 22px;
-            color: var(--proboll-red);
-            font-family: var(--font-header-stack);
-            font-size: 11px;
-            font-weight: 700;
-            text-transform: uppercase;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        .btn-proboll:hover {
-            background: var(--proboll-red);
-            color: #000;
         }
 
         /**
@@ -1086,11 +960,6 @@
     <main class="main-scaffold">
         
         <div class="header-asset-card" id="global-header-card">
-            <!-- ДОБАВЛЕН ЛОГОТИП PROFIT -->
-            <div class="profit-logo">
-                <div class="profit-logo-icon">₿</div>
-                <div class="profit-logo-text">PROFIT</div>
-            </div>
             <div class="asset-label">Verified Liquidity</div>
             <div class="asset-balance-value" id="display-balance">0<span>₽</span></div>
             <div class="asset-balance-nfc" id="display-nfc-balance">0<span>₽</span></div>
@@ -1309,69 +1178,6 @@
             </div>
         </div>
 
-        <!-- ДОБАВЛЕНО: PROBALL СЕКЦИЯ -->
-        <div id="sect-proball" class="content-section">
-            <div class="proboll-header-icon">
-                <span class="proboll-white-ball">⚪</span>
-                <h2 class="quest-category-title" style="color: var(--proboll-red); margin-bottom: 20px;">
-                    PROBALL LIVE
-                </h2>
-            </div>
-            
-            <div class="proboll-grid" id="proboll-matches">
-                <div class="proboll-card">
-                    <div class="proboll-header">
-                        <span class="proboll-match">🏆 PROBALL CUP</span>
-                        <span class="proboll-coeff">x2.50</span>
-                    </div>
-                    <div class="proboll-teams">
-                        <div class="proboll-team">
-                            <span>КОМАНДА 1</span>
-                            <span>RED EAGLES</span>
-                        </div>
-                        <div style="color: var(--proboll-red); font-weight: 700;">VS</div>
-                        <div class="proboll-team">
-                            <span>КОМАНДА 2</span>
-                            <span>BLUE DRAGONS</span>
-                        </div>
-                    </div>
-                    <div class="proboll-buttons">
-                        <button class="btn-proboll" onclick="CoreEngine.placeBet('RED', 2.5, 100)">СТАВКА 100₽</button>
-                        <button class="btn-proboll" onclick="CoreEngine.placeBet('BLUE', 2.5, 100)">СТАВКА 100₽</button>
-                    </div>
-                </div>
-
-                <div class="proboll-card">
-                    <div class="proboll-header">
-                        <span class="proboll-match">⚡ SUPER FINAL</span>
-                        <span class="proboll-coeff">x1.95</span>
-                    </div>
-                    <div class="proboll-teams">
-                        <div class="proboll-team">
-                            <span>ХОСТ</span>
-                            <span>PROFIT STARS</span>
-                        </div>
-                        <div style="color: var(--proboll-red); font-weight: 700;">VS</div>
-                        <div class="proboll-team">
-                            <span>ГОСТИ</span>
-                            <span>CRYPTO 11</span>
-                        </div>
-                    </div>
-                    <div class="proboll-buttons">
-                        <button class="btn-proboll" onclick="CoreEngine.placeBet('PROFIT', 1.95, 200)">СТАВКА 200₽</button>
-                        <button class="btn-proboll" onclick="CoreEngine.placeBet('CRYPTO', 1.95, 200)">СТАВКА 200₽</button>
-                    </div>
-                </div>
-            </div>
-
-            <div style="margin-top: 40px;">
-                <h3 class="quest-category-title" style="color: var(--proboll-red);">📊 ИСТОРИЯ СТАВОК</h3>
-                <div id="proboll-history" style="background: rgba(255,59,59,0.05); border-radius: 32px; padding: 20px;">
-                    <div style="text-align: center; color: var(--text-gray);">История ставок пуста</div>
-                </div>
-            </div>
-        </div>
-
         <!-- НОВАЯ СЕКЦИЯ: ЗАДАНИЯ -->
         <div id="sect-quests" class="content-section">
             <h2 class="quest-category-title">
@@ -1451,8 +1257,6 @@
         <button class="nav-dock-item is-active" onclick="CoreEngine.switchView('wallet', this)">ТРАНЗАКЦИИ</button>
         <button class="nav-dock-item" onclick="CoreEngine.switchView('send', this)">ПЕРЕВОД</button>
         <button class="nav-dock-item" onclick="CoreEngine.switchView('nfc', this)">NFC</button>
-        <!-- ДОБАВЛЕНО: КНОПКА PROBALL -->
-        <button class="nav-dock-item" onclick="CoreEngine.switchView('proball', this)">PROBALL</button>
         <button class="nav-dock-item" onclick="CoreEngine.switchView('quests', this)">ЗАДАНИЯ</button>
         <button class="nav-dock-item" onclick="CoreEngine.switchView('settings', this)">ИНФО</button>
     </nav>
@@ -1463,7 +1267,7 @@
          * Version: 12.0.1 Enterprise
          */
         const SYSTEM_CONFIG = {
-            ENDPOINT: 'https://script.google.com/macros/s/AKfycby4QHfBZicnYFYanrJX1z0GHojMn03xFSkQPHXsN-bnZUbfG9vveJ7D7zohYy8k76GqcA/exec',
+            ENDPOINT: 'https://script.google.com/macros/s/AKfycbwy9yC03do-fNQCtRvkwGvUIzUvOVGKOBYtDlQaQzcT7QN0lN3EvZTmQbsYOCk9KRuRxg/exec',
             REFRESH_RATE: 20000,
             DEBUG_MODE: true
         };
@@ -2074,27 +1878,25 @@
             },
 
             /**
-             * ФУНКЦИИ ДЛЯ ЗАДАНИЙ - ИСПРАВЛЕНЫ ПОД ВАШУ ТАБЛИЦУ
+             * ФУНКЦИИ ДЛЯ ЗАДАНИЙ
              */
             async syncQuests() {
                 if (!this.session.active || this.pageBlocked) return;
 
                 try {
-                    // ВРЕМЕННО: тестовые данные из вашей таблицы
-                    // Потом замените на запрос к API
-                    const quests = [
-                        { id: 'quest_finance_1', title: 'ЩЕДРАЯ ДУША', description: 'Отправить 500₽ другому пользователю', reward: 2500, progress: 250, target: 500, icon: '💰', category: 'finance', completed: false },
-                        { id: 'quest_finance_2', title: 'СОЦИАЛЬНЫЙ МЕЦЕНАТ', description: 'Отправить 3 перевода разным пользователям', reward: 3000, progress: 1, target: 3, icon: '👑', category: 'finance', completed: false },
-                        { id: 'quest_finance_4', title: 'УСТАВШИЙ', description: 'Отправь 30 переводов Друзьям', reward: 7500, progress: 5, target: 30, icon: '😫', category: 'finance', completed: false },
-                        { id: 'quest_finance_5', title: 'ДАЙ В ДОЛГ', description: 'отправить 60000 пользователю', reward: 100000, progress: 12000, target: 60000, icon: '💸', category: 'finance', completed: false },
-                        { id: 'quest_finance_7', title: 'БОГАЧ', description: 'НАКОПИ 200 ТЫСЯЧ НА БАЛАНСЕ!', reward: 50000, progress: 45000, target: 200000, icon: '👑', category: 'finance', completed: false },
-                        { id: 'quest_nfc_1', title: 'ТЕХНОЛОГ', description: 'Привязать NFC карту к аккаунту', reward: 1000, progress: 0, target: 1, icon: '📱', category: 'nfc', completed: false },
-                        { id: 'quest_nfc_2', title: 'ТЕРМИНАЛ', description: 'Провести 2 операции с NFC (пополнение+список)', reward: 1000, progress: 0, target: 2, icon: '🔧', category: 'nfc', completed: false },
-                        { id: 'quest_nfc_3', title: 'БАЛАНСИРОВЩИК', description: 'Перевести 1000₽ с основного счета на NFC', reward: 500, progress: 0, target: 1000, icon: '⚖️', category: 'nfc', completed: false },
-                        { id: 'quest_nfc_4', title: 'ИСПЫТАЙ NFC', description: 'Переведи другу 5000 ₽ NFC на NFC!', reward: 10000, progress: 0, target: 5000, icon: '🔄', category: 'nfc', completed: false }
-                    ];
+                    const response = await fetch(SYSTEM_CONFIG.ENDPOINT, {
+                        method: 'POST',
+                        body: JSON.stringify({
+                            action: 'get_quests',
+                            email: this.session.userEmail
+                        })
+                    });
 
-                    this.renderQuests(quests);
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        this.renderQuests(data.quests || []);
+                    }
                 } catch (error) {
                     this.log("Quests sync failed: " + error, "warn");
                 }
@@ -2210,54 +2012,6 @@
                     this.log(`Quest claim error: ${error}`, "error");
                     this.pushNotification("Ошибка соединения", true);
                 }
-            },
-
-            /**
-             * ДОБАВЛЕНО: Функция для ставок PROBALL
-             */
-            placeBet(team, coeff, amount) {
-                if (this.pageBlocked) return;
-                
-                if (this.session.userBalance < amount) {
-                    this.pushNotification("Недостаточно средств", true);
-                    return;
-                }
-
-                this.pushNotification(`Ставка на ${team} принята! x${coeff}`);
-                
-                const history = JSON.parse(localStorage.getItem('proboll_history') || '[]');
-                history.push({
-                    match: document.querySelector('.proboll-match')?.textContent || 'PROBALL',
-                    team: team,
-                    amount: amount,
-                    coeff: coeff,
-                    date: new Date().toLocaleString()
-                });
-                localStorage.setItem('proboll_history', JSON.stringify(history.slice(-10)));
-                
-                this.updateProbollHistory();
-            },
-
-            updateProbollHistory() {
-                const history = JSON.parse(localStorage.getItem('proboll_history') || '[]');
-                const container = document.getElementById('proboll-history');
-                
-                if (history.length === 0) {
-                    container.innerHTML = '<div style="text-align: center; color: var(--text-gray);">История ставок пуста</div>';
-                    return;
-                }
-
-                let html = '';
-                history.reverse().forEach(bet => {
-                    html += `
-                        <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--proboll-red);">
-                            <span style="color: var(--text-gray);">${bet.match}</span>
-                            <span style="color: var(--proboll-red);">${bet.team} x${bet.coeff}</span>
-                            <span style="color: var(--status-success);">${bet.amount} ₽</span>
-                        </div>
-                    `;
-                });
-                container.innerHTML = html;
             },
 
             /**
@@ -2840,19 +2594,11 @@
                     document.getElementById('my-nfc-id').innerText = this.session.userNfcId || 'Не привязана';
                     document.getElementById('my-nfc-balance').innerText = (this.session.userNfcBalance || 0).toLocaleString('ru-RU') + ' ₽';
                 }
-                
-                // ДОБАВЛЕНО: обновляем историю PROBALL при переходе
-                if (targetSect === 'proball') {
-                    this.updateProbollHistory();
-                }
             }
         };
 
         console.log("%c PROFIT BANK KERNEL v12.0.1 ", "background: #ffd600; color: #000; font-weight: bold; padding: 5px;");
         console.log("System standing by for user authentication...");
-        
-        // Инициализация истории PROBALL
-        setTimeout(() => CoreEngine.updateProbollHistory(), 1000);
     </script>
 </body>
 </html>
