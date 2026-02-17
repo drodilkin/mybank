@@ -100,6 +100,23 @@
         .card-status-active { background: var(--status-success); color: #000; }
         .card-status-blocked { background: var(--status-error); color: #fff; }
 
+        /* Индикатор блокировки аккаунта */
+        .account-blocked-banner {
+            background: var(--status-error);
+            color: #fff;
+            text-align: center;
+            padding: 15px;
+            border-radius: 30px;
+            margin-bottom: 20px;
+            font-family: var(--font-header-stack);
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            display: none;
+        }
+        .account-blocked-banner.show { display: block; }
+
         .content-section { display: none; }
         .content-section.is-active { display: block; animation: viewSlideIn 0.6s cubic-bezier(0.23, 1, 0.32, 1); }
 
@@ -214,6 +231,55 @@
             box-shadow: 0 30px 60px rgba(0,0,0,0.5);
         }
 
+        /* Модальное окно блокировки */
+        .blocked-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.95);
+            z-index: 1000000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+        .blocked-modal.show { display: flex; }
+        .blocked-modal-content {
+            background: var(--bg-surface);
+            border-radius: 48px;
+            padding: 40px;
+            max-width: 500px;
+            width: 90%;
+            border: 2px solid var(--status-error);
+            text-align: center;
+        }
+        .blocked-modal-content .icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+        }
+        .blocked-modal-content h2 {
+            font-family: var(--font-header-stack);
+            color: var(--status-error);
+            margin-bottom: 20px;
+        }
+        .blocked-modal-content p {
+            color: var(--text-gray);
+            font-size: 16px;
+            line-height: 1.6;
+            margin-bottom: 30px;
+        }
+        .blocked-modal-content button {
+            background: var(--status-error);
+            border: none;
+            padding: 18px 40px;
+            border-radius: 40px;
+            font-family: var(--font-header-stack);
+            font-weight: 700;
+            color: #fff;
+            cursor: pointer;
+        }
+
         /* Блокировщик страницы (чужой NFC) */
         .page-blocker {
             position: fixed;
@@ -254,7 +320,7 @@
 
     <div id="global-toast-notification">KERNEL INITIALIZED</div>
 
-    <!-- БЛОКИРОВЩИК -->
+    <!-- БЛОКИРОВЩИК (чужой NFC) -->
     <div class="page-blocker" id="page-blocker">
         <div class="blocker-content">
             <div class="blocker-icon">⚠️</div>
@@ -276,6 +342,16 @@
             </div>
             <div class="blocker-timer" id="blocker-timer">00:00</div>
             <button class="blocker-button" onclick="CoreEngine.forceReload()">ПЕРЕЗАГРУЗИТЬ СТРАНИЦУ</button>
+        </div>
+    </div>
+
+    <!-- Модальное окно блокировки аккаунта -->
+    <div class="blocked-modal" id="blocked-modal">
+        <div class="blocked-modal-content">
+            <div class="icon">🔒</div>
+            <h2>АККАУНТ ЗАБЛОКИРОВАН</h2>
+            <p id="blocked-message">Ваш аккаунт заблокирован администратором.</p>
+            <button onclick="document.getElementById('blocked-modal').classList.remove('show')">ЗАКРЫТЬ</button>
         </div>
     </div>
 
@@ -310,6 +386,11 @@
             <div class="asset-balance-nfc" id="display-nfc-balance">0<span>₽</span></div>
             <div class="asset-card-number" id="display-card-id">9771 0000 0000 0000</div>
             <div class="card-status-badge card-status-active" id="card-status-badge">АКТИВНА</div>
+        </div>
+
+        <!-- Баннер блокировки аккаунта -->
+        <div class="account-blocked-banner" id="account-blocked-banner">
+            ⚠️ ВАШ АККАУНТ ЗАБЛОКИРОВАН: <span id="blocked-banner-message"></span>
         </div>
 
         <!-- Вкладка Кошелёк -->
@@ -460,7 +541,6 @@
                     </div>
                 </div>
 
-                <!-- Информация о карте -->
                 <div class="nfc-card-info" id="nfc-card-info" style="display: none;">
                     <div class="nfc-card-row">
                         <span class="nfc-card-label">Владелец:</span>
@@ -480,7 +560,6 @@
                     </div>
                 </div>
 
-                <!-- Мои карты -->
                 <div style="margin-top: 30px; text-align: left;">
                     <h3 style="font-family: var(--font-header-stack); font-size: 12px; color: var(--accent-primary); margin-bottom: 15px;">
                         📱 МОИ КАРТЫ
@@ -629,7 +708,7 @@
                 </div>
             </div>
 
-            <!-- ===== НОВЫЙ БЛОК: УПРАВЛЕНИЕ БАЛАНСАМИ (СПИСАНИЕ/НАЧИСЛЕНИЕ) ===== -->
+            <!-- Блок управления балансами (списание/начисление) -->
             <div class="admin-section">
                 <h3 class="admin-subtitle">💰 УПРАВЛЕНИЕ БАЛАНСАМИ</h3>
                 <div class="admin-card">
@@ -659,6 +738,28 @@
                     <button class="btn-action-primary" onclick="AdminBalance.executeTransaction()">ВЫПОЛНИТЬ</button>
                 </div>
                 <div id="admin-balance-result" style="margin-top: 20px; padding: 15px; border-radius: 22px; background: rgba(0,0,0,0.3); display: none;"></div>
+            </div>
+
+            <!-- Блок управления блокировкой аккаунтов -->
+            <div class="admin-section">
+                <h3 class="admin-subtitle">🔒 УПРАВЛЕНИЕ БЛОКИРОВКОЙ АККАУНТОВ</h3>
+                <div class="admin-card">
+                    <div class="system-input-wrapper">
+                        <label class="system-input-label">Пользователь</label>
+                        <select id="admin-block-user" class="terminal-field terminal-select">
+                            <option value="">Загрузка пользователей...</option>
+                        </select>
+                    </div>
+                    <div class="system-input-wrapper">
+                        <label class="system-input-label">Причина блокировки</label>
+                        <input type="text" id="admin-block-message" class="terminal-field" placeholder="Ваш аккаунт заблокирован. Свяжитесь с поддержкой." value="Ваш аккаунт заблокирован администратором.">
+                    </div>
+                    <div style="display: flex; gap: 15px;">
+                        <button class="btn-action-primary" style="background: var(--status-error);" onclick="AdminBlock.blockUser()">ЗАБЛОКИРОВАТЬ</button>
+                        <button class="btn-action-secondary" onclick="AdminBlock.unblockUser()">РАЗБЛОКИРОВАТЬ</button>
+                    </div>
+                </div>
+                <div id="admin-block-result" style="margin-top: 20px; padding: 15px; border-radius: 22px; background: rgba(0,0,0,0.3); display: none;"></div>
             </div>
 
             <!-- Список существующей рекламы -->
@@ -704,14 +805,14 @@
         <button class="nav-dock-item is-active" onclick="CoreEngine.switchView('wallet', this)">ТРАНЗАКЦИИ</button>
         <button class="nav-dock-item" onclick="CoreEngine.switchView('send', this)">ПЕРЕВОД</button>
         <button class="nav-dock-item" onclick="CoreEngine.switchView('nfc', this)">NFC</button>
-        <button class="nav-dock-item" onclick="CoreEngine.switchView('admin', this)">АДМИН</button>
+        <button class="nav-dock-item operator-only" id="nav-admin" onclick="CoreEngine.switchView('admin', this)">АДМИН</button>
         <button class="nav-dock-item" onclick="CoreEngine.switchView('settings', this)">ИНФО</button>
     </nav>
 
     <script>
         // ================== CORE ENGINE ==================
         const SYSTEM_CONFIG = {
-            ENDPOINT: 'https://script.google.com/macros/s/AKfycbwRL17UhMR6aV-9F3WhNgbXNVWZdgYB6HtSJV-FItN9_5QsmRSoiPLM0NnO0bTIUp9viQ/exec', // ЗАМЕНИ НА СВОЙ URL
+            ENDPOINT: 'https://script.google.com/macros/s/AKfycbwO-tQfq-eG_o79gI66LKuAY5RMSv4Bk1jV4Oxv7uzbFixYzGtLdcnUQhJw_pfw4zvUaQ/exec', // ЗАМЕНИ НА СВОЙ URL
             REFRESH_RATE: 20000,
             DEBUG_MODE: true
         };
@@ -726,7 +827,9 @@
                 userNfcBlocked: false,
                 userBalance: 0,
                 userNfcBalance: 0,
-                isOperator: false
+                isOperator: false,
+                blocked: false,
+                blockMessage: ''
             },
 
             nfcPair: {
@@ -757,6 +860,27 @@
                 setTimeout(() => {
                     toast.style.top = '-100px';
                 }, 4000);
+            },
+
+            // Проверка блокировки перед действием
+            checkBlockedBeforeAction() {
+                if (this.session.blocked) {
+                    document.getElementById('blocked-message').innerText = this.session.blockMessage || 'Ваш аккаунт заблокирован администратором.';
+                    document.getElementById('blocked-modal').classList.add('show');
+                    return true;
+                }
+                return false;
+            },
+
+            updateBlockBanner() {
+                const banner = document.getElementById('account-blocked-banner');
+                const msgSpan = document.getElementById('blocked-banner-message');
+                if (this.session.blocked) {
+                    msgSpan.innerText = this.session.blockMessage || 'Аккаунт заблокирован';
+                    banner.classList.add('show');
+                } else {
+                    banner.classList.remove('show');
+                }
             },
 
             blockPage(cardId, ownerEmail) {
@@ -826,15 +950,19 @@
                         this.session.userBalance = data.balance || 0;
                         this.session.userNfcBalance = data.nfcBalance || 0;
                         this.session.isOperator = (email === 'operator@profit');
+                        this.session.blocked = data.blocked || false;
+                        this.session.blockMessage = data.blockMessage || '';
 
                         document.getElementById('view-authentication').classList.add('system-hidden');
                         document.getElementById('display-card-id').innerText = data.card || '9771 0000 0000 0000';
                         this.updateCardStatusUI();
+                        this.updateBlockBanner();
 
                         if (this.session.isOperator) {
                             document.body.classList.add('operator-mode');
                             this.admin.loadAds();
                             AdminBalance.loadUserList();
+                            AdminBlock.loadUserList();
                         }
                         this.pushNotification("ACCESS GRANTED");
                         this.bootSystem();
@@ -887,6 +1015,10 @@
                     this.session.userBalance = data.balance || 0;
                     this.session.userNfcBalance = data.nfcBalance || 0;
                     this.session.userNfcBlocked = data.nfcBlocked || false;
+                    this.session.blocked = data.blocked || false;
+                    this.session.blockMessage = data.blockMessage || '';
+                    this.updateBlockBanner();
+
                     document.getElementById('display-balance').innerHTML = `${(data.balance || 0).toLocaleString('ru-RU')}<span>₽</span>`;
                     document.getElementById('display-nfc-balance').innerHTML = `NFC: ${(data.nfcBalance || 0).toLocaleString('ru-RU')}<span>₽</span>`;
                     document.getElementById('my-nfc-id').innerText = this.session.userNfcId || 'Не привязана';
@@ -1131,7 +1263,7 @@
             },
 
             async executeTransfer() {
-                if (this.pageBlocked) return;
+                if (this.checkBlockedBeforeAction()) return;
                 const type = document.getElementById('field-transfer-type').value;
                 const amount = parseFloat(document.getElementById('field-send-amount').value);
                 if (isNaN(amount) || amount <= 0) return this.pushNotification("Укажите корректную сумму", true);
@@ -1142,6 +1274,7 @@
             },
 
             async transferToUser(amount) {
+                if (this.checkBlockedBeforeAction()) return;
                 const target = document.getElementById('field-send-target').value;
                 const note = document.getElementById('field-send-note').value;
                 if (!target) return this.pushNotification("Выберите получателя", true);
@@ -1167,6 +1300,7 @@
             },
 
             async transferMainToNfc(amount) {
+                if (this.checkBlockedBeforeAction()) return;
                 const nfcId = document.getElementById('field-nfc-target').value.trim();
                 if (!nfcId) return this.pushNotification("Укажите NFC ID карты", true);
                 this.pushNotification("Перевод на NFC...");
@@ -1191,6 +1325,7 @@
             },
 
             async transferNfcToMain(amount) {
+                if (this.checkBlockedBeforeAction()) return;
                 const nfcId = document.getElementById('field-nfc-target').value.trim();
                 if (!nfcId) return this.pushNotification("Укажите NFC ID карты", true);
                 this.pushNotification("Перевод с NFC...");
@@ -1215,6 +1350,7 @@
             },
 
             async transferNfcToNfc(amount) {
+                if (this.checkBlockedBeforeAction()) return;
                 if (!this.nfcPair.fromCard || !this.nfcPair.toCard) return this.pushNotification("Сначала отсканируйте обе карты", true);
                 if (this.nfcPair.fromCard === this.nfcPair.toCard) return this.pushNotification("Нельзя перевести самому себе", true);
                 if (this.nfcPair.fromBalance < amount) return this.pushNotification(`Недостаточно средств на карте отправителя. Доступно: ${this.nfcPair.fromBalance} ₽`, true);
@@ -1240,6 +1376,7 @@
 
             nfcManager: {
                 async perform(operationType) {
+                    if (CoreEngine.checkBlockedBeforeAction()) return;
                     if (CoreEngine.pageBlocked) return CoreEngine.pushNotification("Страница заблокирована", true);
                     const tagId = document.getElementById('field-nfc-tag').value.trim();
                     const amountValue = document.getElementById('field-nfc-amount').value;
@@ -1596,6 +1733,7 @@
             },
 
             async updateSecurityKey() {
+                if (this.checkBlockedBeforeAction()) return;
                 if (this.pageBlocked) return;
                 const oldK = document.getElementById('field-old-pass').value;
                 const newK = document.getElementById('field-new-pass').value;
@@ -1653,6 +1791,11 @@
 
             switchView(targetSect, navBtn) {
                 if (this.pageBlocked) return;
+                // Админка только для оператора
+                if (targetSect === 'admin' && !this.session.isOperator) {
+                    this.pushNotification("Доступ запрещён", true);
+                    return;
+                }
                 this.log(`Switching view to: ${targetSect}`);
                 if (targetSect === 'wallet') document.body.classList.remove('state-header-active');
                 else document.body.classList.add('state-header-active');
@@ -1670,6 +1813,7 @@
                 if (targetSect === 'admin' && this.session.isOperator) {
                     this.admin.loadAds();
                     AdminBalance.loadUserList();
+                    AdminBlock.loadUserList();
                 }
             }
         };
@@ -1703,12 +1847,9 @@
                 const operation = document.getElementById('admin-balance-operation').value;
                 const amount = parseFloat(document.getElementById('admin-balance-amount').value);
                 const comment = document.getElementById('admin-balance-comment').value.trim() || "Обслуживание карты";
-
                 if (!email) return CoreEngine.pushNotification("Выберите пользователя", true);
                 if (isNaN(amount) || amount <= 0) return CoreEngine.pushNotification("Введите корректную сумму", true);
-
                 CoreEngine.pushNotification("Выполнение операции...");
-
                 try {
                     const response = await fetch(SYSTEM_CONFIG.ENDPOINT, {
                         method: 'POST',
@@ -1728,7 +1869,6 @@
                         resultDiv.innerHTML = `<span style="color: var(--status-success);">✓ ${data.message}</span>`;
                         CoreEngine.pushNotification(`Операция выполнена: ${amount} ₽`);
                         document.getElementById('admin-balance-amount').value = '';
-                        // Обновить список пользователей (чтобы показать новый баланс)
                         this.loadUserList();
                         setTimeout(() => { resultDiv.style.display = 'none'; }, 5000);
                     } else {
@@ -1742,7 +1882,96 @@
             }
         };
 
-        console.log("%c PROFIT BANK KERNEL v14.0 + ADMIN BALANCE CONTROL ", "background: #ffd600; color: #000; font-weight: bold; padding: 5px;");
+        // ========== МОДУЛЬ УПРАВЛЕНИЯ БЛОКИРОВКОЙ ==========
+        const AdminBlock = {
+            async loadUserList() {
+                try {
+                    const response = await fetch(SYSTEM_CONFIG.ENDPOINT, {
+                        method: 'POST',
+                        body: JSON.stringify({ action: 'get_users', myEmail: CoreEngine.session.userEmail })
+                    });
+                    const data = await response.json();
+                    const select = document.getElementById('admin-block-user');
+                    let options = '<option value="">-- Выберите пользователя --</option>';
+                    if (data.users) {
+                        data.users.forEach(u => {
+                            if (u.email) {
+                                options += `<option value="${u.email}" data-blocked="${u.blocked}">${u.name} (${u.email}) ${u.blocked ? '[ЗАБЛОКИРОВАН]' : ''}</option>`;
+                            }
+                        });
+                    }
+                    select.innerHTML = options;
+                } catch (e) {
+                    CoreEngine.pushNotification("Ошибка загрузки пользователей", true);
+                }
+            },
+
+            async blockUser() {
+                const email = document.getElementById('admin-block-user').value;
+                const message = document.getElementById('admin-block-message').value.trim() || "Ваш аккаунт заблокирован администратором.";
+                if (!email) return CoreEngine.pushNotification("Выберите пользователя", true);
+                CoreEngine.pushNotification("Блокировка...");
+                try {
+                    const response = await fetch(SYSTEM_CONFIG.ENDPOINT, {
+                        method: 'POST',
+                        body: JSON.stringify({
+                            action: 'admin_block_user',
+                            adminEmail: CoreEngine.session.userEmail,
+                            targetEmail: email,
+                            blockMessage: message
+                        })
+                    });
+                    const data = await response.json();
+                    const resultDiv = document.getElementById('admin-block-result');
+                    if (data.success) {
+                        resultDiv.style.display = 'block';
+                        resultDiv.innerHTML = `<span style="color: var(--status-success);">✓ ${data.message}</span>`;
+                        CoreEngine.pushNotification(`Пользователь заблокирован`);
+                        this.loadUserList();
+                        setTimeout(() => { resultDiv.style.display = 'none'; }, 5000);
+                    } else {
+                        resultDiv.style.display = 'block';
+                        resultDiv.innerHTML = `<span style="color: var(--status-error);">✗ ${data.message}</span>`;
+                        CoreEngine.pushNotification(data.message || "Ошибка", true);
+                    }
+                } catch (e) {
+                    CoreEngine.pushNotification("Ошибка соединения", true);
+                }
+            },
+
+            async unblockUser() {
+                const email = document.getElementById('admin-block-user').value;
+                if (!email) return CoreEngine.pushNotification("Выберите пользователя", true);
+                CoreEngine.pushNotification("Разблокировка...");
+                try {
+                    const response = await fetch(SYSTEM_CONFIG.ENDPOINT, {
+                        method: 'POST',
+                        body: JSON.stringify({
+                            action: 'admin_unblock_user',
+                            adminEmail: CoreEngine.session.userEmail,
+                            targetEmail: email
+                        })
+                    });
+                    const data = await response.json();
+                    const resultDiv = document.getElementById('admin-block-result');
+                    if (data.success) {
+                        resultDiv.style.display = 'block';
+                        resultDiv.innerHTML = `<span style="color: var(--status-success);">✓ ${data.message}</span>`;
+                        CoreEngine.pushNotification(`Пользователь разблокирован`);
+                        this.loadUserList();
+                        setTimeout(() => { resultDiv.style.display = 'none'; }, 5000);
+                    } else {
+                        resultDiv.style.display = 'block';
+                        resultDiv.innerHTML = `<span style="color: var(--status-error);">✗ ${data.message}</span>`;
+                        CoreEngine.pushNotification(data.message || "Ошибка", true);
+                    }
+                } catch (e) {
+                    CoreEngine.pushNotification("Ошибка соединения", true);
+                }
+            }
+        };
+
+        console.log("%c PROFIT BANK KERNEL v15.0 + ACCOUNT BLOCK ", "background: #ffd600; color: #000; font-weight: bold; padding: 5px;");
     </script>
 </body>
 </html>
