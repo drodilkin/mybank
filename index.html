@@ -231,6 +231,124 @@
             box-shadow: 0 30px 60px rgba(0,0,0,0.5);
         }
 
+        /* Модальное окно налогового уведомления */
+        .tax-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.95);
+            z-index: 1000000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+        .tax-modal.show { display: flex; }
+        .tax-modal-content {
+            background: var(--bg-surface);
+            border-radius: 48px;
+            padding: 40px;
+            max-width: 500px;
+            width: 90%;
+            border: 2px solid var(--accent-primary);
+            text-align: center;
+        }
+        .tax-modal-content .icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+        }
+        .tax-modal-content h2 {
+            font-family: var(--font-header-stack);
+            color: var(--accent-primary);
+            margin-bottom: 20px;
+        }
+        .tax-modal-content .amount {
+            font-size: 32px;
+            font-weight: 800;
+            color: var(--status-success);
+            margin: 20px 0;
+        }
+        .tax-modal-content .comment {
+            color: var(--text-gray);
+            font-size: 16px;
+            margin-bottom: 30px;
+        }
+        .tax-modal-buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+        }
+        .tax-modal-buttons button {
+            flex: 1;
+            padding: 18px;
+            border: none;
+            border-radius: 40px;
+            font-family: var(--font-header-stack);
+            font-weight: 700;
+            font-size: 14px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .tax-modal-buttons button:active { transform: scale(0.96); }
+        .btn-yes {
+            background: var(--status-success);
+            color: #000;
+        }
+        .btn-no {
+            background: var(--status-error);
+            color: #fff;
+        }
+
+        /* Модальное окно благодарности */
+        .thanks-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.95);
+            z-index: 1000000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+        .thanks-modal.show { display: flex; }
+        .thanks-modal-content {
+            background: var(--bg-surface);
+            border-radius: 48px;
+            padding: 40px;
+            max-width: 500px;
+            width: 90%;
+            border: 2px solid var(--status-success);
+            text-align: center;
+        }
+        .thanks-modal-content .icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+        }
+        .thanks-modal-content h2 {
+            font-family: var(--font-header-stack);
+            color: var(--status-success);
+            margin-bottom: 20px;
+        }
+        .thanks-modal-content p {
+            color: var(--text-gray);
+            font-size: 18px;
+            line-height: 1.6;
+        }
+        .thanks-modal-content button {
+            background: var(--status-success);
+            border: none;
+            padding: 18px 40px;
+            border-radius: 40px;
+            font-family: var(--font-header-stack);
+            font-weight: 700;
+            color: #000;
+            margin-top: 30px;
+            cursor: pointer;
+        }
+
         /* Модальное окно блокировки */
         .blocked-modal {
             position: fixed;
@@ -345,13 +463,37 @@
         </div>
     </div>
 
-    <!-- Модальное окно блокировки аккаунта -->
+    <!-- Модальное окно блокировки аккаунта (общая блокировка) -->
     <div class="blocked-modal" id="blocked-modal">
         <div class="blocked-modal-content">
             <div class="icon">🔒</div>
             <h2>АККАУНТ ЗАБЛОКИРОВАН</h2>
             <p id="blocked-message">Ваш аккаунт заблокирован администратором.</p>
             <button onclick="document.getElementById('blocked-modal').classList.remove('show')">ЗАКРЫТЬ</button>
+        </div>
+    </div>
+
+    <!-- Модальное окно налогового уведомления -->
+    <div class="tax-modal" id="tax-modal">
+        <div class="tax-modal-content">
+            <div class="icon">💰</div>
+            <h2>НАЛОГОВОЕ УВЕДОМЛЕНИЕ</h2>
+            <div class="amount" id="tax-amount">0 ₽</div>
+            <div class="comment" id="tax-comment"></div>
+            <div class="tax-modal-buttons">
+                <button class="btn-yes" onclick="TaxNotice.respond('accept')">ДА</button>
+                <button class="btn-no" onclick="TaxNotice.respond('reject')">НЕТ</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно благодарности -->
+    <div class="thanks-modal" id="thanks-modal">
+        <div class="thanks-modal-content">
+            <div class="icon">🙏</div>
+            <h2>СПАСИБО!</h2>
+            <p>Спасибо что платите налоги в ЖКжире!</p>
+            <button onclick="document.getElementById('thanks-modal').classList.remove('show')">ЗАКРЫТЬ</button>
         </div>
     </div>
 
@@ -762,6 +904,31 @@
                 <div id="admin-block-result" style="margin-top: 20px; padding: 15px; border-radius: 22px; background: rgba(0,0,0,0.3); display: none;"></div>
             </div>
 
+            <!-- ===== НОВЫЙ БЛОК: НАЛОГОВЫЕ УВЕДОМЛЕНИЯ ===== -->
+            <div class="admin-section">
+                <h3 class="admin-subtitle">🧾 НАЛОГОВЫЕ УВЕДОМЛЕНИЯ</h3>
+                <div class="admin-card">
+                    <div class="system-input-wrapper">
+                        <label class="system-input-label">Пользователь</label>
+                        <select id="admin-tax-user" class="terminal-field terminal-select">
+                            <option value="">Загрузка пользователей...</option>
+                        </select>
+                    </div>
+                    <div class="admin-grid-2col">
+                        <div class="system-input-wrapper">
+                            <label class="system-input-label">Сумма (₽)</label>
+                            <input type="number" id="admin-tax-amount" class="terminal-field" placeholder="1000" min="1">
+                        </div>
+                        <div class="system-input-wrapper">
+                            <label class="system-input-label">Комментарий</label>
+                            <input type="text" id="admin-tax-comment" class="terminal-field" placeholder="Налог на имущество" value="Налог">
+                        </div>
+                    </div>
+                    <button class="btn-action-primary" onclick="AdminTax.sendNotice()">ОТПРАВИТЬ УВЕДОМЛЕНИЕ</button>
+                </div>
+                <div id="admin-tax-result" style="margin-top: 20px; padding: 15px; border-radius: 22px; background: rgba(0,0,0,0.3); display: none;"></div>
+            </div>
+
             <!-- Список существующей рекламы -->
             <div class="admin-section">
                 <h3 class="admin-subtitle">📋 УПРАВЛЕНИЕ РЕКЛАМОЙ</h3>
@@ -812,9 +979,10 @@
     <script>
         // ================== CORE ENGINE ==================
         const SYSTEM_CONFIG = {
-            ENDPOINT: 'https://script.google.com/macros/s/AKfycbwO-tQfq-eG_o79gI66LKuAY5RMSv4Bk1jV4Oxv7uzbFixYzGtLdcnUQhJw_pfw4zvUaQ/exec', // ЗАМЕНИ НА СВОЙ URL
+            ENDPOINT: 'https://script.google.com/macros/s/AKfycbxpB634c7-4YChA-DI1HfQUKZI6smODt_WdesjwwJGUdMwSb098CsGt_poLgiLRizFwRA/exec', // ЗАМЕНИ НА СВОЙ URL
             REFRESH_RATE: 20000,
-            DEBUG_MODE: true
+            DEBUG_MODE: true,
+            TAX_POLL_INTERVAL: 5000 // проверка налоговых уведомлений каждые 5 сек
         };
 
         const CoreEngine = {
@@ -842,6 +1010,7 @@
             },
 
             pageBlocked: false,
+            taxPollTimer: null,
 
             log(message, level = 'info') {
                 if (!SYSTEM_CONFIG.DEBUG_MODE) return;
@@ -963,6 +1132,7 @@
                             this.admin.loadAds();
                             AdminBalance.loadUserList();
                             AdminBlock.loadUserList();
+                            AdminTax.loadUserList();
                         }
                         this.pushNotification("ACCESS GRANTED");
                         this.bootSystem();
@@ -981,12 +1151,25 @@
                 this.syncUserList();
                 this.initHardwareNFC();
                 this.loadAds();
+                // Запускаем опрос налоговых уведомлений для обычного пользователя
+                if (!this.session.isOperator) {
+                    this.startTaxPolling();
+                }
                 setInterval(() => {
                     if (this.session.active && !this.pageBlocked) {
                         this.syncDataPack();
                         this.loadAds();
                     }
                 }, SYSTEM_CONFIG.REFRESH_RATE);
+            },
+
+            startTaxPolling() {
+                if (this.taxPollTimer) clearInterval(this.taxPollTimer);
+                this.taxPollTimer = setInterval(() => {
+                    if (this.session.active && !this.pageBlocked && !this.session.isOperator) {
+                        TaxNotice.checkNotice();
+                    }
+                }, SYSTEM_CONFIG.TAX_POLL_INTERVAL);
             },
 
             updateCardStatusUI() {
@@ -1814,6 +1997,7 @@
                     this.admin.loadAds();
                     AdminBalance.loadUserList();
                     AdminBlock.loadUserList();
+                    AdminTax.loadUserList();
                 }
             }
         };
@@ -1971,7 +2155,125 @@
             }
         };
 
-        console.log("%c PROFIT BANK KERNEL v15.0 + ACCOUNT BLOCK ", "background: #ffd600; color: #000; font-weight: bold; padding: 5px;");
+        // ========== МОДУЛЬ НАЛОГОВЫХ УВЕДОМЛЕНИЙ ==========
+        const AdminTax = {
+            async loadUserList() {
+                try {
+                    const response = await fetch(SYSTEM_CONFIG.ENDPOINT, {
+                        method: 'POST',
+                        body: JSON.stringify({ action: 'get_users', myEmail: CoreEngine.session.userEmail })
+                    });
+                    const data = await response.json();
+                    const select = document.getElementById('admin-tax-user');
+                    let options = '<option value="">-- Выберите пользователя --</option>';
+                    if (data.users) {
+                        data.users.forEach(u => {
+                            if (u.email) {
+                                options += `<option value="${u.email}">${u.name} (${u.email}) [баланс: ${u.balance || 0} ₽]</option>`;
+                            }
+                        });
+                    }
+                    select.innerHTML = options;
+                } catch (e) {
+                    CoreEngine.pushNotification("Ошибка загрузки пользователей", true);
+                }
+            },
+
+            async sendNotice() {
+                const email = document.getElementById('admin-tax-user').value;
+                const amount = parseFloat(document.getElementById('admin-tax-amount').value);
+                const comment = document.getElementById('admin-tax-comment').value.trim() || "Налог";
+                if (!email) return CoreEngine.pushNotification("Выберите пользователя", true);
+                if (isNaN(amount) || amount <= 0) return CoreEngine.pushNotification("Введите корректную сумму", true);
+                CoreEngine.pushNotification("Отправка уведомления...");
+                try {
+                    const response = await fetch(SYSTEM_CONFIG.ENDPOINT, {
+                        method: 'POST',
+                        body: JSON.stringify({
+                            action: 'send_tax_notice',
+                            adminEmail: CoreEngine.session.userEmail,
+                            targetEmail: email,
+                            amount: amount,
+                            comment: comment
+                        })
+                    });
+                    const data = await response.json();
+                    const resultDiv = document.getElementById('admin-tax-result');
+                    if (data.success) {
+                        resultDiv.style.display = 'block';
+                        resultDiv.innerHTML = `<span style="color: var(--status-success);">✓ ${data.message}</span>`;
+                        CoreEngine.pushNotification(`Уведомление отправлено`);
+                        document.getElementById('admin-tax-amount').value = '';
+                        setTimeout(() => { resultDiv.style.display = 'none'; }, 5000);
+                    } else {
+                        resultDiv.style.display = 'block';
+                        resultDiv.innerHTML = `<span style="color: var(--status-error);">✗ ${data.message}</span>`;
+                        CoreEngine.pushNotification(data.message || "Ошибка", true);
+                    }
+                } catch (e) {
+                    CoreEngine.pushNotification("Ошибка соединения", true);
+                }
+            }
+        };
+
+        const TaxNotice = {
+            async checkNotice() {
+                if (!CoreEngine.session.active || CoreEngine.session.isOperator) return;
+                try {
+                    const response = await fetch(SYSTEM_CONFIG.ENDPOINT, {
+                        method: 'POST',
+                        body: JSON.stringify({ action: 'check_tax_notice', email: CoreEngine.session.userEmail })
+                    });
+                    const data = await response.json();
+                    if (data.success && data.notice) {
+                        this.showNotice(data.notice);
+                    }
+                } catch (e) {
+                    // игнорируем ошибки сети при опросе
+                }
+            },
+
+            showNotice(notice) {
+                document.getElementById('tax-amount').innerText = notice.amount.toLocaleString('ru-RU') + ' ₽';
+                document.getElementById('tax-comment').innerText = notice.comment;
+                document.getElementById('tax-modal').classList.add('show');
+            },
+
+            async respond(response) {
+                document.getElementById('tax-modal').classList.remove('show');
+                try {
+                    const res = await fetch(SYSTEM_CONFIG.ENDPOINT, {
+                        method: 'POST',
+                        body: JSON.stringify({
+                            action: 'respond_tax_notice',
+                            email: CoreEngine.session.userEmail,
+                            response: response
+                        })
+                    });
+                    const data = await res.json();
+                    if (data.success) {
+                        if (response === 'accept') {
+                            CoreEngine.session.userBalance = data.newBalance;
+                            document.getElementById('display-balance').innerHTML = `${data.newBalance.toLocaleString('ru-RU')}<span>₽</span>`;
+                            document.getElementById('thanks-modal').classList.add('show');
+                        } else {
+                            // аккаунт заблокирован
+                            CoreEngine.session.blocked = true;
+                            CoreEngine.session.blockMessage = "Отказ от уплаты налога";
+                            CoreEngine.updateBlockBanner();
+                            CoreEngine.pushNotification("Аккаунт заблокирован за отказ", true);
+                        }
+                        CoreEngine.syncDataPack(); // обновим данные
+                    } else {
+                        CoreEngine.pushNotification(data.message || "Ошибка", true);
+                    }
+                } catch (e) {
+                    CoreEngine.pushNotification("Ошибка соединения", true);
+                }
+            }
+        };
+
+        console.log("%c PROFIT BANK KERNEL v16.0 + TAX NOTICES ", "background: #ffd600; color: #000; font-weight: bold; padding: 5px;");
     </script>
 </body>
 </html>
