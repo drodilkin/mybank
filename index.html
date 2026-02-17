@@ -1231,7 +1231,7 @@
                 const type = document.getElementById('field-transfer-type').value;
                 const amount = parseFloat(document.getElementById('field-send-amount').value);
                 if (isNaN(amount) || amount <= 0) return this.pushNotification("Укажите корректную сумму", true);
-                if (amount > 5000000) return this.pushNotification("Превышен лимит операции (5000000 ₽)", true);
+                if (amount > 100000) return this.pushNotification("Превышен лимит операции (100 000 ₽)", true);
                 if (type === 'user') await this.transferToUser(amount);
                 else if (type === 'nfc_main') await this.transferMainToNfc(amount);
                 else if (type === 'nfc_to_main') await this.transferNfcToMain(amount);
