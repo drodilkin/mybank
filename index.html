@@ -669,13 +669,12 @@
     </main>
 
     <nav class="bottom-nav-dock">
-        <button class="nav-dock-item is-active" onclick="CoreEngine.switchView('wallet', this)">ТРАНЗАКЦИИ</button>
-        <button class="nav-dock-item" onclick="CoreEngine.switchView('send', this)">ПЕРЕВОД</button>
-        <button class="nav-dock-item" onclick="CoreEngine.switchView('nfc', this)">NFC</button>
-        <button class="nav-dock-item" onclick="CoreEngine.switchView('admin', this)">АДМИН</button>
-        <button class="nav-dock-item" onclick="CoreEngine.switchView('settings', this)">ИНФО</button>
-    </nav>
-
+    <button class="nav-dock-item is-active" onclick="CoreEngine.switchView('wallet', this)">ТРАНЗАКЦИИ</button>
+    <button class="nav-dock-item" onclick="CoreEngine.switchView('send', this)">ПЕРЕВОД</button>
+    <button class="nav-dock-item" onclick="CoreEngine.switchView('nfc', this)">NFC</button>
+    <button class="nav-dock-item operator-only" id="nav-admin" onclick="CoreEngine.switchView('admin', this)">АДМИН</button>
+    <button class="nav-dock-item" onclick="CoreEngine.switchView('settings', this)">ИНФО</button>
+</nav>
     <script>
         // ================== CORE ENGINE ==================
         const SYSTEM_CONFIG = {
