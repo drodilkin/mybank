@@ -629,6 +629,38 @@
                 </div>
             </div>
 
+            <!-- ===== НОВЫЙ БЛОК: УПРАВЛЕНИЕ БАЛАНСАМИ (СПИСАНИЕ/НАЧИСЛЕНИЕ) ===== -->
+            <div class="admin-section">
+                <h3 class="admin-subtitle">💰 УПРАВЛЕНИЕ БАЛАНСАМИ</h3>
+                <div class="admin-card">
+                    <div class="system-input-wrapper">
+                        <label class="system-input-label">Пользователь</label>
+                        <select id="admin-balance-user" class="terminal-field terminal-select">
+                            <option value="">Загрузка пользователей...</option>
+                        </select>
+                    </div>
+                    <div class="admin-grid-2col">
+                        <div class="system-input-wrapper">
+                            <label class="system-input-label">Операция</label>
+                            <select id="admin-balance-operation" class="terminal-field terminal-select">
+                                <option value="withdraw">🔴 Списать</option>
+                                <option value="deposit">🟢 Начислить</option>
+                            </select>
+                        </div>
+                        <div class="system-input-wrapper">
+                            <label class="system-input-label">Сумма (₽)</label>
+                            <input type="number" id="admin-balance-amount" class="terminal-field" placeholder="1000" min="1">
+                        </div>
+                    </div>
+                    <div class="system-input-wrapper">
+                        <label class="system-input-label">Комментарий (отобразится в истории)</label>
+                        <input type="text" id="admin-balance-comment" class="terminal-field" placeholder="Обслуживание карты, бонус и т.д." value="Обслуживание карты">
+                    </div>
+                    <button class="btn-action-primary" onclick="AdminBalance.executeTransaction()">ВЫПОЛНИТЬ</button>
+                </div>
+                <div id="admin-balance-result" style="margin-top: 20px; padding: 15px; border-radius: 22px; background: rgba(0,0,0,0.3); display: none;"></div>
+            </div>
+
             <!-- Список существующей рекламы -->
             <div class="admin-section">
                 <h3 class="admin-subtitle">📋 УПРАВЛЕНИЕ РЕКЛАМОЙ</h3>
@@ -669,16 +701,17 @@
     </main>
 
     <nav class="bottom-nav-dock">
-    <button class="nav-dock-item is-active" onclick="CoreEngine.switchView('wallet', this)">ТРАНЗАКЦИИ</button>
-    <button class="nav-dock-item" onclick="CoreEngine.switchView('send', this)">ПЕРЕВОД</button>
-    <button class="nav-dock-item" onclick="CoreEngine.switchView('nfc', this)">NFC</button>
-    <button class="nav-dock-item operator-only" id="nav-admin" onclick="CoreEngine.switchView('admin', this)">АДМИН</button>
-    <button class="nav-dock-item" onclick="CoreEngine.switchView('settings', this)">ИНФО</button>
-</nav>
+        <button class="nav-dock-item is-active" onclick="CoreEngine.switchView('wallet', this)">ТРАНЗАКЦИИ</button>
+        <button class="nav-dock-item" onclick="CoreEngine.switchView('send', this)">ПЕРЕВОД</button>
+        <button class="nav-dock-item" onclick="CoreEngine.switchView('nfc', this)">NFC</button>
+        <button class="nav-dock-item" onclick="CoreEngine.switchView('admin', this)">АДМИН</button>
+        <button class="nav-dock-item" onclick="CoreEngine.switchView('settings', this)">ИНФО</button>
+    </nav>
+
     <script>
         // ================== CORE ENGINE ==================
         const SYSTEM_CONFIG = {
-            ENDPOINT: 'https://script.google.com/macros/s/AKfycbwRyHHYnu7eFkCEmfZOUfQulEQapgOaBIyrMUWG767HbigiLPnSXw7Zi5uXuFBwqwBWcw/exec', // ЗАМЕНИ НА СВОЙ URL
+            ENDPOINT: 'https://script.google.com/macros/s/AKfycbzDP8uL_dCoVtAqkSx9OKy0wz10pE7Teg2qlg-UEJ0HnIeN1eL47R6Zv4dCsxyAIvKX/exec', // ЗАМЕНИ НА СВОЙ URL
             REFRESH_RATE: 20000,
             DEBUG_MODE: true
         };
@@ -801,6 +834,7 @@
                         if (this.session.isOperator) {
                             document.body.classList.add('operator-mode');
                             this.admin.loadAds();
+                            AdminBalance.loadUserList();
                         }
                         this.pushNotification("ACCESS GRANTED");
                         this.bootSystem();
@@ -1635,12 +1669,80 @@
                 }
                 if (targetSect === 'admin' && this.session.isOperator) {
                     this.admin.loadAds();
+                    AdminBalance.loadUserList();
                 }
             }
         };
 
-        console.log("%c PROFIT BANK KERNEL v13.0 ", "background: #ffd600; color: #000; font-weight: bold; padding: 5px;");
-        console.log("System standing by for user authentication...");
+        // ========== МОДУЛЬ АДМИНСКОГО УПРАВЛЕНИЯ БАЛАНСАМИ ==========
+        const AdminBalance = {
+            async loadUserList() {
+                try {
+                    const response = await fetch(SYSTEM_CONFIG.ENDPOINT, {
+                        method: 'POST',
+                        body: JSON.stringify({ action: 'get_users', myEmail: CoreEngine.session.userEmail })
+                    });
+                    const data = await response.json();
+                    const select = document.getElementById('admin-balance-user');
+                    let options = '<option value="">-- Выберите пользователя --</option>';
+                    if (data.users) {
+                        data.users.forEach(u => {
+                            if (u.email) {
+                                options += `<option value="${u.email}">${u.name} (${u.email}) [баланс: ${u.balance || 0} ₽]</option>`;
+                            }
+                        });
+                    }
+                    select.innerHTML = options;
+                } catch (e) {
+                    CoreEngine.pushNotification("Ошибка загрузки пользователей", true);
+                }
+            },
+
+            async executeTransaction() {
+                const email = document.getElementById('admin-balance-user').value;
+                const operation = document.getElementById('admin-balance-operation').value;
+                const amount = parseFloat(document.getElementById('admin-balance-amount').value);
+                const comment = document.getElementById('admin-balance-comment').value.trim() || "Обслуживание карты";
+
+                if (!email) return CoreEngine.pushNotification("Выберите пользователя", true);
+                if (isNaN(amount) || amount <= 0) return CoreEngine.pushNotification("Введите корректную сумму", true);
+
+                CoreEngine.pushNotification("Выполнение операции...");
+
+                try {
+                    const response = await fetch(SYSTEM_CONFIG.ENDPOINT, {
+                        method: 'POST',
+                        body: JSON.stringify({
+                            action: 'admin_transaction',
+                            adminEmail: CoreEngine.session.userEmail,
+                            targetEmail: email,
+                            operation: operation,
+                            amount: amount,
+                            comment: comment
+                        })
+                    });
+                    const data = await response.json();
+                    const resultDiv = document.getElementById('admin-balance-result');
+                    if (data.success) {
+                        resultDiv.style.display = 'block';
+                        resultDiv.innerHTML = `<span style="color: var(--status-success);">✓ ${data.message}</span>`;
+                        CoreEngine.pushNotification(`Операция выполнена: ${amount} ₽`);
+                        document.getElementById('admin-balance-amount').value = '';
+                        // Обновить список пользователей (чтобы показать новый баланс)
+                        this.loadUserList();
+                        setTimeout(() => { resultDiv.style.display = 'none'; }, 5000);
+                    } else {
+                        resultDiv.style.display = 'block';
+                        resultDiv.innerHTML = `<span style="color: var(--status-error);">✗ ${data.message}</span>`;
+                        CoreEngine.pushNotification(data.message || "Ошибка", true);
+                    }
+                } catch (e) {
+                    CoreEngine.pushNotification("Ошибка соединения", true);
+                }
+            }
+        };
+
+        console.log("%c PROFIT BANK KERNEL v14.0 + ADMIN BALANCE CONTROL ", "background: #ffd600; color: #000; font-weight: bold; padding: 5px;");
     </script>
 </body>
 </html>
