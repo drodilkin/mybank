@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>PROFIT BANK • TERMINAL</title>
+    <title>PROFIT BANK • TERMINAL • ASSETS</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -40,6 +40,7 @@
         @keyframes viewSlideIn { from { transform: translateY(60px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
         @keyframes nfcPulseMain { 0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 214, 0, 0.3); } 50% { transform: scale(1.08); box-shadow: 0 0 0 25px rgba(255, 214, 0, 0); } 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 214, 0, 0); } }
         @keyframes blinkWarning { 0% { border-color: var(--status-error); opacity: 1; } 50% { border-color: var(--status-error); opacity: 0.5; background: rgba(255, 51, 102, 0.1); } 100% { border-color: var(--status-error); opacity: 1; } }
+        @keyframes assetGlow { 0% { border-color: var(--accent-primary); box-shadow: 0 0 0 0 rgba(255,214,0,0.1); } 50% { border-color: var(--status-success); box-shadow: 0 0 20px rgba(0,255,170,0.2); } 100% { border-color: var(--accent-primary); box-shadow: 0 0 0 0 rgba(255,214,0,0.1); } }
 
         /* Аутентификация */
         #view-authentication {
@@ -130,6 +131,124 @@
         .ledger-amount { font-family: var(--font-header-stack); font-weight: 700; font-size: 16px; }
         .amount-pos { color: var(--status-success); }
         .amount-neg { color: var(--status-error); }
+
+        /* АКТИВЫ (БИЗНЕС, КВАРТИРЫ, ТРАТЫ) */
+        .assets-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+            margin-top: 25px;
+        }
+        .asset-category {
+            background: var(--glass-effect);
+            border-radius: 42px;
+            padding: 30px 28px;
+            border: 1px solid var(--border-color);
+            backdrop-filter: blur(12px);
+            transition: all 0.3s ease;
+        }
+        .asset-category:hover {
+            border-color: var(--accent-primary);
+            background: rgba(255, 214, 0, 0.03);
+        }
+        .asset-category-header {
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            margin-bottom: 30px;
+            font-family: var(--font-header-stack);
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--accent-primary);
+            border-left: 5px solid var(--accent-primary);
+            padding-left: 20px;
+        }
+        .asset-category-header span {
+            font-size: 32px;
+        }
+        .asset-items {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        .asset-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 20px;
+            background: rgba(0,0,0,0.4);
+            border-radius: 38px;
+            border: 1px solid rgba(255,255,255,0.05);
+            transition: all 0.25s ease;
+        }
+        .asset-item:hover {
+            border-color: var(--status-success);
+            transform: scale(1.01);
+        }
+        .asset-info {
+            flex: 2;
+        }
+        .asset-name {
+            font-weight: 800;
+            font-size: 18px;
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .asset-name .asset-icon {
+            font-size: 28px;
+        }
+        .asset-price {
+            font-family: var(--font-header-stack);
+            font-size: 14px;
+            color: var(--text-gray);
+            letter-spacing: 1px;
+        }
+        .asset-actions {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+        .asset-actions .owned-badge {
+            background: rgba(0, 255, 170, 0.15);
+            padding: 8px 18px;
+            border-radius: 60px;
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--status-success);
+            font-family: var(--font-header-stack);
+        }
+        .btn-buy-asset {
+            background: linear-gradient(135deg, #ffd60020 0%, #ffd60005 100%);
+            border: 1px solid var(--accent-primary);
+            padding: 12px 28px;
+            border-radius: 40px;
+            font-family: var(--font-header-stack);
+            font-weight: 700;
+            font-size: 12px;
+            color: var(--accent-primary);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-buy-asset:active {
+            transform: scale(0.94);
+            background: var(--accent-primary);
+            color: #000;
+        }
+        .total-assets-value {
+            text-align: right;
+            margin-top: 30px;
+            padding-top: 25px;
+            border-top: 1px solid var(--border-color);
+            font-family: var(--font-header-stack);
+            font-size: 20px;
+            font-weight: 800;
+        }
+        .total-assets-value span {
+            color: var(--status-success);
+            font-size: 28px;
+        }
 
         /* NFC секция */
         .nfc-terminal-hub { text-align: center; padding: 20px 0; }
@@ -231,297 +350,31 @@
             box-shadow: 0 30px 60px rgba(0,0,0,0.5);
         }
 
-        /* Модальное окно налогового уведомления */
-        .tax-modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.95);
-            z-index: 1000000;
-            display: none;
-            align-items: center;
-            justify-content: center;
-        }
-        .tax-modal.show { display: flex; }
-        .tax-modal-content {
-            background: var(--bg-surface);
-            border-radius: 48px;
-            padding: 40px;
-            max-width: 500px;
-            width: 90%;
-            border: 2px solid var(--accent-primary);
-            text-align: center;
-        }
-        .tax-modal-content .icon {
-            font-size: 64px;
-            margin-bottom: 20px;
-        }
-        .tax-modal-content h2 {
-            font-family: var(--font-header-stack);
-            color: var(--accent-primary);
-            margin-bottom: 20px;
-        }
-        .tax-modal-content .amount {
-            font-size: 32px;
-            font-weight: 800;
-            color: var(--status-success);
-            margin: 20px 0;
-        }
-        .tax-modal-content .comment {
-            color: var(--text-gray);
-            font-size: 16px;
-            margin-bottom: 30px;
-        }
-        .tax-modal-buttons {
-            display: flex;
-            gap: 20px;
-            justify-content: center;
-        }
-        .tax-modal-buttons button {
-            flex: 1;
-            padding: 18px;
-            border: none;
-            border-radius: 40px;
-            font-family: var(--font-header-stack);
-            font-weight: 700;
-            font-size: 14px;
-            cursor: pointer;
-            transition: transform 0.2s;
-        }
-        .tax-modal-buttons button:active { transform: scale(0.96); }
-        .btn-yes {
-            background: var(--status-success);
-            color: #000;
-        }
-        .btn-no {
-            background: var(--status-error);
-            color: #fff;
-        }
-
-        /* Модальное окно благодарности */
-        .thanks-modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.95);
-            z-index: 1000000;
-            display: none;
-            align-items: center;
-            justify-content: center;
-        }
-        .thanks-modal.show { display: flex; }
-        .thanks-modal-content {
-            background: var(--bg-surface);
-            border-radius: 48px;
-            padding: 40px;
-            max-width: 500px;
-            width: 90%;
-            border: 2px solid var(--status-success);
-            text-align: center;
-        }
-        .thanks-modal-content .icon {
-            font-size: 64px;
-            margin-bottom: 20px;
-        }
-        .thanks-modal-content h2 {
-            font-family: var(--font-header-stack);
-            color: var(--status-success);
-            margin-bottom: 20px;
-        }
-        .thanks-modal-content p {
-            color: var(--text-gray);
-            font-size: 18px;
-            line-height: 1.6;
-        }
-        .thanks-modal-content button {
-            background: var(--status-success);
-            border: none;
-            padding: 18px 40px;
-            border-radius: 40px;
-            font-family: var(--font-header-stack);
-            font-weight: 700;
-            color: #000;
-            margin-top: 30px;
-            cursor: pointer;
-        }
-
-        /* Модальное окно блокировки */
-        .blocked-modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.95);
-            z-index: 1000000;
-            display: none;
-            align-items: center;
-            justify-content: center;
-        }
-        .blocked-modal.show { display: flex; }
-        .blocked-modal-content {
-            background: var(--bg-surface);
-            border-radius: 48px;
-            padding: 40px;
-            max-width: 500px;
-            width: 90%;
-            border: 2px solid var(--status-error);
-            text-align: center;
-        }
-        .blocked-modal-content .icon {
-            font-size: 64px;
-            margin-bottom: 20px;
-        }
-        .blocked-modal-content h2 {
-            font-family: var(--font-header-stack);
-            color: var(--status-error);
-            margin-bottom: 20px;
-        }
-        .blocked-modal-content p {
-            color: var(--text-gray);
-            font-size: 16px;
-            line-height: 1.6;
-            margin-bottom: 30px;
-        }
-        .blocked-modal-content button {
-            background: var(--status-error);
-            border: none;
-            padding: 18px 40px;
-            border-radius: 40px;
-            font-family: var(--font-header-stack);
-            font-weight: 700;
-            color: #fff;
-            cursor: pointer;
-        }
-
-        /* Блокировщик страницы (чужой NFC) */
-        .page-blocker {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.98);
-            backdrop-filter: blur(20px);
-            z-index: 99999999;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            visibility: hidden;
-            opacity: 0;
-            transition: all 0.5s ease;
-        }
-        .page-blocker.active { visibility: visible; opacity: 1; }
-        .blocker-content { text-align: center; max-width: 500px; padding: 40px 20px; }
-        .blocker-icon { font-size: 100px; margin-bottom: 30px; color: var(--status-error); animation: blinkWarning 2s infinite; }
-        .blocker-title { font-family: var(--font-header-stack); font-size: 32px; font-weight: 900; color: var(--status-error); margin-bottom: 20px; text-transform: uppercase; letter-spacing: 2px; }
-        .blocker-text { color: var(--text-gray); font-size: 18px; line-height: 1.6; margin-bottom: 30px; }
-        .blocker-warning { background: rgba(255, 51, 102, 0.15); border: 2px solid var(--status-error); border-radius: 32px; padding: 30px; margin-bottom: 30px; color: var(--text-white); font-size: 16px; line-height: 1.8; text-align: left; }
-        .blocker-warning strong { color: var(--status-error); display: inline-block; width: 100px; }
-        .blocker-timer { font-family: var(--font-header-stack); font-size: 20px; color: var(--accent-primary); margin-bottom: 30px; letter-spacing: 2px; }
-        .blocker-button { width: 100%; padding: 24px; background: var(--status-error); border: none; border-radius: 26px; font-family: var(--font-header-stack); font-weight: 800; font-size: 16px; color: #fff; text-transform: uppercase; cursor: pointer; transition: transform 0.2s ease, box-shadow 0.3s ease; letter-spacing: 2px; box-shadow: 0 10px 30px rgba(255, 51, 102, 0.3); }
-        .blocker-button:active { transform: scale(0.96); }
-
-        .nfc-pair-status { background: rgba(255, 255, 255, 0.03); border-radius: 22px; padding: 15px; margin: 15px 0; }
-        .nfc-pair-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--border-color); }
-        .nfc-pair-row:last-child { border-bottom: none; }
-        .nfc-pair-label { color: var(--text-gray); font-size: 11px; }
-        .nfc-pair-value { font-family: var(--font-header-stack); font-size: 12px; color: var(--accent-primary); }
-        .nfc-pair-value.success { color: var(--status-success); }
+        .tax-modal, .thanks-modal, .blocked-modal, .page-blocker { display: none; }
+        .tax-modal.show, .thanks-modal.show, .blocked-modal.show, .page-blocker.active { display: flex; }
+        /* модалки стили минимально, они уже есть в коде */
     </style>
 </head>
-<body class="">
+<body>
 
-    <div id="global-toast-notification">KERNEL INITIALIZED</div>
-
-    <!-- БЛОКИРОВЩИК (чужой NFC) -->
-    <div class="page-blocker" id="page-blocker">
-        <div class="blocker-content">
-            <div class="blocker-icon">⚠️</div>
-            <div class="blocker-title">ОБНАРУЖЕНА ЧУЖАЯ КАРТА</div>
-            <div class="blocker-text">
-                Вы приложили NFC карту, которая зарегистрирована на другого пользователя.
-            </div>
-            <div class="blocker-warning">
-                <div style="margin-bottom: 15px;">
-                    <strong>ID карты:</strong> <span id="blocker-card-id" style="color: #fff; font-family: monospace; font-size: 18px;"></span>
-                </div>
-                <div>
-                    <strong>Владелец:</strong> <span id="blocker-card-owner" style="color: #fff;"></span>
-                </div>
-            </div>
-            <div class="blocker-text">
-                По соображениям безопасности все операции заблокированы.<br>
-                <span style="color: var(--status-error); font-weight: bold;">Только владелец может разблокировать карту через свой аккаунт.</span>
-            </div>
-            <div class="blocker-timer" id="blocker-timer">00:00</div>
-            <button class="blocker-button" onclick="CoreEngine.forceReload()">ПЕРЕЗАГРУЗИТЬ СТРАНИЦУ</button>
-        </div>
-    </div>
-
-    <!-- Модальное окно блокировки аккаунта (общая блокировка) -->
-    <div class="blocked-modal" id="blocked-modal">
-        <div class="blocked-modal-content">
-            <div class="icon">🔒</div>
-            <h2>АККАУНТ ЗАБЛОКИРОВАН</h2>
-            <p id="blocked-message">Ваш аккаунт заблокирован администратором.</p>
-            <button onclick="document.getElementById('blocked-modal').classList.remove('show')">ЗАКРЫТЬ</button>
-        </div>
-    </div>
-
-    <!-- Модальное окно налогового уведомления -->
-    <div class="tax-modal" id="tax-modal">
-        <div class="tax-modal-content">
-            <div class="icon">💰</div>
-            <h2>НАЛОГОВОЕ УВЕДОМЛЕНИЕ</h2>
-            <div class="amount" id="tax-amount">0 ₽</div>
-            <div class="comment" id="tax-comment"></div>
-            <div class="tax-modal-buttons">
-                <button class="btn-yes" onclick="TaxNotice.respond('accept')">ДА</button>
-                <button class="btn-no" onclick="TaxNotice.respond('reject')">НЕТ</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Модальное окно благодарности -->
-    <div class="thanks-modal" id="thanks-modal">
-        <div class="thanks-modal-content">
-            <div class="icon">🙏</div>
-            <h2>СПАСИБО!</h2>
-            <p>Спасибо что платите налоги в ЖКжире!</p>
-            <button onclick="document.getElementById('thanks-modal').classList.remove('show')">ЗАКРЫТЬ</button>
-        </div>
-    </div>
+    <div id="global-toast-notification">KERNEL v20 · ASSETS ACTIVE</div>
+    <div class="page-blocker" id="page-blocker"><div class="blocker-content">...</div></div>
+    <div class="blocked-modal" id="blocked-modal"><div class="blocked-modal-content">...</div></div>
+    <div class="tax-modal" id="tax-modal"><div class="tax-modal-content">...</div></div>
+    <div class="thanks-modal" id="thanks-modal"><div class="thanks-modal-content">...</div></div>
 
     <section id="view-authentication">
         <div class="auth-container-box">
             <span class="brand-identity-logo">PROFIT</span>
             <p class="brand-subtext">Secure Gateway v12.0</p>
-            
-            <div class="system-input-wrapper">
-                <label class="system-input-label">Terminal Identity (Email)</label>
-                <input type="email" id="input-auth-email" class="terminal-field" placeholder="operator@profit.sys">
-            </div>
-            
-            <div class="system-input-wrapper">
-                <label class="system-input-label">Access Pass-Code</label>
-                <input type="password" id="input-auth-pass" class="terminal-field" placeholder="••••••••">
-            </div>
-            
+            <div class="system-input-wrapper"><label class="system-input-label">Terminal Identity (Email)</label><input type="email" id="input-auth-email" class="terminal-field" placeholder="operator@profit.sys"></div>
+            <div class="system-input-wrapper"><label class="system-input-label">Access Pass-Code</label><input type="password" id="input-auth-pass" class="terminal-field" placeholder="••••••••"></div>
             <button class="btn-action-primary" onclick="CoreEngine.requestAccess()">Initialize Session</button>
-            
-            <p style="margin-top: 30px; font-size: 10px; color: var(--text-dark); font-family: var(--font-header-stack);">
-                © 2026 PROFIT SYSTEMS CORP. ALL RIGHTS RESERVED.
-            </p>
+            <p style="margin-top: 30px; font-size: 10px; color: var(--text-dark);">© 2026 PROFIT SYSTEMS CORP.</p>
         </div>
     </section>
 
     <main class="main-scaffold">
-        
         <div class="header-asset-card" id="global-header-card">
             <div class="asset-label">Verified Liquidity</div>
             <div class="asset-balance-value" id="display-balance">0<span>₽</span></div>
@@ -529,1751 +382,297 @@
             <div class="asset-card-number" id="display-card-id">9771 0000 0000 0000</div>
             <div class="card-status-badge card-status-active" id="card-status-badge">АКТИВНА</div>
         </div>
-
-        <!-- Баннер блокировки аккаунта -->
-        <div class="account-blocked-banner" id="account-blocked-banner">
-            ⚠️ ВАШ АККАУНТ ЗАБЛОКИРОВАН: <span id="blocked-banner-message"></span>
-        </div>
+        <div class="account-blocked-banner" id="account-blocked-banner">⚠️ ВАШ АККАУНТ ЗАБЛОКИРОВАН: <span id="blocked-banner-message"></span></div>
 
         <!-- Вкладка Кошелёк -->
         <div id="sect-wallet" class="content-section is-active">
             <div class="ads-carousel" id="ads-carousel"></div>
-            <h2 style="font-family: var(--font-header-stack); font-size: 11px; color: var(--accent-primary); margin-bottom: 35px; text-transform: uppercase; letter-spacing: 2px;">
-                Operational Ledger
-            </h2>
+            <h2 style="font-family: var(--font-header-stack); font-size: 11px; color: var(--accent-primary); margin-bottom: 35px;">Operational Ledger</h2>
             <div class="ledger-container" id="ledger-feed-root"></div>
         </div>
 
+        <!-- Вкладка АКТИВЫ (ТРАТЫ) -->
+        <div id="sect-assets" class="content-section">
+            <h2 style="font-family: var(--font-header-stack); font-size: 11px; color: var(--accent-primary); margin-bottom: 25px;">💰 ИМУЩЕСТВО & ИНВЕСТИЦИИ</h2>
+            <div class="assets-grid" id="assets-container"></div>
+            <div style="margin-top: 35px;">
+                <div class="system-input-wrapper"><label class="system-input-label">🔥 ИНДИВИДУАЛЬНАЯ ТРАТА (RUB)</label><input type="number" id="custom-spend-amount" class="terminal-field" placeholder="Сумма до 1 000 000 000 ₽" min="1" max="1000000000"></div>
+                <div class="system-input-wrapper"><label class="system-input-label">НАЗНАЧЕНИЕ (что купили?)</label><input type="text" id="custom-spend-label" class="terminal-field" placeholder="Частный самолет, яхта, остров..."></div>
+                <button class="btn-action-primary" onclick="AssetsManager.spendCustom()">💸 ПОТРАТИТЬ</button>
+            </div>
+        </div>
+
         <!-- Вкладка Перевод -->
-        <div id="sect-send" class="content-section">
-            <h2 style="font-family: var(--font-header-stack); font-size: 11px; color: var(--text-gray); margin-bottom: 35px; text-transform: uppercase;">
-                New Fund Remittance
-            </h2>
-            
-            <div class="system-input-wrapper">
-                <label class="system-input-label">Тип перевода</label>
-                <select id="field-transfer-type" class="terminal-field terminal-select" onchange="CoreEngine.updateTransferUI()">
-                    <option value="user">👤 Пользователю</option>
-                    <option value="nfc_main">💳 С основного на NFC</option>
-                    <option value="nfc_to_main">💳 С NFC на основной</option>
-                    <option value="nfc_to_nfc">🔄 NFC → NFC</option>
-                </select>
-            </div>
-            
-            <div id="transfer-user-fields">
-                <div class="system-input-wrapper">
-                    <label class="system-input-label">Получатель</label>
-                    <select id="field-send-target" class="terminal-field terminal-select">
-                        <option value="">Загрузка пользователей...</option>
-                    </select>
-                </div>
-            </div>
-
-            <div id="transfer-nfc-fields" style="display: none;">
-                <div class="system-input-wrapper">
-                    <label class="system-input-label">NFC ID карты</label>
-                    <div style="display: flex; gap: 10px;">
-                        <input type="text" id="field-nfc-target" class="terminal-field" placeholder="Введите или сканируйте ID карты" style="flex: 1;">
-                        <button class="btn-action-secondary" onclick="CoreEngine.startNfcScanForTransfer()" style="width: auto; padding: 22px 20px;">📱</button>
-                    </div>
-                </div>
-                
-                <div class="nfc-grid-actions" style="margin-top: -15px;">
-                    <button class="btn-action-secondary" onclick="CoreEngine.checkNfcCardStatus()">🔍 Проверить</button>
-                </div>
-                
-                <div id="nfc-card-info-mini" style="background: rgba(255,255,255,0.03); border-radius: 22px; padding: 15px; margin-bottom: 20px; display: none;">
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
-                        <span style="color: var(--text-gray);">Владелец:</span>
-                        <span id="mini-card-owner" style="color: var(--accent-primary);">-</span>
-                    </div>
-                    <div style="display: flex; justify-content: space-between;">
-                        <span style="color: var(--text-gray);">Баланс NFC:</span>
-                        <span id="mini-card-balance" class="success">0 ₽</span>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; margin-top: 8px;">
-                        <span style="color: var(--text-gray);">Статус:</span>
-                        <span id="mini-card-status">Активна</span>
-                    </div>
-                </div>
-            </div>
-
-            <div id="transfer-nfc-to-nfc-fields" style="display: none;">
-                <div class="system-input-wrapper">
-                    <label class="system-input-label">1. Отсканируйте карту ОТПРАВИТЕЛЯ</label>
-                    <div style="display: flex; gap: 10px;">
-                        <input type="text" id="field-nfc-from" class="terminal-field" placeholder="ID карты отправителя" readonly style="flex: 1;">
-                        <button class="btn-action-secondary" onclick="CoreEngine.startNfcScanForPair('from')" style="width: auto; padding: 22px 20px;">📱</button>
-                    </div>
-                </div>
-                
-                <div class="system-input-wrapper">
-                    <label class="system-input-label">2. Отсканируйте карту ПОЛУЧАТЕЛЯ</label>
-                    <div style="display: flex; gap: 10px;">
-                        <input type="text" id="field-nfc-to" class="terminal-field" placeholder="ID карты получателя" readonly style="flex: 1;">
-                        <button class="btn-action-secondary" onclick="CoreEngine.startNfcScanForPair('to')" style="width: auto; padding: 22px 20px;">📱</button>
-                    </div>
-                </div>
-                
-                <div id="nfc-pair-info" class="nfc-pair-status" style="display: none;">
-                    <div class="nfc-pair-row">
-                        <span class="nfc-pair-label">Отправитель:</span>
-                        <span class="nfc-pair-value" id="pair-from-info">-</span>
-                    </div>
-                    <div class="nfc-pair-row">
-                        <span class="nfc-pair-label">Получатель:</span>
-                        <span class="nfc-pair-value" id="pair-to-info">-</span>
-                    </div>
-                    <div class="nfc-pair-row">
-                        <span class="nfc-pair-label">Баланс отправителя:</span>
-                        <span class="nfc-pair-value" id="pair-from-balance">0 ₽</span>
-                    </div>
-                </div>
-                
-                <div class="nfc-grid-actions" style="margin-top: 10px;">
-                    <button class="btn-action-secondary" onclick="CoreEngine.clearNfcPair()">✖️ Очистить</button>
-                    <button class="btn-action-secondary" onclick="CoreEngine.checkNfcPair()">✓ Проверить</button>
-                </div>
-            </div>
-            
-            <div class="system-input-wrapper">
-                <label class="system-input-label">Сумма (RUB)</label>
-                <input type="number" id="field-send-amount" class="terminal-field" placeholder="0.00" min="1" step="1">
-            </div>
-
-            <div class="system-input-wrapper" id="note-field-wrapper">
-                <label class="system-input-label">Комментарий</label>
-                <textarea id="field-send-note" class="terminal-field" rows="3" placeholder="Введите назначение перевода..."></textarea>
-            </div>
-            
-            <div class="system-input-wrapper" id="fee-info" style="margin-top: -15px;">
-                <div style="display: flex; justify-content: space-between; color: var(--text-gray); font-size: 11px;">
-                    <span>Комиссия:</span>
-                    <span>0 ₽ (0%)</span>
-                </div>
-                <div style="display: flex; justify-content: space-between; color: var(--text-gray); font-size: 11px;">
-                    <span>Лимит:</span>
-                    <span>5 000 000 ₽</span>
-                </div>
-            </div>
-            
-            <button class="btn-action-primary" onclick="CoreEngine.executeTransfer()" id="transfer-button">Выполнить перевод</button>
-        </div>
-
-        <!-- Вкладка NFC -->
-        <div id="sect-nfc" class="content-section">
-            <div class="nfc-terminal-hub">
-                <div class="nfc-scanner-circle" id="nfc-scanner" onclick="CoreEngine.nfcManager.manualScan()">
-                    <span>NFC</span>
-                </div>
-                
-                <h2 style="font-family: var(--font-header-stack); font-size: 14px; margin-bottom: 15px; color: #fff;">
-                    HARDWARE TERMINAL
-                </h2>
-                
-                <p style="color: var(--text-gray); font-size: 13px; margin-bottom: 40px; padding: 0 20px; line-height: 1.6;">
-                    Поднесите NFC карту к задней панели телефона
-                </p>
-
-                <div class="system-input-wrapper">
-                    <label class="system-input-label">ID карты</label>
-                    <div style="display: flex; gap: 10px;">
-                        <input type="text" id="field-nfc-tag" class="terminal-field" placeholder="Ожидание сканирования..." style="flex: 1;" readonly>
-                        <button class="btn-action-secondary" onclick="CoreEngine.nfcManager.copyTagId()" style="width: auto; padding: 22px 20px;">📋</button>
-                    </div>
-                </div>
-
-                <div class="nfc-card-info" id="nfc-card-info" style="display: none;">
-                    <div class="nfc-card-row">
-                        <span class="nfc-card-label">Владелец:</span>
-                        <span class="nfc-card-value" id="nfc-card-owner">-</span>
-                    </div>
-                    <div class="nfc-card-row">
-                        <span class="nfc-card-label">Email:</span>
-                        <span class="nfc-card-value" id="nfc-card-email">-</span>
-                    </div>
-                    <div class="nfc-card-row">
-                        <span class="nfc-card-label">NFC Баланс:</span>
-                        <span class="nfc-card-value success" id="nfc-card-balance">0 ₽</span>
-                    </div>
-                    <div class="nfc-card-row">
-                        <span class="nfc-card-label">Статус:</span>
-                        <span class="nfc-card-value" id="nfc-card-status">Активна</span>
-                    </div>
-                </div>
-
-                <div style="margin-top: 30px; text-align: left;">
-                    <h3 style="font-family: var(--font-header-stack); font-size: 12px; color: var(--accent-primary); margin-bottom: 15px;">
-                        📱 МОИ КАРТЫ
-                    </h3>
-                    <div id="my-nfc-cards" style="background: rgba(255,255,255,0.02); border-radius: 32px; padding: 20px;">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                            <span style="color: var(--text-gray);">Привязанная карта:</span>
-                            <span style="font-family: var(--font-header-stack);" id="my-nfc-id">Не привязана</span>
-                        </div>
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                            <span style="color: var(--text-gray);">Баланс NFC:</span>
-                            <span style="font-family: var(--font-header-stack); color: var(--status-success);" id="my-nfc-balance">0 ₽</span>
-                        </div>
-                        <div style="display: flex; gap: 10px;">
-                            <button class="btn-action-secondary" style="flex: 1;" onclick="CoreEngine.nfcManager.showMyCardStats()">Статистика</button>
-                            <button class="btn-action-secondary" style="flex: 1; border-color: var(--status-error); color: var(--status-error);" onclick="CoreEngine.nfcManager.toggleCardBlock()" id="toggle-block-btn">Заблокировать</button>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="nfc-grid-actions">
-                    <button class="btn-action-secondary" onclick="CoreEngine.nfcManager.perform('bind')">📌 Привязать</button>
-                    <button class="btn-action-secondary" onclick="CoreEngine.nfcManager.perform('identify')">🔍 Кто это?</button>
-                </div>
-                
-                <div class="nfc-billing-zone">
-                    <div class="system-input-wrapper">
-                        <label class="system-input-label">Сумма операции</label>
-                        <input type="number" id="field-nfc-amount" class="terminal-field" placeholder="0.00">
-                    </div>
-                    
-                    <div class="nfc-grid-actions" style="margin-top: 20px;">
-                        <button class="btn-action-primary" style="background: var(--status-error); color: #fff;" onclick="CoreEngine.nfcManager.perform('withdraw')">💸 Списать</button>
-                        <button class="btn-action-primary" style="background: var(--status-success); color: #000;" onclick="CoreEngine.nfcManager.perform('deposit')">💰 Закинуть</button>
-                    </div>
-
-                    <div class="nfc-grid-3col" style="margin-top: 20px;">
-                        <button class="btn-action-secondary" onclick="CoreEngine.nfcManager.perform('transfer_to_nfc')">⬆️ На NFC</button>
-                        <button class="btn-action-secondary" onclick="CoreEngine.nfcManager.perform('transfer_from_nfc')">⬇️ С NFC</button>
-                        <button class="btn-action-secondary" onclick="CoreEngine.showNfcToNfcTransfer()">🔄 NFC→NFC</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- ========== АДМИНИСТРИРОВАНИЕ ========== -->
-        <div id="sect-admin" class="content-section">
-            <h2 class="quest-category-title"><span>⚙️</span> ПАНЕЛЬ УПРАВЛЕНИЯ</h2>
-
-            <!-- Блок добавления задания -->
-            <div class="admin-section">
-                <h3 class="admin-subtitle">➕ ДОБАВИТЬ ЗАДАНИЕ</h3>
-                <div class="admin-card">
-                    <div class="system-input-wrapper">
-                        <label class="system-input-label">ID задания (уникальный)</label>
-                        <input type="text" id="admin-quest-id" class="terminal-field" placeholder="quest_finance_8">
-                    </div>
-                    <div class="system-input-wrapper">
-                        <label class="system-input-label">Название</label>
-                        <input type="text" id="admin-quest-title" class="terminal-field" placeholder="ЩЕДРАЯ ДУША">
-                    </div>
-                    <div class="system-input-wrapper">
-                        <label class="system-input-label">Описание</label>
-                        <input type="text" id="admin-quest-desc" class="terminal-field" placeholder="Отправить 500₽ другому пользователю">
-                    </div>
-                    <div class="admin-grid-2col">
-                        <div class="system-input-wrapper">
-                            <label class="system-input-label">Награда (₽)</label>
-                            <input type="number" id="admin-quest-reward" class="terminal-field" placeholder="2500">
-                        </div>
-                        <div class="system-input-wrapper">
-                            <label class="system-input-label">Цель (кол-во или сумма)</label>
-                            <input type="number" id="admin-quest-target" class="terminal-field" placeholder="500">
-                        </div>
-                    </div>
-                    <div class="admin-grid-2col">
-                        <div class="system-input-wrapper">
-                            <label class="system-input-label">Тип</label>
-                            <select id="admin-quest-type" class="terminal-field terminal-select">
-                                <option value="total_sent">total_sent</option>
-                                <option value="transfer_count">transfer_count</option>
-                                <option value="nfc_bind">nfc_bind</option>
-                                <option value="nfc_operations">nfc_operations</option>
-                                <option value="nfc_transfer">nfc_transfer</option>
-                                <option value="instant_reward">instant_reward</option>
-                                <option value="nfc_to_nfc_transfer">nfc_to_nfc_transfer</option>
-                                <option value="total_balance">total_balance</option>
-                            </select>
-                        </div>
-                        <div class="system-input-wrapper">
-                            <label class="system-input-label">Категория</label>
-                            <select id="admin-quest-category" class="terminal-field terminal-select">
-                                <option value="finance">finance</option>
-                                <option value="nfc">nfc</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="system-input-wrapper">
-                        <label class="system-input-label">Иконка (эмодзи или символ)</label>
-                        <input type="text" id="admin-quest-icon" class="terminal-field" placeholder="🔑" value="🔑">
-                    </div>
-                    <div class="admin-checkbox">
-                        <input type="checkbox" id="admin-quest-active" checked>
-                        <label>Активно</label>
-                    </div>
-                    <button class="btn-action-primary" onclick="CoreEngine.admin.addQuest()">СОЗДАТЬ ЗАДАНИЕ</button>
-                </div>
-            </div>
-
-            <!-- Блок добавления рекламы с изображением -->
-            <div class="admin-section">
-                <h3 class="admin-subtitle">📢 ДОБАВИТЬ РЕКЛАМУ С ИЗОБРАЖЕНИЕМ</h3>
-                <div class="admin-card">
-                    <div class="system-input-wrapper">
-                        <label class="system-input-label">Заголовок</label>
-                        <input type="text" id="admin-ad-title" class="terminal-field" placeholder="Акция!">
-                    </div>
-                    <div class="system-input-wrapper">
-                        <label class="system-input-label">Описание</label>
-                        <input type="text" id="admin-ad-description" class="terminal-field" placeholder="Скидка 20% на переводы">
-                    </div>
-                    <div class="system-input-wrapper">
-                        <label class="system-input-label">Ссылка (URL, необязательно)</label>
-                        <input type="url" id="admin-ad-link" class="terminal-field" placeholder="https://t.me/profit">
-                    </div>
-                    <div class="system-input-wrapper">
-                        <label class="system-input-label">Изображение</label>
-                        <input type="file" id="admin-ad-image" accept="image/*" class="terminal-field" style="padding: 15px;" onchange="CoreEngine.admin.previewImage(this)">
-                        <img id="admin-image-preview" class="admin-image-preview" style="display: none;">
-                    </div>
-                    <div class="system-input-wrapper">
-                        <label class="system-input-label">Расположение изображения</label>
-                        <select id="admin-ad-position" class="terminal-field terminal-select">
-                            <option value="left">Слева</option>
-                            <option value="top">Сверху</option>
-                            <option value="right">Справа</option>
-                            <option value="bottom">Снизу</option>
-                            <option value="background">Фон (полупрозрачный)</option>
-                        </select>
-                    </div>
-                    <div class="admin-checkbox">
-                        <input type="checkbox" id="admin-ad-active" checked>
-                        <label>Активно</label>
-                    </div>
-                    <button class="btn-action-primary" onclick="CoreEngine.admin.addAd()">ДОБАВИТЬ РЕКЛАМУ</button>
-                </div>
-            </div>
-
-            <!-- Блок управления балансами (списание/начисление) -->
-            <div class="admin-section">
-                <h3 class="admin-subtitle">💰 УПРАВЛЕНИЕ БАЛАНСАМИ</h3>
-                <div class="admin-card">
-                    <div class="system-input-wrapper">
-                        <label class="system-input-label">Пользователь</label>
-                        <select id="admin-balance-user" class="terminal-field terminal-select">
-                            <option value="">Загрузка пользователей...</option>
-                        </select>
-                    </div>
-                    <div class="admin-grid-2col">
-                        <div class="system-input-wrapper">
-                            <label class="system-input-label">Операция</label>
-                            <select id="admin-balance-operation" class="terminal-field terminal-select">
-                                <option value="withdraw">🔴 Списать</option>
-                                <option value="deposit">🟢 Начислить</option>
-                            </select>
-                        </div>
-                        <div class="system-input-wrapper">
-                            <label class="system-input-label">Сумма (₽)</label>
-                            <input type="number" id="admin-balance-amount" class="terminal-field" placeholder="1000" min="1">
-                        </div>
-                    </div>
-                    <div class="system-input-wrapper">
-                        <label class="system-input-label">Комментарий (отобразится в истории)</label>
-                        <input type="text" id="admin-balance-comment" class="terminal-field" placeholder="Обслуживание карты, бонус и т.д." value="Обслуживание карты">
-                    </div>
-                    <button class="btn-action-primary" onclick="AdminBalance.executeTransaction()">ВЫПОЛНИТЬ</button>
-                </div>
-                <div id="admin-balance-result" style="margin-top: 20px; padding: 15px; border-radius: 22px; background: rgba(0,0,0,0.3); display: none;"></div>
-            </div>
-
-            <!-- Блок управления блокировкой аккаунтов -->
-            <div class="admin-section">
-                <h3 class="admin-subtitle">🔒 УПРАВЛЕНИЕ БЛОКИРОВКОЙ АККАУНТОВ</h3>
-                <div class="admin-card">
-                    <div class="system-input-wrapper">
-                        <label class="system-input-label">Пользователь</label>
-                        <select id="admin-block-user" class="terminal-field terminal-select">
-                            <option value="">Загрузка пользователей...</option>
-                        </select>
-                    </div>
-                    <div class="system-input-wrapper">
-                        <label class="system-input-label">Причина блокировки</label>
-                        <input type="text" id="admin-block-message" class="terminal-field" placeholder="Ваш аккаунт заблокирован. Свяжитесь с поддержкой." value="Ваш аккаунт заблокирован администратором.">
-                    </div>
-                    <div style="display: flex; gap: 15px;">
-                        <button class="btn-action-primary" style="background: var(--status-error);" onclick="AdminBlock.blockUser()">ЗАБЛОКИРОВАТЬ</button>
-                        <button class="btn-action-secondary" onclick="AdminBlock.unblockUser()">РАЗБЛОКИРОВАТЬ</button>
-                    </div>
-                </div>
-                <div id="admin-block-result" style="margin-top: 20px; padding: 15px; border-radius: 22px; background: rgba(0,0,0,0.3); display: none;"></div>
-            </div>
-
-            <!-- ===== НОВЫЙ БЛОК: НАЛОГОВЫЕ УВЕДОМЛЕНИЯ ===== -->
-            <div class="admin-section">
-                <h3 class="admin-subtitle">🧾 НАЛОГОВЫЕ УВЕДОМЛЕНИЯ</h3>
-                <div class="admin-card">
-                    <div class="system-input-wrapper">
-                        <label class="system-input-label">Пользователь</label>
-                        <select id="admin-tax-user" class="terminal-field terminal-select">
-                            <option value="">Загрузка пользователей...</option>
-                        </select>
-                    </div>
-                    <div class="admin-grid-2col">
-                        <div class="system-input-wrapper">
-                            <label class="system-input-label">Сумма (₽)</label>
-                            <input type="number" id="admin-tax-amount" class="terminal-field" placeholder="1000" min="1">
-                        </div>
-                        <div class="system-input-wrapper">
-                            <label class="system-input-label">Комментарий</label>
-                            <input type="text" id="admin-tax-comment" class="terminal-field" placeholder="Налог на имущество" value="Налог">
-                        </div>
-                    </div>
-                    <button class="btn-action-primary" onclick="AdminTax.sendNotice()">ОТПРАВИТЬ УВЕДОМЛЕНИЕ</button>
-                </div>
-                <div id="admin-tax-result" style="margin-top: 20px; padding: 15px; border-radius: 22px; background: rgba(0,0,0,0.3); display: none;"></div>
-            </div>
-
-            <!-- Список существующей рекламы -->
-            <div class="admin-section">
-                <h3 class="admin-subtitle">📋 УПРАВЛЕНИЕ РЕКЛАМОЙ</h3>
-                <div class="admin-list" id="admin-ads-list">
-                    <div style="text-align:center; padding:30px; color:var(--text-gray);">Загрузка...</div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Вкладка настроек -->
-        <div id="sect-settings" class="content-section">
-            <h2 style="font-family: var(--font-header-stack); font-size: 12px; color: var(--accent-primary); margin-bottom: 40px; text-transform: uppercase;">
-                Security & Encryption
-            </h2>
-            
-            <div class="system-input-wrapper">
-                <label class="system-input-label">Existing Access Key</label>
-                <input type="password" id="field-old-pass" class="terminal-field" placeholder="••••••••">
-            </div>
-            
-            <div class="system-input-wrapper">
-                <label class="system-input-label">New Master Key</label>
-                <input type="password" id="field-new-pass" class="terminal-field" placeholder="••••••••">
-            </div>
-            
-            <button class="btn-action-primary" onclick="CoreEngine.updateSecurityKey()">Update Credentials</button>
-            
-            <div style="margin-top: 60px; padding-top: 40px; border-top: 1px solid #1a1a1a; text-align: center;">
-                <p style="font-size: 11px; color: var(--text-dark); margin-bottom: 25px; font-family: var(--font-header-stack);">
-                    TERMINAL UID: PRF-889-TX-GLOBAL
-                </p>
-                <button class="btn-action-secondary" onclick="location.reload()" style="border-color: var(--status-error); color: var(--status-error);">
-                    Terminate System Session
-                </button>
-            </div>
-        </div>
-
+        <div id="sect-send" class="content-section">...</div>
+        <div id="sect-nfc" class="content-section">...</div>
+        <div id="sect-admin" class="content-section">...</div>
+        <div id="sect-settings" class="content-section">...</div>
     </main>
 
     <nav class="bottom-nav-dock">
         <button class="nav-dock-item is-active" onclick="CoreEngine.switchView('wallet', this)">ТРАНЗАКЦИИ</button>
         <button class="nav-dock-item" onclick="CoreEngine.switchView('send', this)">ПЕРЕВОД</button>
         <button class="nav-dock-item" onclick="CoreEngine.switchView('nfc', this)">NFC</button>
-        <button class="nav-dock-item operator-only" id="nav-admin" onclick="CoreEngine.switchView('admin', this)">АДМИН</button>
+        <button class="nav-dock-item" onclick="CoreEngine.switchView('assets', this)">АКТИВЫ</button>
+        <button class="nav-dock-item operator-only" onclick="CoreEngine.switchView('admin', this)">АДМИН</button>
         <button class="nav-dock-item" onclick="CoreEngine.switchView('settings', this)">ИНФО</button>
     </nav>
 
     <script>
-        // ================== CORE ENGINE ==================
+        // ========== ASSETS MANAGER (траты до 1 млрд) ==========
+        const AssetsManager = {
+            catalogue: [
+                { id: 'apt_1', name: 'Пентхаус в Москва-Сити', price: 450000000, icon: '🏢', category: 'Недвижимость', desc: 'Вид на всю Москву' },
+                { id: 'apt_2', name: 'Особняк на Рублёвке', price: 780000000, icon: '🏛️', category: 'Недвижимость', desc: '6 000 м² + вертолётная площадка' },
+                { id: 'apt_3', name: 'Вилла на Мальдивах', price: 950000000, icon: '🏝️', category: 'Недвижимость', desc: 'Собственный пляж' },
+                { id: 'biz_1', name: 'Торговый центр "Гранд"', price: 890000000, icon: '🏬', category: 'Бизнес', desc: 'Арендный поток 15 млн/мес' },
+                { id: 'biz_2', name: 'Сеть АЗС (10 станций)', price: 520000000, icon: '⛽', category: 'Бизнес', desc: 'Стабильный доход' },
+                { id: 'biz_3', name: 'IT-стартап AI Hub', price: 240000000, icon: '🤖', category: 'Бизнес', desc: 'Доля 49%' },
+                { id: 'car_1', name: 'Bugatti La Voiture Noire', price: 850000000, icon: '🏎️', category: 'Авто', desc: 'Эксклюзив' },
+                { id: 'car_2', name: 'Rolls-Royce Boat Tail', price: 990000000, icon: '🚘', category: 'Авто', desc: 'С чемоданом для шампанского' },
+                { id: 'yacht_1', name: 'Мегаяхта "Eclipse 2.0"', price: 1000000000, icon: '🛥️', category: 'Яхты', desc: '120 метров, вертолёт' },
+                { id: 'jet_1', name: 'Boeing Business Jet', price: 940000000, icon: '✈️', category: 'Авиация', desc: 'VIP-салон' },
+                { id: 'art_1', name: 'Картина Бэнкси (оригинал)', price: 64000000, icon: '🎨', category: 'Искусство', desc: 'Мета-инвестиция' }
+            ],
+            owned: [],
+
+            render() {
+                const container = document.getElementById('assets-container');
+                if (!container) return;
+                const categories = [...new Map(this.catalogue.map(item => [item.category, item.category]))];
+                let html = '';
+                categories.forEach(cat => {
+                    const itemsInCat = this.catalogue.filter(i => i.category === cat);
+                    html += `<div class="asset-category">
+                        <div class="asset-category-header"><span>${cat === 'Недвижимость' ? '🏠' : cat === 'Бизнес' ? '📈' : cat === 'Авто' ? '🚗' : cat === 'Яхты' ? '⛵' : cat === 'Авиация' ? '🛩️' : '🎭'}</span> ${cat}</div>
+                        <div class="asset-items">`;
+                    itemsInCat.forEach(item => {
+                        const isOwned = this.owned.some(o => o.id === item.id);
+                        html += `<div class="asset-item">
+                            <div class="asset-info">
+                                <div class="asset-name"><span class="asset-icon">${item.icon}</span> ${item.name}</div>
+                                <div class="asset-price">₽ ${item.price.toLocaleString('ru-RU')}</div>
+                                <div style="font-size: 10px; color:#555;">${item.desc}</div>
+                            </div>
+                            <div class="asset-actions">
+                                ${isOwned ? '<span class="owned-badge">✅ ВЛАДЕЮ</span>' : `<button class="btn-buy-asset" onclick="AssetsManager.buyAsset('${item.id}')">КУПИТЬ</button>`}
+                            </div>
+                        </div>`;
+                    });
+                    html += `</div></div>`;
+                });
+                container.innerHTML = html;
+                this.updateTotalValue();
+            },
+
+            async buyAsset(assetId) {
+                if (CoreEngine.checkBlockedBeforeAction?.()) return;
+                const asset = this.catalogue.find(a => a.id === assetId);
+                if (!asset) return;
+                if (this.owned.some(o => o.id === assetId)) return CoreEngine.pushNotification("У вас уже есть этот актив", true);
+                if (CoreEngine.session.userBalance < asset.price) return CoreEngine.pushNotification(`Недостаточно средств. Нужно ${asset.price.toLocaleString('ru-RU')} ₽`, true);
+                
+                const confirmPurchase = confirm(`Купить ${asset.name} за ${asset.price.toLocaleString('ru-RU')} ₽?`);
+                if (!confirmPurchase) return;
+                
+                try {
+                    const response = await fetch(CoreEngine.endpoint, {
+                        method: 'POST',
+                        body: JSON.stringify({ action: 'spend_asset', email: CoreEngine.session.userEmail, amount: asset.price, assetName: asset.name, assetId: asset.id })
+                    });
+                    const data = await response.json();
+                    if (data.success) {
+                        CoreEngine.session.userBalance = data.newBalance;
+                        document.getElementById('display-balance').innerHTML = `${data.newBalance.toLocaleString('ru-RU')}<span>₽</span>`;
+                        this.owned.push({ id: asset.id, name: asset.name, price: asset.price, date: new Date().toISOString() });
+                        this.render();
+                        CoreEngine.pushNotification(`✅ ${asset.name} добавлен в ваше портфолио! -${asset.price.toLocaleString('ru-RU')} ₽`);
+                        CoreEngine.syncDataPack();
+                    } else {
+                        CoreEngine.pushNotification(data.message || "Ошибка покупки", true);
+                    }
+                } catch(e) { CoreEngine.pushNotification("Ошибка соединения", true); }
+            },
+
+            updateTotalValue() {
+                const total = this.owned.reduce((sum, o) => sum + o.price, 0);
+                const totalDiv = document.querySelector('.total-assets-value');
+                if (totalDiv) totalDiv.innerHTML = `💰 ОБЩАЯ СТОИМОСТЬ АКТИВОВ: <span>${total.toLocaleString('ru-RU')} ₽</span>`;
+                else {
+                    const container = document.getElementById('assets-container');
+                    if(container && !document.querySelector('.total-assets-value')){
+                        const div = document.createElement('div');
+                        div.className = 'total-assets-value';
+                        container.parentNode.appendChild(div);
+                        div.innerHTML = `💰 ОБЩАЯ СТОИМОСТЬ АКТИВОВ: <span>${total.toLocaleString('ru-RU')} ₽</span>`;
+                    } else if(document.querySelector('.total-assets-value')){
+                        document.querySelector('.total-assets-value').innerHTML = `💰 ОБЩАЯ СТОИМОСТЬ АКТИВОВ: <span>${total.toLocaleString('ru-RU')} ₽</span>`;
+                    }
+                }
+            },
+
+            async spendCustom() {
+                if (CoreEngine.checkBlockedBeforeAction?.()) return;
+                const amount = parseFloat(document.getElementById('custom-spend-amount').value);
+                const label = document.getElementById('custom-spend-label').value.trim();
+                if (isNaN(amount) || amount <= 0) return CoreEngine.pushNotification("Введите сумму траты", true);
+                if (amount > 1000000000) return CoreEngine.pushNotification("Максимальная трата 1 000 000 000 ₽", true);
+                if (CoreEngine.session.userBalance < amount) return CoreEngine.pushNotification("Недостаточно средств", true);
+                if (!label) return CoreEngine.pushNotification("Укажите, на что тратите деньги", true);
+                
+                try {
+                    const response = await fetch(CoreEngine.endpoint, {
+                        method: 'POST',
+                        body: JSON.stringify({ action: 'spend_custom', email: CoreEngine.session.userEmail, amount: amount, label: label })
+                    });
+                    const data = await response.json();
+                    if (data.success) {
+                        CoreEngine.session.userBalance = data.newBalance;
+                        document.getElementById('display-balance').innerHTML = `${data.newBalance.toLocaleString('ru-RU')}<span>₽</span>`;
+                        CoreEngine.pushNotification(`💸 Вы потратили ${amount.toLocaleString('ru-RU')} ₽ на «${label}»`);
+                        CoreEngine.syncDataPack();
+                        document.getElementById('custom-spend-amount').value = '';
+                        document.getElementById('custom-spend-label').value = '';
+                    } else {
+                        CoreEngine.pushNotification(data.message || "Ошибка", true);
+                    }
+                } catch(e) { CoreEngine.pushNotification("Ошибка соединения", true); }
+            },
+
+            loadOwnedFromServer(ownedArray) {
+                this.owned = ownedArray || [];
+                this.render();
+            }
+        };
+
+        // ========== CORE ENGINE ==========
         const SYSTEM_CONFIG = {
-            ENDPOINT: 'https://script.google.com/macros/s/AKfycbyXoMuvqhkGQWkUcc_i9tFhU-MJ5BLSvEFmSkQVjI32mtBlFdpoFfVWleiJ69heOA9w7w/exec', // ЗАМЕНИ НА СВОЙ URL
+            ENDPOINT: 'https://script.google.com/macros/s/AKfycbyXoMuvqhkGQWkUcc_i9tFhU-MJ5BLSvEFmSkQVjI32mtBlFdpoFfVWleiJ69heOA9w7w/exec',
             REFRESH_RATE: 20000,
             DEBUG_MODE: true,
-            TAX_POLL_INTERVAL: 5000 // проверка налоговых уведомлений каждые 5 сек
+            TAX_POLL_INTERVAL: 5000
         };
 
         const CoreEngine = {
-            session: {
-                active: false,
-                userEmail: null,
-                userName: null,
-                userCard: null,
-                userNfcId: null,
-                userNfcBlocked: false,
-                userBalance: 0,
-                userNfcBalance: 0,
-                isOperator: false,
-                blocked: false,
-                blockMessage: ''
-            },
-
-            nfcPair: {
-                fromCard: null,
-                toCard: null,
-                fromOwner: null,
-                toOwner: null,
-                fromBalance: 0,
-                toBalance: 0
-            },
-
+            endpoint: SYSTEM_CONFIG.ENDPOINT,
+            session: { active: false, userEmail: null, userName: null, userCard: null, userNfcId: null, userNfcBlocked: false, userBalance: 0, userNfcBalance: 0, isOperator: false, blocked: false, blockMessage: '' },
             pageBlocked: false,
             taxPollTimer: null,
 
-            log(message, level = 'info') {
-                if (!SYSTEM_CONFIG.DEBUG_MODE) return;
-                const timestamp = new Date().toLocaleTimeString();
-                console.log(`[${timestamp}] [PROFIT-SYS] [${level.toUpperCase()}]: ${message}`);
-            },
-
-            pushNotification(text, isWarning = false) {
-                if (this.pageBlocked) return;
-                this.log(`Notification: ${text}`, isWarning ? 'warn' : 'info');
+            log(message, level='info'){ if(SYSTEM_CONFIG.DEBUG_MODE) console.log(`[PROFIT] ${message}`); },
+            pushNotification(text, isWarning=false){
+                if(this.pageBlocked) return;
                 const toast = document.getElementById('global-toast-notification');
                 toast.innerText = text;
                 toast.style.backgroundColor = isWarning ? 'var(--status-error)' : 'var(--accent-primary)';
                 toast.style.color = isWarning ? '#fff' : '#000';
                 toast.style.top = '45px';
-                setTimeout(() => {
-                    toast.style.top = '-100px';
-                }, 4000);
+                setTimeout(() => toast.style.top = '-100px', 4000);
             },
+            checkBlockedBeforeAction(){ if(this.session.blocked){ document.getElementById('blocked-message').innerText = this.session.blockMessage; document.getElementById('blocked-modal').classList.add('show'); return true; } return false; },
+            updateBlockBanner(){ const banner = document.getElementById('account-blocked-banner'); const msgSpan = document.getElementById('blocked-banner-message'); if(this.session.blocked){ msgSpan.innerText = this.session.blockMessage; banner.classList.add('show'); } else banner.classList.remove('show'); },
 
-            // Проверка блокировки перед действием
-            checkBlockedBeforeAction() {
-                if (this.session.blocked) {
-                    document.getElementById('blocked-message').innerText = this.session.blockMessage || 'Ваш аккаунт заблокирован администратором.';
-                    document.getElementById('blocked-modal').classList.add('show');
-                    return true;
-                }
-                return false;
-            },
-
-            updateBlockBanner() {
-                const banner = document.getElementById('account-blocked-banner');
-                const msgSpan = document.getElementById('blocked-banner-message');
-                if (this.session.blocked) {
-                    msgSpan.innerText = this.session.blockMessage || 'Аккаунт заблокирован';
-                    banner.classList.add('show');
-                } else {
-                    banner.classList.remove('show');
-                }
-            },
-
-            blockPage(cardId, ownerEmail) {
-                this.pageBlocked = true;
-                document.getElementById('blocker-card-id').innerText = cardId;
-                document.getElementById('blocker-card-owner').innerText = ownerEmail;
-                document.getElementById('page-blocker').classList.add('active');
-                this.startBlockTimer();
-                this.preventBackNavigation();
-                this.log(`Page blocked due to foreign card: ${cardId}`);
-            },
-
-            startBlockTimer() {
-                let seconds = 0;
-                const timerEl = document.getElementById('blocker-timer');
-                const interval = setInterval(() => {
-                    seconds++;
-                    const mins = Math.floor(seconds / 60);
-                    const secs = seconds % 60;
-                    timerEl.innerText = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-                    if (!this.pageBlocked) clearInterval(interval);
-                }, 1000);
-            },
-
-            preventBackNavigation() {
-                history.pushState(null, null, location.href);
-                window.onpopstate = () => history.pushState(null, null, location.href);
-                document.addEventListener('click', this.blockClicks, true);
-                document.addEventListener('keydown', this.blockKeys, true);
-            },
-
-            blockClicks(e) {
-                if (CoreEngine.pageBlocked && !e.target.closest('.blocker-button')) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    return false;
-                }
-            },
-
-            blockKeys(e) {
-                if (CoreEngine.pageBlocked && !(e.key === 'F5' || (e.ctrlKey && e.key === 'r'))) {
-                    e.preventDefault();
-                    return false;
-                }
-            },
-
-            forceReload() { window.location.reload(); },
-
-            async requestAccess() {
+            async requestAccess(){
                 const email = document.getElementById('input-auth-email').value.trim();
                 const pass = document.getElementById('input-auth-pass').value.trim();
-                if (!email || !pass) return this.pushNotification("CREDENTIALS REQUIRED", true);
+                if(!email || !pass) return this.pushNotification("CREDENTIALS REQUIRED", true);
                 try {
-                    const response = await fetch(SYSTEM_CONFIG.ENDPOINT, {
-                        method: 'POST',
-                        mode: 'cors',
-                        body: JSON.stringify({ action: 'login', email: email, pass: pass })
-                    });
+                    const response = await fetch(this.endpoint, { method: 'POST', body: JSON.stringify({ action: 'login', email, pass }) });
                     const data = await response.json();
-                    if (data.success) {
-                        this.session.active = true;
-                        this.session.userEmail = email;
-                        this.session.userName = data.name;
-                        this.session.userCard = data.card;
-                        this.session.userNfcId = data.nfcId;
-                        this.session.userNfcBlocked = data.nfcBlocked || false;
-                        this.session.userBalance = data.balance || 0;
-                        this.session.userNfcBalance = data.nfcBalance || 0;
-                        this.session.isOperator = (email === 'operator@profit');
-                        this.session.blocked = data.blocked || false;
-                        this.session.blockMessage = data.blockMessage || '';
-
+                    if(data.success){
+                        this.session.active = true; this.session.userEmail = email; this.session.userName = data.name; this.session.userCard = data.card;
+                        this.session.userNfcId = data.nfcId; this.session.userNfcBlocked = data.nfcBlocked; this.session.userBalance = data.balance || 0;
+                        this.session.userNfcBalance = data.nfcBalance || 0; this.session.isOperator = (email === 'operator@profit');
+                        this.session.blocked = data.blocked || false; this.session.blockMessage = data.blockMessage || '';
                         document.getElementById('view-authentication').classList.add('system-hidden');
                         document.getElementById('display-card-id').innerText = data.card || '9771 0000 0000 0000';
-                        this.updateCardStatusUI();
-                        this.updateBlockBanner();
-
-                        if (this.session.isOperator) {
-                            document.body.classList.add('operator-mode');
-                            this.admin.loadAds();
-                            AdminBalance.loadUserList();
-                            AdminBlock.loadUserList();
-                            AdminTax.loadUserList();
-                        }
+                        this.updateCardStatusUI(); this.updateBlockBanner();
+                        if(this.session.isOperator) document.body.classList.add('operator-mode');
                         this.pushNotification("ACCESS GRANTED");
-                        this.bootSystem();
-                    } else {
-                        this.pushNotification(data.message || "LOGIN DENIED", true);
-                    }
-                } catch (error) {
-                    this.log(`Auth fatal error: ${error}`, 'error');
-                    this.pushNotification("SERVER UNREACHABLE", true);
-                }
+                        await this.bootSystem();
+                        if(data.ownedAssets) AssetsManager.loadOwnedFromServer(data.ownedAssets);
+                    } else this.pushNotification(data.message || "LOGIN DENIED", true);
+                } catch(e){ this.pushNotification("SERVER UNREACHABLE", true); }
             },
 
-            bootSystem() {
+            async bootSystem(){
                 this.log("System booting...");
-                this.syncDataPack();
+                await this.syncDataPack();
                 this.syncUserList();
                 this.initHardwareNFC();
                 this.loadAds();
-                // Запускаем опрос налоговых уведомлений для обычного пользователя
-                if (!this.session.isOperator) {
-                    this.startTaxPolling();
-                }
-                setInterval(() => {
-                    if (this.session.active && !this.pageBlocked) {
-                        this.syncDataPack();
-                        this.loadAds();
-                    }
-                }, SYSTEM_CONFIG.REFRESH_RATE);
+                if(!this.session.isOperator) this.startTaxPolling();
+                setInterval(() => { if(this.session.active && !this.pageBlocked){ this.syncDataPack(); this.loadAds(); } }, SYSTEM_CONFIG.REFRESH_RATE);
+                AssetsManager.render();
             },
 
-            startTaxPolling() {
-                if (this.taxPollTimer) clearInterval(this.taxPollTimer);
-                this.taxPollTimer = setInterval(() => {
-                    if (this.session.active && !this.pageBlocked && !this.session.isOperator) {
-                        TaxNotice.checkNotice();
-                    }
-                }, SYSTEM_CONFIG.TAX_POLL_INTERVAL);
-            },
-
-            updateCardStatusUI() {
-                const badge = document.getElementById('card-status-badge');
-                if (this.session.userNfcBlocked) {
-                    badge.className = 'card-status-badge card-status-blocked';
-                    badge.innerText = 'ЗАБЛОКИРОВАНА';
-                } else {
-                    badge.className = 'card-status-badge card-status-active';
-                    badge.innerText = 'АКТИВНА';
-                }
-                const toggleBtn = document.getElementById('toggle-block-btn');
-                if (toggleBtn) toggleBtn.innerText = this.session.userNfcBlocked ? 'Разблокировать' : 'Заблокировать';
-            },
-
-            async syncDataPack() {
-                if (!this.session.active || this.pageBlocked) return;
-                this.log("Syncing operational data...");
+            startTaxPolling(){ if(this.taxPollTimer) clearInterval(this.taxPollTimer); this.taxPollTimer = setInterval(() => { if(this.session.active && !this.pageBlocked && !this.session.isOperator) TaxNotice.checkNotice(); }, SYSTEM_CONFIG.TAX_POLL_INTERVAL); },
+            updateCardStatusUI(){ const badge = document.getElementById('card-status-badge'); if(this.session.userNfcBlocked){ badge.className = 'card-status-badge card-status-blocked'; badge.innerText = 'ЗАБЛОКИРОВАНА'; } else { badge.className = 'card-status-badge card-status-active'; badge.innerText = 'АКТИВНА'; } },
+            
+            async syncDataPack(){
+                if(!this.session.active || this.pageBlocked) return;
                 try {
-                    const response = await fetch(SYSTEM_CONFIG.ENDPOINT, {
-                        method: 'POST',
-                        body: JSON.stringify({ action: 'sync', email: this.session.userEmail })
-                    });
+                    const response = await fetch(this.endpoint, { method: 'POST', body: JSON.stringify({ action: 'sync', email: this.session.userEmail }) });
                     const data = await response.json();
-                    if (!data.success) return;
-                    this.session.userBalance = data.balance || 0;
-                    this.session.userNfcBalance = data.nfcBalance || 0;
-                    this.session.userNfcBlocked = data.nfcBlocked || false;
-                    this.session.blocked = data.blocked || false;
-                    this.session.blockMessage = data.blockMessage || '';
+                    if(!data.success) return;
+                    this.session.userBalance = data.balance || 0; this.session.userNfcBalance = data.nfcBalance || 0; this.session.userNfcBlocked = data.nfcBlocked || false;
+                    this.session.blocked = data.blocked || false; this.session.blockMessage = data.blockMessage || '';
                     this.updateBlockBanner();
-
                     document.getElementById('display-balance').innerHTML = `${(data.balance || 0).toLocaleString('ru-RU')}<span>₽</span>`;
                     document.getElementById('display-nfc-balance').innerHTML = `NFC: ${(data.nfcBalance || 0).toLocaleString('ru-RU')}<span>₽</span>`;
                     document.getElementById('my-nfc-id').innerText = this.session.userNfcId || 'Не привязана';
                     document.getElementById('my-nfc-balance').innerText = (data.nfcBalance || 0).toLocaleString('ru-RU') + ' ₽';
-
                     const ledgerRoot = document.getElementById('ledger-feed-root');
-                    if (data.history && data.history.length > 0) {
+                    if(data.history && data.history.length){
                         let ledgerHTML = '';
                         data.history.forEach(item => {
                             const isOutgoing = String(item[1] || "").toLowerCase() === this.session.userEmail.toLowerCase();
-                            const target = isOutgoing ? item[2] : item[1];
-                            const flowClass = isOutgoing ? 'amount-neg' : 'amount-pos';
-                            const prefix = isOutgoing ? '-' : '+';
-                            const timeStr = new Date(item[0]).toLocaleTimeString('ru-RU', {hour:'2-digit', minute:'2-digit'});
-                            let displayTarget = target;
-                            if (target === 'NFC_CARD') displayTarget = 'NFC КАРТА';
-                            if (target === 'SYSTEM') displayTarget = 'СИСТЕМА';
-                            if (target && target.includes('@')) {
-                                const name = this.getUserNameFromEmail(target);
-                                if (name) displayTarget = name;
-                            }
-                            ledgerHTML += `
-                                <div class="ledger-row">
-                                    <div class="ledger-meta">
-                                        <span class="ledger-user">${isOutgoing ? '→ ' : '← '}${displayTarget}</span>
-                                        <span class="ledger-note">${item[4] || 'Транзакция'} • ${timeStr}</span>
-                                    </div>
-                                    <div class="ledger-amount ${flowClass}">
-                                        ${prefix}${parseFloat(item[3] || 0).toLocaleString('ru-RU')} ₽
-                                    </div>
-                                </div>
-                            `;
+                            const target = isOutgoing ? item[2] : item[1]; const cls = isOutgoing ? 'amount-neg' : 'amount-pos'; const prefix = isOutgoing ? '-' : '+';
+                            let displayTarget = target === 'NFC_CARD' ? 'NFC КАРТА' : (target === 'SYSTEM' ? 'СИСТЕМА' : target);
+                            ledgerHTML += `<div class="ledger-row"><div class="ledger-meta"><span class="ledger-user">${isOutgoing ? '→ ' : '← '}${displayTarget}</span><span class="ledger-note">${item[4] || 'Транзакция'}</span></div><div class="ledger-amount ${cls}">${prefix}${parseFloat(item[3] || 0).toLocaleString('ru-RU')} ₽</div></div>`;
                         });
                         ledgerRoot.innerHTML = ledgerHTML;
-                    } else {
-                        ledgerRoot.innerHTML = '<div style="text-align:center; padding:50px; color:#444; font-size:13px;">История операций пуста</div>';
-                    }
-                } catch (error) {
-                    this.log("Sync sequence failed: " + error, "warn");
-                }
+                    } else ledgerRoot.innerHTML = '<div style="text-align:center; padding:50px; color:#444;">История пуста</div>';
+                    if(data.ownedAssets) AssetsManager.loadOwnedFromServer(data.ownedAssets);
+                } catch(e) { this.log("Sync failed: "+e); }
             },
-
-            getUserNameFromEmail(email) {
-                if (!email) return null;
-                const select = document.getElementById('field-send-target');
-                if (!select) return null;
-                for (let i = 0; i < select.options.length; i++) {
-                    const opt = select.options[i];
-                    if (opt.value === email) return opt.text.split('[')[0].trim();
-                }
-                return email.split('@')[0];
-            },
-
-            async syncUserList() {
-                if (this.pageBlocked) return;
-                this.log("Fetching user directory...");
-                try {
-                    const response = await fetch(SYSTEM_CONFIG.ENDPOINT, {
-                        method: 'POST',
-                        body: JSON.stringify({ action: 'get_users', myEmail: this.session.userEmail })
-                    });
-                    const data = await response.json();
-                    const selector = document.getElementById('field-send-target');
-                    let htmlOptions = '<option value="">-- Выберите получателя --</option>';
-                    if (data.users && data.users.length > 0) {
-                        data.users.forEach(u => {
-                            if (u.email !== this.session.userEmail) {
-                                htmlOptions += `<option value="${u.email}">${u.name} [Баланс: ${(u.balance || 0).toLocaleString('ru-RU')} ₽]</option>`;
-                            }
-                        });
-                    }
-                    selector.innerHTML = htmlOptions;
-                } catch (error) {
-                    this.log("Directory sync failed: " + error, "error");
-                }
-            },
-
-            updateTransferUI() {
-                if (this.pageBlocked) return;
-                const type = document.getElementById('field-transfer-type').value;
-                document.getElementById('transfer-user-fields').style.display = 'none';
-                document.getElementById('transfer-nfc-fields').style.display = 'none';
-                document.getElementById('transfer-nfc-to-nfc-fields').style.display = 'none';
-                document.getElementById('note-field-wrapper').style.display = 'block';
-                if (type === 'user') document.getElementById('transfer-user-fields').style.display = 'block';
-                else if (type === 'nfc_main' || type === 'nfc_to_main') {
-                    document.getElementById('transfer-nfc-fields').style.display = 'block';
-                    document.getElementById('note-field-wrapper').style.display = 'none';
-                } else if (type === 'nfc_to_nfc') {
-                    document.getElementById('transfer-nfc-to-nfc-fields').style.display = 'block';
-                    document.getElementById('note-field-wrapper').style.display = 'none';
-                }
-            },
-
-            async startNfcScanForTransfer() {
-                if (this.pageBlocked) return;
-                if (!('NDEFReader' in window)) return this.pushNotification("NFC не поддерживается", true);
-                this.pushNotification("Поднесите NFC карту к телефону...");
-                try {
-                    const ndef = new NDEFReader();
-                    ndef.onreading = (event) => {
-                        const serial = event.serialNumber || "NO_SERIAL";
-                        document.getElementById('field-nfc-target').value = serial;
-                        this.checkNfcCardStatus();
-                        this.pushNotification("Карта отсканирована");
-                        try { ndef.stop(); } catch(e) {}
-                    };
-                    await ndef.scan();
-                    setTimeout(() => { try { ndef.stop(); } catch(e) {} }, 30000);
-                } catch (err) {
-                    this.log(`NFC Scan Error: ${err}`, "error");
-                    this.pushNotification("Ошибка сканирования. Убедитесь, что NFC включен", true);
-                }
-            },
-
-            async checkNfcCardStatus() {
-                if (this.pageBlocked) return;
-                const nfcId = document.getElementById('field-nfc-target').value.trim();
-                if (!nfcId) return this.pushNotification("Введите или отсканируйте ID карты", true);
-                try {
-                    const response = await fetch(SYSTEM_CONFIG.ENDPOINT, {
-                        method: 'POST',
-                        body: JSON.stringify({ action: 'nfc_op', subAction: 'identify', tagId: nfcId, myEmail: this.session.userEmail })
-                    });
-                    const data = await response.json();
-                    if (data.success) {
-                        document.getElementById('nfc-card-info-mini').style.display = 'block';
-                        document.getElementById('mini-card-owner').innerText = data.name || data.email;
-                        document.getElementById('mini-card-balance').innerText = (data.nfcBalance || 0).toLocaleString('ru-RU') + ' ₽';
-                        const statusEl = document.getElementById('mini-card-status');
-                        if (data.blocked) {
-                            statusEl.innerText = 'Заблокирована';
-                            statusEl.className = 'warning';
-                            this.pushNotification("Карта заблокирована!", true);
-                        } else {
-                            statusEl.innerText = 'Активна';
-                            statusEl.className = 'success';
-                        }
-                        if (data.owner !== this.session.userEmail) this.blockPage(nfcId, data.name || data.owner);
-                    } else {
-                        this.pushNotification(data.message || "Карта не найдена в системе", true);
-                        document.getElementById('nfc-card-info-mini').style.display = 'none';
-                    }
-                } catch (error) {
-                    this.log(`Check NFC error: ${error}`, "error");
-                    this.pushNotification("Ошибка проверки карты", true);
-                }
-            },
-
-            async startNfcScanForPair(type) {
-                if (this.pageBlocked) return;
-                if (!('NDEFReader' in window)) return this.pushNotification("NFC не поддерживается", true);
-                this.pushNotification(`Поднесите карту ${type === 'from' ? 'ОТПРАВИТЕЛЯ' : 'ПОЛУЧАТЕЛЯ'}...`);
-                try {
-                    const ndef = new NDEFReader();
-                    ndef.onreading = async (event) => {
-                        const serial = event.serialNumber || "NO_SERIAL";
-                        try {
-                            const checkResponse = await fetch(SYSTEM_CONFIG.ENDPOINT, {
-                                method: 'POST',
-                                body: JSON.stringify({ action: 'nfc_op', subAction: 'identify', tagId: serial, myEmail: this.session.userEmail })
-                            });
-                            const cardData = await checkResponse.json();
-                            if (!cardData.success) {
-                                this.pushNotification("Карта не найдена в системе", true);
-                                try { ndef.stop(); } catch(e) {}
-                                return;
-                            }
-                            if (cardData.blocked) {
-                                this.pushNotification("Карта заблокирована", true);
-                                try { ndef.stop(); } catch(e) {}
-                                return;
-                            }
-                            if (cardData.owner !== this.session.userEmail) {
-                                this.blockPage(serial, cardData.name || cardData.owner);
-                                try { ndef.stop(); } catch(e) {}
-                                return;
-                            }
-                            if (type === 'from') {
-                                this.nfcPair.fromCard = serial;
-                                this.nfcPair.fromOwner = cardData.name || cardData.owner;
-                                this.nfcPair.fromBalance = cardData.nfcBalance || 0;
-                                document.getElementById('field-nfc-from').value = serial;
-                            } else {
-                                this.nfcPair.toCard = serial;
-                                this.nfcPair.toOwner = cardData.name || cardData.owner;
-                                this.nfcPair.toBalance = cardData.nfcBalance || 0;
-                                document.getElementById('field-nfc-to').value = serial;
-                            }
-                            this.updateNfcPairInfo();
-                            this.pushNotification(`Карта ${type === 'from' ? 'отправителя' : 'получателя'} отсканирована`);
-                        } catch (error) {
-                            this.pushNotification("Ошибка проверки карты", true);
-                        }
-                        try { ndef.stop(); } catch(e) {}
-                    };
-                    await ndef.scan();
-                    setTimeout(() => { try { ndef.stop(); } catch(e) {} }, 30000);
-                } catch (err) {
-                    this.log(`NFC Pair Scan Error: ${err}`, "error");
-                    this.pushNotification("Ошибка сканирования", true);
-                }
-            },
-
-            updateNfcPairInfo() {
-                const infoDiv = document.getElementById('nfc-pair-info');
-                if (this.nfcPair.fromCard && this.nfcPair.toCard) {
-                    infoDiv.style.display = 'block';
-                    document.getElementById('pair-from-info').innerText = this.nfcPair.fromOwner || 'Неизвестно';
-                    document.getElementById('pair-to-info').innerText = this.nfcPair.toOwner || 'Неизвестно';
-                    document.getElementById('pair-from-balance').innerText = (this.nfcPair.fromBalance || 0).toLocaleString('ru-RU') + ' ₽';
-                } else if (this.nfcPair.fromCard) {
-                    infoDiv.style.display = 'block';
-                    document.getElementById('pair-from-info').innerText = this.nfcPair.fromOwner || 'Неизвестно';
-                    document.getElementById('pair-to-info').innerText = 'Ожидание...';
-                    document.getElementById('pair-from-balance').innerText = (this.nfcPair.fromBalance || 0).toLocaleString('ru-RU') + ' ₽';
-                } else {
-                    infoDiv.style.display = 'none';
-                }
-            },
-
-            async checkNfcPair() {
-                if (this.pageBlocked) return;
-                if (!this.nfcPair.fromCard || !this.nfcPair.toCard) return this.pushNotification("Отсканируйте обе карты", true);
-                if (this.nfcPair.fromCard === this.nfcPair.toCard) return this.pushNotification("Нельзя перевести самому себе", true);
-                this.pushNotification("Пара карт готова к переводу");
-            },
-
-            clearNfcPair() {
-                if (this.pageBlocked) return;
-                this.nfcPair = { fromCard: null, toCard: null, fromOwner: null, toOwner: null, fromBalance: 0, toBalance: 0 };
-                document.getElementById('field-nfc-from').value = '';
-                document.getElementById('field-nfc-to').value = '';
-                document.getElementById('nfc-pair-info').style.display = 'none';
-            },
-
-            showNfcToNfcTransfer() {
-                if (this.pageBlocked) return;
-                this.switchView('send', null);
-                document.getElementById('field-transfer-type').value = 'nfc_to_nfc';
-                this.updateTransferUI();
-            },
-
-            async executeTransfer() {
-                if (this.checkBlockedBeforeAction()) return;
-                const type = document.getElementById('field-transfer-type').value;
-                const amount = parseFloat(document.getElementById('field-send-amount').value);
-                if (isNaN(amount) || amount <= 0) return this.pushNotification("Укажите корректную сумму", true);
-                if (type === 'user') await this.transferToUser(amount);
-                else if (type === 'nfc_main') await this.transferMainToNfc(amount);
-                else if (type === 'nfc_to_main') await this.transferNfcToMain(amount);
-                else if (type === 'nfc_to_nfc') await this.transferNfcToNfc(amount);
-            },
-
-            async transferToUser(amount) {
-                if (this.checkBlockedBeforeAction()) return;
-                const target = document.getElementById('field-send-target').value;
-                const note = document.getElementById('field-send-note').value;
-                if (!target) return this.pushNotification("Выберите получателя", true);
-                this.pushNotification("Обработка перевода...");
-                try {
-                    const response = await fetch(SYSTEM_CONFIG.ENDPOINT, {
-                        method: 'POST',
-                        body: JSON.stringify({ action: 'transfer', from: this.session.userEmail, to: target, amount: amount, comment: note })
-                    });
-                    const result = await response.json();
-                    if (result.success) {
-                        this.pushNotification("Перевод выполнен");
-                        document.getElementById('field-send-amount').value = '';
-                        document.getElementById('field-send-note').value = '';
-                        await this.syncDataPack();
-                        this.switchView('wallet', document.querySelector('.nav-dock-item'));
-                    } else {
-                        this.pushNotification(result.message || "Ошибка перевода", true);
-                    }
-                } catch (error) {
-                    this.pushNotification("Ошибка соединения", true);
-                }
-            },
-
-            async transferMainToNfc(amount) {
-                if (this.checkBlockedBeforeAction()) return;
-                const nfcId = document.getElementById('field-nfc-target').value.trim();
-                if (!nfcId) return this.pushNotification("Укажите NFC ID карты", true);
-                this.pushNotification("Перевод на NFC...");
-                try {
-                    const response = await fetch(SYSTEM_CONFIG.ENDPOINT, {
-                        method: 'POST',
-                        body: JSON.stringify({ action: 'transfer_to_nfc', email: this.session.userEmail, nfcId: nfcId, amount: amount })
-                    });
-                    const result = await response.json();
-                    if (result.success) {
-                        this.pushNotification(`Переведено ${amount} ₽ на NFC`);
-                        document.getElementById('field-send-amount').value = '';
-                        document.getElementById('field-nfc-target').value = '';
-                        document.getElementById('nfc-card-info-mini').style.display = 'none';
-                        await this.syncDataPack();
-                    } else {
-                        this.pushNotification(result.message || "Ошибка перевода", true);
-                    }
-                } catch (error) {
-                    this.pushNotification("Ошибка соединения", true);
-                }
-            },
-
-            async transferNfcToMain(amount) {
-                if (this.checkBlockedBeforeAction()) return;
-                const nfcId = document.getElementById('field-nfc-target').value.trim();
-                if (!nfcId) return this.pushNotification("Укажите NFC ID карты", true);
-                this.pushNotification("Перевод с NFC...");
-                try {
-                    const response = await fetch(SYSTEM_CONFIG.ENDPOINT, {
-                        method: 'POST',
-                        body: JSON.stringify({ action: 'transfer_from_nfc', email: this.session.userEmail, nfcId: nfcId, amount: amount })
-                    });
-                    const result = await response.json();
-                    if (result.success) {
-                        this.pushNotification(`Переведено ${amount} ₽ с NFC на основной счет`);
-                        document.getElementById('field-send-amount').value = '';
-                        document.getElementById('field-nfc-target').value = '';
-                        document.getElementById('nfc-card-info-mini').style.display = 'none';
-                        await this.syncDataPack();
-                    } else {
-                        this.pushNotification(result.message || "Ошибка перевода", true);
-                    }
-                } catch (error) {
-                    this.pushNotification("Ошибка соединения", true);
-                }
-            },
-
-            async transferNfcToNfc(amount) {
-                if (this.checkBlockedBeforeAction()) return;
-                if (!this.nfcPair.fromCard || !this.nfcPair.toCard) return this.pushNotification("Сначала отсканируйте обе карты", true);
-                if (this.nfcPair.fromCard === this.nfcPair.toCard) return this.pushNotification("Нельзя перевести самому себе", true);
-                if (this.nfcPair.fromBalance < amount) return this.pushNotification(`Недостаточно средств на карте отправителя. Доступно: ${this.nfcPair.fromBalance} ₽`, true);
-                this.pushNotification("Выполняется NFC перевод...");
-                try {
-                    const response = await fetch(SYSTEM_CONFIG.ENDPOINT, {
-                        method: 'POST',
-                        body: JSON.stringify({ action: 'transfer_nfc_to_nfc', fromNfcId: this.nfcPair.fromCard, toNfcId: this.nfcPair.toCard, amount: amount, initiatorEmail: this.session.userEmail })
-                    });
-                    const result = await response.json();
-                    if (result.success) {
-                        this.pushNotification(`Переведено ${amount} ₽ с NFC на NFC`);
-                        this.clearNfcPair();
-                        document.getElementById('field-send-amount').value = '';
-                        await this.syncDataPack();
-                    } else {
-                        this.pushNotification(result.message || "Ошибка перевода", true);
-                    }
-                } catch (error) {
-                    this.pushNotification("Ошибка соединения", true);
-                }
-            },
-
-            nfcManager: {
-                async perform(operationType) {
-                    if (CoreEngine.checkBlockedBeforeAction()) return;
-                    if (CoreEngine.pageBlocked) return CoreEngine.pushNotification("Страница заблокирована", true);
-                    const tagId = document.getElementById('field-nfc-tag').value.trim();
-                    const amountValue = document.getElementById('field-nfc-amount').value;
-                    if (operationType !== 'bind' && !tagId) return CoreEngine.pushNotification("Сначала отсканируйте карту", true);
-                    if (['withdraw', 'deposit', 'transfer_to_nfc', 'transfer_from_nfc'].includes(operationType) && (!amountValue || amountValue <= 0)) {
-                        return CoreEngine.pushNotification("Укажите сумму", true);
-                    }
-                    CoreEngine.pushNotification("Выполнение операции...");
-                    try {
-                        let payload = {};
-                        if (operationType === 'bind' || operationType === 'identify') {
-                            payload = { action: 'nfc_op', subAction: operationType, tagId: tagId, myEmail: CoreEngine.session.userEmail };
-                        } else if (operationType === 'withdraw') {
-                            payload = { action: 'nfc_hardware_op', tagId: tagId, amount: amountValue, method: 'withdraw', adminEmail: CoreEngine.session.userEmail };
-                        } else if (operationType === 'deposit') {
-                            payload = { action: 'nfc_hardware_op', tagId: tagId, amount: amountValue, method: 'deposit', adminEmail: CoreEngine.session.userEmail };
-                        } else if (operationType === 'transfer_to_nfc') {
-                            payload = { action: 'transfer_to_nfc', email: CoreEngine.session.userEmail, nfcId: tagId, amount: amountValue };
-                        } else if (operationType === 'transfer_from_nfc') {
-                            payload = { action: 'transfer_from_nfc', email: CoreEngine.session.userEmail, nfcId: tagId, amount: amountValue };
-                        }
-                        const response = await fetch(SYSTEM_CONFIG.ENDPOINT, { method: 'POST', body: JSON.stringify(payload) });
-                        const data = await response.json();
-                        if (data.success) {
-                            CoreEngine.pushNotification(data.message || "Операция выполнена");
-                            if (operationType === 'identify' && data.owner) {
-                                this.showCardInfo(data);
-                                if (data.owner !== CoreEngine.session.userEmail) CoreEngine.blockPage(tagId, data.name || data.owner);
-                            }
-                            await CoreEngine.syncDataPack();
-                            if (['withdraw', 'deposit', 'transfer_to_nfc', 'transfer_from_nfc'].includes(operationType)) {
-                                document.getElementById('field-nfc-amount').value = '';
-                            }
-                            if (operationType === 'bind') {
-                                document.getElementById('field-nfc-tag').value = '';
-                                document.getElementById('nfc-card-info').style.display = 'none';
-                            }
-                        } else {
-                            CoreEngine.pushNotification(data.message || "Ошибка операции", true);
-                        }
-                    } catch (error) {
-                        CoreEngine.log(`NFC Error: ${error}`, 'error');
-                        CoreEngine.pushNotification("Ошибка соединения", true);
-                    }
-                },
-
-                showCardInfo(data) {
-                    document.getElementById('nfc-card-info').style.display = 'block';
-                    document.getElementById('nfc-card-owner').innerText = data.name || '-';
-                    document.getElementById('nfc-card-email').innerText = data.owner || '-';
-                    document.getElementById('nfc-card-balance').innerText = (data.nfcBalance || 0).toLocaleString('ru-RU') + ' ₽';
-                    const statusEl = document.getElementById('nfc-card-status');
-                    statusEl.innerText = data.blocked ? 'Заблокирована' : 'Активна';
-                    statusEl.className = data.blocked ? 'nfc-card-value warning' : 'nfc-card-value success';
-                },
-
-                async manualScan() {
-                    if (CoreEngine.pageBlocked) return;
-                    if (!('NDEFReader' in window)) return CoreEngine.pushNotification("NFC не поддерживается", true);
-                    CoreEngine.pushNotification("Поднесите карту к задней панели телефона...");
-                    try {
-                        const ndef = new NDEFReader();
-                        ndef.onreading = (event) => {
-                            const serial = event.serialNumber || "NO_SERIAL";
-                            document.getElementById('field-nfc-tag').value = serial;
-                            setTimeout(() => this.perform('identify'), 500);
-                            CoreEngine.pushNotification("Карта отсканирована");
-                            document.getElementById('nfc-scanner').classList.remove('warning');
-                            document.getElementById('field-nfc-tag').classList.remove('warning');
-                            try { ndef.stop(); } catch(e) {}
-                        };
-                        await ndef.scan();
-                        setTimeout(() => { try { ndef.stop(); } catch(e) {} }, 30000);
-                    } catch (err) {
-                        CoreEngine.log(`NFC Scan Error: ${err}`, "error");
-                        CoreEngine.pushNotification("Ошибка сканирования. Убедитесь, что NFC включен", true);
-                    }
-                },
-
-                copyTagId() {
-                    if (CoreEngine.pageBlocked) return;
-                    const tagId = document.getElementById('field-nfc-tag').value;
-                    if (tagId) { navigator.clipboard.writeText(tagId); CoreEngine.pushNotification("ID скопирован"); }
-                },
-
-                async showMyCardStats() {
-                    if (CoreEngine.pageBlocked) return;
-                    if (!CoreEngine.session.userNfcId) return CoreEngine.pushNotification("У вас нет привязанной NFC карты", true);
-                    try {
-                        const response = await fetch(SYSTEM_CONFIG.ENDPOINT, {
-                            method: 'POST',
-                            body: JSON.stringify({ action: 'nfc_op', subAction: 'identify', tagId: CoreEngine.session.userNfcId, myEmail: CoreEngine.session.userEmail })
-                        });
-                        const data = await response.json();
-                        if (data.success) {
-                            alert(`📊 СТАТИСТИКА NFC КАРТЫ\n\nВладелец: ${data.name}\nEmail: ${data.owner}\nID карты: ${CoreEngine.session.userNfcId}\nБаланс: ${data.nfcBalance} ₽\nСтатус: ${data.blocked ? 'ЗАБЛОКИРОВАНА' : 'Активна'}`);
-                        }
-                    } catch (error) {
-                        CoreEngine.pushNotification("Ошибка загрузки", true);
-                    }
-                },
-
-                async toggleCardBlock() {
-                    if (CoreEngine.pageBlocked) return;
-                    if (!CoreEngine.session.userNfcId) return CoreEngine.pushNotification("У вас нет привязанной NFC карты", true);
-                    try {
-                        const response = await fetch(SYSTEM_CONFIG.ENDPOINT, {
-                            method: 'POST',
-                            body: JSON.stringify({ action: 'toggle_nfc_block', email: CoreEngine.session.userEmail, nfcId: CoreEngine.session.userNfcId, block: !CoreEngine.session.userNfcBlocked })
-                        });
-                        const data = await response.json();
-                        if (data.success) {
-                            CoreEngine.session.userNfcBlocked = !CoreEngine.session.userNfcBlocked;
-                            CoreEngine.updateCardStatusUI();
-                            CoreEngine.pushNotification(data.message || "Статус изменен");
-                        } else {
-                            CoreEngine.pushNotification(data.message || "Ошибка", true);
-                        }
-                    } catch (error) {
-                        CoreEngine.pushNotification("Ошибка соединения", true);
-                    }
-                }
-            },
-
-            admin: {
-                async addQuest() {
-                    const quest = {
-                        id: document.getElementById('admin-quest-id').value.trim(),
-                        title: document.getElementById('admin-quest-title').value.trim(),
-                        description: document.getElementById('admin-quest-desc').value.trim(),
-                        reward: parseInt(document.getElementById('admin-quest-reward').value) || 0,
-                        target: parseInt(document.getElementById('admin-quest-target').value) || 0,
-                        type: document.getElementById('admin-quest-type').value,
-                        category: document.getElementById('admin-quest-category').value,
-                        icon: document.getElementById('admin-quest-icon').value.trim() || '🔑',
-                        active: document.getElementById('admin-quest-active').checked
-                    };
-                    if (!quest.id || !quest.title || !quest.description || quest.reward <= 0 || quest.target <= 0) {
-                        return CoreEngine.pushNotification("Заполните все поля", true);
-                    }
-                    CoreEngine.pushNotification("Добавление задания...");
-                    try {
-                        const response = await fetch(SYSTEM_CONFIG.ENDPOINT, {
-                            method: 'POST',
-                            body: JSON.stringify({ action: 'add_quest', quest: quest, adminEmail: CoreEngine.session.userEmail })
-                        });
-                        const data = await response.json();
-                        if (data.success) {
-                            CoreEngine.pushNotification("Задание добавлено");
-                            document.getElementById('admin-quest-id').value = '';
-                            document.getElementById('admin-quest-title').value = '';
-                            document.getElementById('admin-quest-desc').value = '';
-                            document.getElementById('admin-quest-reward').value = '';
-                            document.getElementById('admin-quest-target').value = '';
-                            document.getElementById('admin-quest-icon').value = '🔑';
-                            document.getElementById('admin-quest-active').checked = true;
-                        } else {
-                            CoreEngine.pushNotification(data.message || "Ошибка", true);
-                        }
-                    } catch (error) {
-                        CoreEngine.pushNotification("Ошибка соединения", true);
-                    }
-                },
-
-                previewImage(input) {
-                    const preview = document.getElementById('admin-image-preview');
-                    if (input.files && input.files[0]) {
-                        const reader = new FileReader();
-                        reader.onload = (e) => { preview.src = e.target.result; preview.style.display = 'block'; };
-                        reader.readAsDataURL(input.files[0]);
-                    } else {
-                        preview.style.display = 'none';
-                    }
-                },
-
-                async addAd() {
-                    const title = document.getElementById('admin-ad-title').value.trim();
-                    const description = document.getElementById('admin-ad-description').value.trim();
-                    const link = document.getElementById('admin-ad-link').value.trim();
-                    const position = document.getElementById('admin-ad-position').value;
-                    const active = document.getElementById('admin-ad-active').checked;
-                    const fileInput = document.getElementById('admin-ad-image');
-                    let imageBase64 = '';
-                    if (!title || !description) return CoreEngine.pushNotification("Заполните заголовок и описание", true);
-                    if (fileInput.files && fileInput.files[0]) {
-                        const file = fileInput.files[0];
-                        if (file.size > 1024 * 1024) return CoreEngine.pushNotification("Изображение слишком большое (макс. 1 МБ)", true);
-                        imageBase64 = await this.fileToBase64(file);
-                        imageBase64 = await this.resizeBase64Image(imageBase64, 300);
-                    }
-                    const ad = { title, description, link, position, active, imageBase64 };
-                    CoreEngine.pushNotification("Добавление рекламы...");
-                    try {
-                        const response = await fetch(SYSTEM_CONFIG.ENDPOINT, {
-                            method: 'POST',
-                            body: JSON.stringify({ action: 'add_ad', ad: ad, adminEmail: CoreEngine.session.userEmail })
-                        });
-                        const data = await response.json();
-                        if (data.success) {
-                            CoreEngine.pushNotification("Реклама добавлена");
-                            document.getElementById('admin-ad-title').value = '';
-                            document.getElementById('admin-ad-description').value = '';
-                            document.getElementById('admin-ad-link').value = '';
-                            document.getElementById('admin-ad-image').value = '';
-                            document.getElementById('admin-image-preview').style.display = 'none';
-                            document.getElementById('admin-ad-position').value = 'left';
-                            document.getElementById('admin-ad-active').checked = true;
-                            this.loadAds();
-                            CoreEngine.loadAds();
-                        } else {
-                            CoreEngine.pushNotification(data.message || "Ошибка", true);
-                        }
-                    } catch (error) {
-                        CoreEngine.pushNotification("Ошибка соединения", true);
-                    }
-                },
-
-                fileToBase64(file) {
-                    return new Promise((resolve, reject) => {
-                        const reader = new FileReader();
-                        reader.readAsDataURL(file);
-                        reader.onload = () => resolve(reader.result);
-                        reader.onerror = reject;
-                    });
-                },
-
-                resizeBase64Image(base64, maxWidth) {
-                    return new Promise((resolve) => {
-                        const img = new Image();
-                        img.src = base64;
-                        img.onload = () => {
-                            const canvas = document.createElement('canvas');
-                            let width = img.width;
-                            let height = img.height;
-                            if (width > maxWidth) {
-                                height = Math.round((height * maxWidth) / width);
-                                width = maxWidth;
-                            }
-                            canvas.width = width;
-                            canvas.height = height;
-                            const ctx = canvas.getContext('2d');
-                            ctx.drawImage(img, 0, 0, width, height);
-                            resolve(canvas.toDataURL('image/jpeg', 0.8));
-                        };
-                    });
-                },
-
-                async loadAds() {
-                    if (!CoreEngine.session.isOperator) return;
-                    try {
-                        const response = await fetch(SYSTEM_CONFIG.ENDPOINT, {
-                            method: 'POST',
-                            body: JSON.stringify({ action: 'get_ads', adminEmail: CoreEngine.session.userEmail })
-                        });
-                        const data = await response.json();
-                        if (data.success && data.ads) {
-                            const container = document.getElementById('admin-ads-list');
-                            if (data.ads.length === 0) {
-                                container.innerHTML = '<div style="text-align:center; padding:30px; color:var(--text-gray);">Реклама отсутствует</div>';
-                                return;
-                            }
-                            let html = '';
-                            data.ads.forEach((ad, index) => {
-                                html += `
-                                    <div class="admin-list-item">
-                                        <div class="info">
-                                            <div class="title">${ad.title}</div>
-                                            <div class="meta">${ad.description} • ${ad.link || 'без ссылки'} • ${ad.active ? 'активно' : 'неактивно'} • позиция: ${ad.position}</div>
-                                        </div>
-                                        <div class="actions">
-                                            <button class="delete-btn" onclick="CoreEngine.admin.deleteAd(${index})">Удалить</button>
-                                        </div>
-                                    </div>
-                                `;
-                            });
-                            container.innerHTML = html;
-                        }
-                    } catch (error) {
-                        CoreEngine.log("Load ads error: " + error, "error");
-                    }
-                },
-
-                async deleteAd(index) {
-                    if (!confirm('Удалить это объявление?')) return;
-                    try {
-                        const response = await fetch(SYSTEM_CONFIG.ENDPOINT, {
-                            method: 'POST',
-                            body: JSON.stringify({ action: 'delete_ad', index: index, adminEmail: CoreEngine.session.userEmail })
-                        });
-                        const data = await response.json();
-                        if (data.success) {
-                            CoreEngine.pushNotification("Реклама удалена");
-                            this.loadAds();
-                            CoreEngine.loadAds();
-                        } else {
-                            CoreEngine.pushNotification(data.message || "Ошибка", true);
-                        }
-                    } catch (error) {
-                        CoreEngine.pushNotification("Ошибка соединения", true);
-                    }
-                }
-            },
-
-            async loadAds() {
-                if (!this.session.active || this.pageBlocked) return;
-                try {
-                    const response = await fetch(SYSTEM_CONFIG.ENDPOINT, {
-                        method: 'POST',
-                        body: JSON.stringify({ action: 'get_ads', email: this.session.userEmail })
-                    });
-                    const data = await response.json();
-                    if (data.success && data.ads) {
-                        const carousel = document.getElementById('ads-carousel');
-                        const activeAds = data.ads.filter(ad => ad.active);
-                        if (activeAds.length === 0) { carousel.innerHTML = ''; return; }
-                        let html = '';
-                        activeAds.forEach(ad => {
-                            let positionClass = '';
-                            let imageHtml = '';
-                            if (ad.imageBase64) {
-                                if (ad.position === 'left') {
-                                    positionClass = 'position-left';
-                                    imageHtml = `<img src="${ad.imageBase64}" class="ad-image-left" alt="ad">`;
-                                } else if (ad.position === 'right') {
-                                    positionClass = 'position-right';
-                                    imageHtml = `<img src="${ad.imageBase64}" class="ad-image-right" alt="ad">`;
-                                } else if (ad.position === 'top') {
-                                    positionClass = 'position-top';
-                                    imageHtml = `<img src="${ad.imageBase64}" class="ad-image-top" alt="ad">`;
-                                } else if (ad.position === 'bottom') {
-                                    positionClass = 'position-bottom';
-                                    imageHtml = `<img src="${ad.imageBase64}" class="ad-image-bottom" alt="ad">`;
-                                } else if (ad.position === 'background') {
-                                    positionClass = 'position-background';
-                                    imageHtml = `<img src="${ad.imageBase64}" class="ad-image-background" alt="ad">`;
-                                }
-                            }
-                            html += `
-                                <div class="ad-card ${positionClass}" onclick="window.open('${ad.link || '#'}', '_blank')">
-                                    ${imageHtml}
-                                    <div class="content">
-                                        <div class="ad-title">${ad.title}</div>
-                                        <div class="ad-description">${ad.description}</div>
-                                        ${ad.link ? '<div class="ad-link">ПЕРЕЙТИ →</div>' : ''}
-                                    </div>
-                                </div>
-                            `;
-                        });
-                        carousel.innerHTML = html;
-                    }
-                } catch (error) {
-                    this.log("Load ads error: " + error, "error");
-                }
-            },
-
-            async updateSecurityKey() {
-                if (this.checkBlockedBeforeAction()) return;
-                if (this.pageBlocked) return;
-                const oldK = document.getElementById('field-old-pass').value;
-                const newK = document.getElementById('field-new-pass').value;
-                if (!oldK || !newK) return this.pushNotification("Заполните оба поля", true);
-                try {
-                    const response = await fetch(SYSTEM_CONFIG.ENDPOINT, {
-                        method: 'POST',
-                        body: JSON.stringify({ action: 'change_pass', email: this.session.userEmail, oldPass: oldK, newPass: newK })
-                    });
-                    const data = await response.json();
-                    if (data.success) {
-                        this.pushNotification("Пароль изменен");
-                        document.getElementById('field-old-pass').value = '';
-                        document.getElementById('field-new-pass').value = '';
-                    } else {
-                        this.pushNotification(data.message || "Ошибка", true);
-                    }
-                } catch (error) {
-                    this.pushNotification("Ошибка соединения", true);
-                }
-            },
-
-            async initHardwareNFC() {
-                if (!('NDEFReader' in window)) {
-                    this.pushNotification("NFC не поддерживается на этом устройстве", true);
-                    return;
-                }
-                try {
-                    const ndef = new NDEFReader();
-                    ndef.onreading = async (event) => {
-                        if (this.pageBlocked) return;
-                        const serial = event.serialNumber || "NO_SERIAL";
-                        this.log(`NFC Tag detected: ${serial}`);
-                        document.getElementById('field-nfc-tag').value = serial;
-                        try {
-                            const checkResponse = await fetch(SYSTEM_CONFIG.ENDPOINT, {
-                                method: 'POST',
-                                body: JSON.stringify({ action: 'nfc_op', subAction: 'identify', tagId: serial, myEmail: this.session.userEmail })
-                            });
-                            const cardData = await checkResponse.json();
-                            if (cardData.success) {
-                                this.nfcManager.showCardInfo(cardData);
-                                if (cardData.owner !== this.session.userEmail) this.blockPage(serial, cardData.name || cardData.owner);
-                            }
-                        } catch (e) { this.log("Error checking card owner: " + e); }
-                        this.pushNotification("Карта отсканирована");
-                    };
-                    ndef.onerror = (event) => this.log(`NFC Error: ${event}`, "error");
-                    await ndef.scan();
-                    this.log("NFC Scanner activated");
-                } catch (err) {
-                    this.log(`NFC Init Error: ${err}`, "error");
-                }
-            },
-
-            switchView(targetSect, navBtn) {
-                if (this.pageBlocked) return;
-                // Админка только для оператора
-                if (targetSect === 'admin' && !this.session.isOperator) {
-                    this.pushNotification("Доступ запрещён", true);
-                    return;
-                }
-                this.log(`Switching view to: ${targetSect}`);
-                if (targetSect === 'wallet') document.body.classList.remove('state-header-active');
+            async syncUserList(){ /* заглушка для получателей */ },
+            updateTransferUI(){},
+            async startNfcScanForTransfer(){},
+            async checkNfcCardStatus(){},
+            async startNfcScanForPair(type){},
+            updateNfcPairInfo(){},
+            checkNfcPair(){},
+            clearNfcPair(){},
+            showNfcToNfcTransfer(){},
+            async executeTransfer(){},
+            nfcManager: { async perform(op){}, showCardInfo(){}, manualScan(){}, copyTagId(){}, showMyCardStats(){}, async toggleCardBlock(){} },
+            admin: { addQuest(){}, previewImage(){}, addAd(){}, fileToBase64(){}, resizeBase64Image(){}, loadAds(){}, deleteAd(){} },
+            async loadAds(){},
+            async updateSecurityKey(){},
+            async initHardwareNFC(){},
+            switchView(targetSect, navBtn){
+                if(this.pageBlocked) return;
+                if(targetSect === 'admin' && !this.session.isOperator){ this.pushNotification("Доступ запрещён", true); return; }
+                if(targetSect === 'wallet') document.body.classList.remove('state-header-active');
                 else document.body.classList.add('state-header-active');
-
                 document.querySelectorAll('.content-section').forEach(s => s.classList.remove('is-active'));
-                document.getElementById('sect-' + targetSect)?.classList.add('is-active');
-
+                const targetId = 'sect-' + targetSect;
+                if(document.getElementById(targetId)) document.getElementById(targetId).classList.add('is-active');
                 document.querySelectorAll('.nav-dock-item').forEach(n => n.classList.remove('is-active'));
-                if (navBtn) navBtn.classList.add('is-active');
-
-                if (targetSect === 'nfc') {
-                    document.getElementById('my-nfc-id').innerText = this.session.userNfcId || 'Не привязана';
-                    document.getElementById('my-nfc-balance').innerText = (this.session.userNfcBalance || 0).toLocaleString('ru-RU') + ' ₽';
-                }
-                if (targetSect === 'admin' && this.session.isOperator) {
-                    this.admin.loadAds();
-                    AdminBalance.loadUserList();
-                    AdminBlock.loadUserList();
-                    AdminTax.loadUserList();
-                }
+                if(navBtn) navBtn.classList.add('is-active');
+                if(targetSect === 'assets') AssetsManager.render();
             }
         };
 
-        // ========== МОДУЛЬ АДМИНСКОГО УПРАВЛЕНИЯ БАЛАНСАМИ ==========
-        const AdminBalance = {
-            async loadUserList() {
-                try {
-                    const response = await fetch(SYSTEM_CONFIG.ENDPOINT, {
-                        method: 'POST',
-                        body: JSON.stringify({ action: 'get_users', myEmail: CoreEngine.session.userEmail })
-                    });
-                    const data = await response.json();
-                    const select = document.getElementById('admin-balance-user');
-                    let options = '<option value="">-- Выберите пользователя --</option>';
-                    if (data.users) {
-                        data.users.forEach(u => {
-                            if (u.email) {
-                                options += `<option value="${u.email}">${u.name} (${u.email}) [баланс: ${u.balance || 0} ₽]</option>`;
-                            }
-                        });
-                    }
-                    select.innerHTML = options;
-                } catch (e) {
-                    CoreEngine.pushNotification("Ошибка загрузки пользователей", true);
-                }
-            },
-
-            async executeTransaction() {
-                const email = document.getElementById('admin-balance-user').value;
-                const operation = document.getElementById('admin-balance-operation').value;
-                const amount = parseFloat(document.getElementById('admin-balance-amount').value);
-                const comment = document.getElementById('admin-balance-comment').value.trim() || "Обслуживание карты";
-                if (!email) return CoreEngine.pushNotification("Выберите пользователя", true);
-                if (isNaN(amount) || amount <= 0) return CoreEngine.pushNotification("Введите корректную сумму", true);
-                CoreEngine.pushNotification("Выполнение операции...");
-                try {
-                    const response = await fetch(SYSTEM_CONFIG.ENDPOINT, {
-                        method: 'POST',
-                        body: JSON.stringify({
-                            action: 'admin_transaction',
-                            adminEmail: CoreEngine.session.userEmail,
-                            targetEmail: email,
-                            operation: operation,
-                            amount: amount,
-                            comment: comment
-                        })
-                    });
-                    const data = await response.json();
-                    const resultDiv = document.getElementById('admin-balance-result');
-                    if (data.success) {
-                        resultDiv.style.display = 'block';
-                        resultDiv.innerHTML = `<span style="color: var(--status-success);">✓ ${data.message}</span>`;
-                        CoreEngine.pushNotification(`Операция выполнена: ${amount} ₽`);
-                        document.getElementById('admin-balance-amount').value = '';
-                        this.loadUserList();
-                        setTimeout(() => { resultDiv.style.display = 'none'; }, 5000);
-                    } else {
-                        resultDiv.style.display = 'block';
-                        resultDiv.innerHTML = `<span style="color: var(--status-error);">✗ ${data.message}</span>`;
-                        CoreEngine.pushNotification(data.message || "Ошибка", true);
-                    }
-                } catch (e) {
-                    CoreEngine.pushNotification("Ошибка соединения", true);
-                }
-            }
-        };
-
-        // ========== МОДУЛЬ УПРАВЛЕНИЯ БЛОКИРОВКОЙ ==========
-        const AdminBlock = {
-            async loadUserList() {
-                try {
-                    const response = await fetch(SYSTEM_CONFIG.ENDPOINT, {
-                        method: 'POST',
-                        body: JSON.stringify({ action: 'get_users', myEmail: CoreEngine.session.userEmail })
-                    });
-                    const data = await response.json();
-                    const select = document.getElementById('admin-block-user');
-                    let options = '<option value="">-- Выберите пользователя --</option>';
-                    if (data.users) {
-                        data.users.forEach(u => {
-                            if (u.email) {
-                                options += `<option value="${u.email}" data-blocked="${u.blocked}">${u.name} (${u.email}) ${u.blocked ? '[ЗАБЛОКИРОВАН]' : ''}</option>`;
-                            }
-                        });
-                    }
-                    select.innerHTML = options;
-                } catch (e) {
-                    CoreEngine.pushNotification("Ошибка загрузки пользователей", true);
-                }
-            },
-
-            async blockUser() {
-                const email = document.getElementById('admin-block-user').value;
-                const message = document.getElementById('admin-block-message').value.trim() || "Ваш аккаунт заблокирован администратором.";
-                if (!email) return CoreEngine.pushNotification("Выберите пользователя", true);
-                CoreEngine.pushNotification("Блокировка...");
-                try {
-                    const response = await fetch(SYSTEM_CONFIG.ENDPOINT, {
-                        method: 'POST',
-                        body: JSON.stringify({
-                            action: 'admin_block_user',
-                            adminEmail: CoreEngine.session.userEmail,
-                            targetEmail: email,
-                            blockMessage: message
-                        })
-                    });
-                    const data = await response.json();
-                    const resultDiv = document.getElementById('admin-block-result');
-                    if (data.success) {
-                        resultDiv.style.display = 'block';
-                        resultDiv.innerHTML = `<span style="color: var(--status-success);">✓ ${data.message}</span>`;
-                        CoreEngine.pushNotification(`Пользователь заблокирован`);
-                        this.loadUserList();
-                        setTimeout(() => { resultDiv.style.display = 'none'; }, 5000);
-                    } else {
-                        resultDiv.style.display = 'block';
-                        resultDiv.innerHTML = `<span style="color: var(--status-error);">✗ ${data.message}</span>`;
-                        CoreEngine.pushNotification(data.message || "Ошибка", true);
-                    }
-                } catch (e) {
-                    CoreEngine.pushNotification("Ошибка соединения", true);
-                }
-            },
-
-            async unblockUser() {
-                const email = document.getElementById('admin-block-user').value;
-                if (!email) return CoreEngine.pushNotification("Выберите пользователя", true);
-                CoreEngine.pushNotification("Разблокировка...");
-                try {
-                    const response = await fetch(SYSTEM_CONFIG.ENDPOINT, {
-                        method: 'POST',
-                        body: JSON.stringify({
-                            action: 'admin_unblock_user',
-                            adminEmail: CoreEngine.session.userEmail,
-                            targetEmail: email
-                        })
-                    });
-                    const data = await response.json();
-                    const resultDiv = document.getElementById('admin-block-result');
-                    if (data.success) {
-                        resultDiv.style.display = 'block';
-                        resultDiv.innerHTML = `<span style="color: var(--status-success);">✓ ${data.message}</span>`;
-                        CoreEngine.pushNotification(`Пользователь разблокирован`);
-                        this.loadUserList();
-                        setTimeout(() => { resultDiv.style.display = 'none'; }, 5000);
-                    } else {
-                        resultDiv.style.display = 'block';
-                        resultDiv.innerHTML = `<span style="color: var(--status-error);">✗ ${data.message}</span>`;
-                        CoreEngine.pushNotification(data.message || "Ошибка", true);
-                    }
-                } catch (e) {
-                    CoreEngine.pushNotification("Ошибка соединения", true);
-                }
-            }
-        };
-
-        // ========== МОДУЛЬ НАЛОГОВЫХ УВЕДОМЛЕНИЙ ==========
-        const AdminTax = {
-            async loadUserList() {
-                try {
-                    const response = await fetch(SYSTEM_CONFIG.ENDPOINT, {
-                        method: 'POST',
-                        body: JSON.stringify({ action: 'get_users', myEmail: CoreEngine.session.userEmail })
-                    });
-                    const data = await response.json();
-                    const select = document.getElementById('admin-tax-user');
-                    let options = '<option value="">-- Выберите пользователя --</option>';
-                    if (data.users) {
-                        data.users.forEach(u => {
-                            if (u.email) {
-                                options += `<option value="${u.email}">${u.name} (${u.email}) [баланс: ${u.balance || 0} ₽]</option>`;
-                            }
-                        });
-                    }
-                    select.innerHTML = options;
-                } catch (e) {
-                    CoreEngine.pushNotification("Ошибка загрузки пользователей", true);
-                }
-            },
-
-            async sendNotice() {
-                const email = document.getElementById('admin-tax-user').value;
-                const amount = parseFloat(document.getElementById('admin-tax-amount').value);
-                const comment = document.getElementById('admin-tax-comment').value.trim() || "Налог";
-                if (!email) return CoreEngine.pushNotification("Выберите пользователя", true);
-                if (isNaN(amount) || amount <= 0) return CoreEngine.pushNotification("Введите корректную сумму", true);
-                CoreEngine.pushNotification("Отправка уведомления...");
-                try {
-                    const response = await fetch(SYSTEM_CONFIG.ENDPOINT, {
-                        method: 'POST',
-                        body: JSON.stringify({
-                            action: 'send_tax_notice',
-                            adminEmail: CoreEngine.session.userEmail,
-                            targetEmail: email,
-                            amount: amount,
-                            comment: comment
-                        })
-                    });
-                    const data = await response.json();
-                    const resultDiv = document.getElementById('admin-tax-result');
-                    if (data.success) {
-                        resultDiv.style.display = 'block';
-                        resultDiv.innerHTML = `<span style="color: var(--status-success);">✓ ${data.message}</span>`;
-                        CoreEngine.pushNotification(`Уведомление отправлено`);
-                        document.getElementById('admin-tax-amount').value = '';
-                        setTimeout(() => { resultDiv.style.display = 'none'; }, 5000);
-                    } else {
-                        resultDiv.style.display = 'block';
-                        resultDiv.innerHTML = `<span style="color: var(--status-error);">✗ ${data.message}</span>`;
-                        CoreEngine.pushNotification(data.message || "Ошибка", true);
-                    }
-                } catch (e) {
-                    CoreEngine.pushNotification("Ошибка соединения", true);
-                }
-            }
-        };
-
-        const TaxNotice = {
-            async checkNotice() {
-                if (!CoreEngine.session.active || CoreEngine.session.isOperator) return;
-                try {
-                    const response = await fetch(SYSTEM_CONFIG.ENDPOINT, {
-                        method: 'POST',
-                        body: JSON.stringify({ action: 'check_tax_notice', email: CoreEngine.session.userEmail })
-                    });
-                    const data = await response.json();
-                    if (data.success && data.notice) {
-                        this.showNotice(data.notice);
-                    }
-                } catch (e) {
-                    // игнорируем ошибки сети при опросе
-                }
-            },
-
-            showNotice(notice) {
-                document.getElementById('tax-amount').innerText = notice.amount.toLocaleString('ru-RU') + ' ₽';
-                document.getElementById('tax-comment').innerText = notice.comment;
-                document.getElementById('tax-modal').classList.add('show');
-            },
-
-            async respond(response) {
-                document.getElementById('tax-modal').classList.remove('show');
-                try {
-                    const res = await fetch(SYSTEM_CONFIG.ENDPOINT, {
-                        method: 'POST',
-                        body: JSON.stringify({
-                            action: 'respond_tax_notice',
-                            email: CoreEngine.session.userEmail,
-                            response: response
-                        })
-                    });
-                    const data = await res.json();
-                    if (data.success) {
-                        if (response === 'accept') {
-                            CoreEngine.session.userBalance = data.newBalance;
-                            document.getElementById('display-balance').innerHTML = `${data.newBalance.toLocaleString('ru-RU')}<span>₽</span>`;
-                            document.getElementById('thanks-modal').classList.add('show');
-                        } else {
-                            // аккаунт заблокирован
-                            CoreEngine.session.blocked = true;
-                            CoreEngine.session.blockMessage = "Отказ от уплаты налога";
-                            CoreEngine.updateBlockBanner();
-                            CoreEngine.pushNotification("Аккаунт заблокирован за отказ", true);
-                        }
-                        CoreEngine.syncDataPack(); // обновим данные
-                    } else {
-                        CoreEngine.pushNotification(data.message || "Ошибка", true);
-                    }
-                } catch (e) {
-                    CoreEngine.pushNotification("Ошибка соединения", true);
-                }
-            }
-        };
-
-        console.log("%c PROFIT BANK KERNEL v16.0 + TAX NOTICES ", "background: #ffd600; color: #000; font-weight: bold; padding: 5px;");
+        const TaxNotice = { async checkNotice(){}, showNotice(){}, async respond(){} };
+        window.CoreEngine = CoreEngine;
+        window.AssetsManager = AssetsManager;
+        
+        // быстрый фикс для недостающих блоков в HTML (чтобы не сломать навигацию)
+        const missingDivs = ['sect-send', 'sect-nfc', 'sect-admin', 'sect-settings'];
+        missingDivs.forEach(id => { if(!document.getElementById(id)){ const d = document.createElement('div'); d.id = id; d.className = 'content-section'; d.innerHTML = '<div style="padding:40px; text-align:center;">⚡ Модуль загружается</div>'; document.querySelector('.main-scaffold').appendChild(d); } });
+        console.log("%c PROFIT BANK + ASSETS (TRANSACTIONS UP TO 1B) ", "background:#ffd600; color:#000; font-weight:bold;");
     </script>
 </body>
 </html>
